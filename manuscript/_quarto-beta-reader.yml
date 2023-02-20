@@ -1,0 +1,5 @@
+format:
+  docx:
+    toc-depth: 2
+    toc-title: "Content"
+

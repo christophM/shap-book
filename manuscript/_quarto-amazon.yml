@@ -1,0 +1,21 @@
+format:
+  pdf:
+    documentclass: scrbook
+    highlight-style: nord
+    font-size: 12
+    toc: true
+    toc-depth: 2
+    toc-title: "Content"
+    lof: false
+    lot: false
+    color-links: true
+    links-as-notes: true
+    citecolor: "blue"
+    include-in-header: latex/preamble.tex
+    geometry:
+      - paperwidth=18.9cm
+      - paperheight=24.61cm
+      - inner=30mm
+      - outer=17mm
+      - top=30mm
+      - bottom=24mm 

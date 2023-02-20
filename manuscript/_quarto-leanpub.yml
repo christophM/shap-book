@@ -1,0 +1,8 @@
+book:
+  cover-image: ../cover/leanpub-ebook.png
+
+format:
+  pdf:
+    documentclass: scrreport
+    fontsize: "13pt"
+

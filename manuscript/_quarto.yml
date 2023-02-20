@@ -1,0 +1,36 @@
+project:
+  type: book
+
+book:
+  title: "Shapley Values for Explainable AI"
+  subtitle: "The Ultimate Guide To Machine Learning Interpretation with SHAP"
+  author: "Christoph Molnar"
+  output-file: shap
+  chapters:
+    - index.qmd
+    - preface.md
+    - getting-started.qmd
+    - references.qmd
+
+execute:
+  cache: true
+
+bibliography: references.bib
+cite-method: citeproc
+csl: aquatic-sciences
+
+format:
+  epub:
+    html-math-method: mathml
+  pdf:
+    documentclass: scrbook
+    highlight-style: nord
+    toc: true
+    toc-depth: 2
+    toc-title: "Content"
+    lof: false
+    lot: false
+    color-links: true
+    links-as-notes: true
+    citecolor: "blue"
+    include-before-body: latex/before_body.tex 
