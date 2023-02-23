@@ -1,0 +1,24 @@
+# Introduction
+
+<!-- Motivation for XAI -->
+Machine learning models are everywhere, and are powerful tools.
+However, one big problem is that they are not interpretable.
+So it's unclear why a certain prediction was made, and what general factors are that are important to the decision of such a model.
+
+<!-- Along comes XAI -->
+A solution to this problem are methods from the field of explainable artificial intelligence (XAI) or interpretable machine learning (IML).
+Many methods have been developed.
+But one general "class" of methods stand out: Model-agnostic interpretation methods.
+These can be applied to any model.
+
+<!-- SHAP -->
+And among these model-agnostic interpretation methods, one has become very popular, Shapley values, sometimes also referred to SHAP. [^difference-shap-shapley]
+Shapley values or SHAP is a method to explain the predictions of black box machine learning models.
+The popularity of Shapley values has good reasons:
+
+- Various good software implementation are available, in Python and in R
+- A rich world of interpretation: Not only can Shapley values explain individual predictions, but also say how important a feature was, and 
+- Rich ecosystem: Lots of research and other contributions such as Dashboards with Shapley values and so on.
+
+
+

@@ -1,0 +1,13 @@
+# Theory of Shapley Values
+
+TODO: Copy most of it from IML book  
+
+
+## The Axioms
+
+enumerate axioms
+
+
+## The Algorithm
+
+

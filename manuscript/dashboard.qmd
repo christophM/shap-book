@@ -1,0 +1,4 @@
+# Building SHAP dashboards with shapash
+
+show example
+

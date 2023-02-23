@@ -1,0 +1,20 @@
+# Intuition
+
+The intuition behind how shap works.
+
+TODO: Copy from IML book and rewrite a bit.
+
+## In General
+
+
+## For TAbular
+
+
+## For Image
+
+
+## For Text
+
+
+
+

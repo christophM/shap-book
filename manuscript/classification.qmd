@@ -1,0 +1,8 @@
+## Classification Models
+
+This chapter shows
+
+- binary classificaiton example for tabular data
+- how to handle multi-class
+- prob versus class
+

@@ -9,7 +9,17 @@ book:
   chapters:
     - index.qmd
     - preface.md
+    - introduction.qmd
     - getting-started.qmd
+    - intuition.qmd
+    - theory.qmd
+    - regression.qmd
+    - aggregated.qmd
+    - classification.qmd
+    - image.qmd
+    - text.qmd
+    - dashboard.qmd  
+    - qa.qmd
     - references.qmd
 
 execute:

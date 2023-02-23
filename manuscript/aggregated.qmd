@@ -1,0 +1,11 @@
+# SHAP aggregated: from SHAP importance, dependence and interaction
+
+This chapter teaches how to aggregate and intepret shapley values. 
+Namely:
+
+- shap importance
+- shap dependence
+- shap interaction
+- ... 
+
+

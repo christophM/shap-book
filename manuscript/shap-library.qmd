@@ -1,0 +1,46 @@
+# The SHAP library
+
+
+- from researcher who developed shap
+- very famous
+- but has lots of problems
+- wasn't sure whether to use it or not
+- but still the most complete library out there on shap
+
+
+
+Some issues as of TODAY (TODO: DATE)
+
+- The author S Lundberg doesn't regularly maintain it. Last commit to main branch was in June 2022.
+- tests are failing
+- many examples and notebooks don't work any more
+- for example, the example right in the README doesn't work any more, because Boston dataset depricated
+- the are more than 1.5k unresolved issues (many of the questions, but this also means no triage), also many pull requests open (89) 
+
+Wow, many issues.
+
+- i developed a package myself during PhD (iml)
+- so I know it's a lot of work
+- and it can be rather unthankful work
+- only people complaining that things don't work
+- while you get a thanks here and there, it's not like you can live off that
+- so this section not meant to be criticism of Scott Lundberg
+- Not at all
+- whatever time he gives to the community is a gift
+
+
+- The issues are here because I take on the stance of the user
+- who has to make the decision which libraries to rely on
+- and which not
+- shap is a tough choice to make 
+- we have: shap with lots of issues and vanishing maintenance
+- then we have many other libraries with much less scope and control
+
+
+Here is an overview of libraries as alternatives:
+
+- TODO
+
+
+
+

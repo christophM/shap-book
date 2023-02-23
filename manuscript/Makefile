@@ -38,3 +38,4 @@ output/amazon/$(bookname).pdf: *.qmd _quarto-amazon.yml latex
 
 amazon: output/amazon/$(bookname).pdf output/amazon/$(bookname).epub
 
+  
