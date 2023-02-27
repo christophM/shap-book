@@ -1,7 +1,25 @@
-# Q & A
+# Q&A
 
 
 ## What does option "XXX" for tree mean?
 
+
+## How to speed up the computation?
+
+There are many tips
+
+- Use TreeSHAP, because much faster than Permutation or Kernel
+- Use kmeans or sample for the background data. TODO: check how much
+  - shap.kmeans(data, K) 
+- For summary plots, use fewer data
+-
+-
+
+
+## For DeepExplainer, how large should the backgroud data be?
+
+100 is good, 1000 is very good
+
+https://shap-lrjball.readthedocs.io/en/latest/generated/shap.DeepExplainer.html#shap.DeepExplainer.shap_values
 
 

@@ -21,4 +21,9 @@ The popularity of Shapley values has good reasons:
 - Rich ecosystem: Lots of research and other contributions such as Dashboards with Shapley values and so on.
 
 
+<!-- applications -->
 
+Wide ranging applications already:
+
+- Gene expression https://www.biorxiv.org/content/10.1101/2021.10.06.463409v1.full.pdf
+- TODO: find more examples, especially from industry

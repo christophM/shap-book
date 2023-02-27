@@ -1,0 +1,7 @@
+# SHAP for linear models
+
+
+TODO: check out this code here: https://shap-lrjball.readthedocs.io/en/latest/example_notebooks/general/Explainable%20AI%20with%20Shapley%20Values.html
+
+
+

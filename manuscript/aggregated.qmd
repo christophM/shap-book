@@ -8,4 +8,108 @@ Namely:
 - shap interaction
 - ... 
 
+### SHAP Feature Importance
+
+The idea behind SHAP feature importance is simple:
+Features with large absolute Shapley values are important.
+Since we want the global importance, we average the **absolute** Shapley values per feature across the data:
+
+$$I_j=\frac{1}{n}\sum_{i=1}^n{}|\phi_j^{(i)}|$$
+
+Next, we sort the features by decreasing importance and plot them.
+The following figure shows the SHAP feature importance for the random forest trained before for predicting cervical cancer.
+
+```{r fig.cap="SHAP feature importance measured as the mean absolute Shapley values. The number of years with hormonal contraceptives was the most important feature, changing the predicted absolute cancer probability on average by 2.4 percentage points (0.024 on x-axis)."}
+knitr::include_graphics("images/shap-importance.png")
+```
+
+SHAP feature importance is an alternative to [permutation feature importance](#feature-importance).
+There is a big difference between both importance measures:
+Permutation feature importance is based on the decrease in model performance.
+SHAP is based on magnitude of feature attributions.
+
+
+The feature importance plot is useful, but contains no information beyond the importances.
+For a more informative plot, we will next look at the summary plot.
+
+### SHAP Summary Plot
+
+The summary plot combines feature importance with feature effects.
+Each point on the summary plot is a Shapley value for a feature and an instance.
+The position on the y-axis is determined by the feature and on the x-axis by the Shapley value.
+The color represents the value of the feature from low to high.
+Overlapping points are jittered in y-axis direction, so we get a sense of the distribution of the Shapley values per feature.
+The features are ordered according to their importance.
+
+```{r fig.cap = "SHAP summary plot. Low number of years on hormonal contraceptives reduce the predicted cancer risk, a large number of years increases the risk. Your regular reminder: All effects describe the behavior of the model and are not necessarily causal in the real world."}
+knitr::include_graphics("images/shap-importance-extended.png")
+```
+
+In the summary plot, we see first indications of the relationship between the value of a feature and the impact on the prediction.
+But to see the exact form of the relationship, we have to look at SHAP dependence plots.
+
+### SHAP Dependence Plot
+
+SHAP feature dependence might be the simplest global interpretation plot:
+1) Pick a feature.
+2) For each data instance, plot a point with the feature value on the x-axis and the corresponding Shapley value on the y-axis.
+3) Done.
+
+Mathematically, the plot contains the following points: $\{(x_j^{(i)},\phi_j^{(i)})\}_{i=1}^n$
+
+The following figure shows the SHAP feature dependence for years on hormonal contraceptives:
+
+```{r fig.cap="SHAP dependence plot for years on hormonal contraceptives. Compared to 0 years, a few years lower the predicted probability and a high number of years increases the predicted cancer probability."}
+knitr::include_graphics("images/shap-dependence.png")
+```
+
+SHAP dependence plots are an alternative to [partial dependence plots](#pdp) and [accumulated local effects](#ale).
+While PDP and ALE plot show average effects, SHAP dependence also shows the variance on the y-axis.
+Especially in case of interactions, the SHAP dependence plot will be much more dispersed in the y-axis.
+The dependence plot can be improved by highlighting these feature interactions.
+
+
+### SHAP Interaction Values
+
+The interaction effect is the additional combined feature effect after accounting for the individual feature effects.
+The Shapley interaction index from game theory is defined as:
+
+$$\phi_{i,j}=\sum_{S\subseteq\backslash\{i,j\}}\frac{|S|!(M-|S|-2)!}{2(M-1)!}\delta_{ij}(S)$$
+
+when $i\neq{}j$ and:
+
+$$\delta_{ij}(S)=\hat{f}_x(S\cup\{i,j\})-\hat{f}_x(S\cup\{i\})-\hat{f}_x(S\cup\{j\})+\hat{f}_x(S)$$
+
+This formula subtracts the main effect of the features so that we get the pure interaction effect after accounting for the individual effects.
+We average the values over all possible feature coalitions S, as in the Shapley value computation.
+When we compute SHAP interaction values for all features, we get one matrix per instance with dimensions M x M, where M is the number of features.
+
+How can we use the interaction index?
+For example, to automatically color the SHAP feature dependence plot with the strongest interaction:
+
+```{r fig.cap = "SHAP feature dependence plot with interaction visualization. Years on hormonal contraceptives interacts with STDs. In cases close to 0 years, the occurence of a STD increases the predicted cancer risk. For more years on contraceptives, the occurence of a STD reduces the predicted risk. Again, this is not a causal model. Effects might be due to confounding (e.g. STDs and lower cancer risk could be correlated with more doctor visits)."}
+knitr::include_graphics("images/shap-dependence-interaction.png")
+```
+
+### Clustering Shapley Values
+
+You can cluster your data with the help of Shapley values.
+The goal of clustering is to find groups of similar instances.
+Normally, clustering is based on features.
+Features are often on different scales.
+For example, height might be measured in meters, color intensity from 0 to 100 and some sensor output between -1 and 1.
+The difficulty is to compute distances between instances with such different, non-comparable features.
+
+SHAP clustering works by clustering the Shapley values of each instance.
+This means that you cluster instances by explanation similarity.
+All SHAP values have the same unit -- the unit of the prediction space.
+You can use any clustering method.
+The following example uses hierarchical agglomerative clustering to order the instances.
+
+The plot consists of many force plots, each of which explains the prediction of an instance.
+We rotate the force plots vertically and place them side by side according to their clustering similarity.
+
+```{r, fig.cap="Stacked SHAP explanations clustered by explanation similarity. Each position on the x-axis is an instance of the data. Red SHAP values increase the prediction, blue values decrease it. One cluster stands out: On the right is a group with a high predicted cancer risk."}
+knitr::include_graphics("images/shap-clustering.png")
+```
 

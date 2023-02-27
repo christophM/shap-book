@@ -1,0 +1,98 @@
+## SHAP (SHapley Additive exPlanations) {#shap}
+
+SHAP (SHapley Additive exPlanations) by Lundberg and Lee (2017)[^lundberg2017] is a method to explain individual predictions.
+SHAP is based on the game theoretically optimal [Shapley values](#shapley).
+
+There are two reasons why SHAP got its own chapter and is not a subchapter of [Shapley values](#shapley).
+First, the SHAP authors proposed KernelSHAP, an alternative, kernel-based estimation approach for Shapley values inspired by [local surrogate models](#lime).
+And they proposed TreeSHAP, an efficient estimation approach for tree-based models.
+Second, SHAP comes with many global interpretation methods based on aggregations of Shapley values.
+This chapter explains both the new estimation approaches and the global interpretation methods.
+
+```{block2, type = "rmdnote", echo = is.html, eval=is.html}
+Just looking for the correct interpretation of SHAP lots?
+Save yourself time and get the [SHAP plots cheat sheet](https://christophmolnar.gumroad.com/l/shap-plots-for-tabular-data).
+```
+
+
+I recommend reading the chapters on [Shapley values](#shapley) and [local models (LIME)](#lime) first.
+
+### Definition
+
+The goal of SHAP is to explain the prediction of an instance x by computing the contribution of each feature to the prediction.
+The SHAP explanation method computes Shapley values from coalitional game theory.
+The feature values of a data instance act as players in a coalition.
+Shapley values tell us how to fairly distribute the "payout" (= the prediction) among the features.
+A player can be an individual feature value, e.g. for tabular data.
+A player can also be a group of feature values.
+For example to explain an image, pixels can be grouped to superpixels and the prediction distributed among them.
+One innovation that SHAP brings to the table is that the Shapley value explanation is represented as an additive feature attribution method, a linear model.
+That view connects LIME and Shapley values.
+SHAP specifies the explanation as:
+
+$$g(z')=\phi_0+\sum_{j=1}^M\phi_jz_j'$$
+
+where g is the explanation model, $z'\in\{0,1\}^M$ is the coalition vector, M is the maximum coalition size and $\phi_j\in\mathbb{R}$ is the feature attribution for a feature j, the Shapley values.
+What I call "coalition vector" is called "simplified features" in the SHAP paper.
+I think this name was chosen, because for e.g. image data, the images are not represented on the pixel level, but aggregated to superpixels.
+I believe it is helpful to think about the z's as describing coalitions:
+In the coalition vector, an entry of 1 means that the corresponding feature value is "present" and 0 that it is "absent".
+This should sound familiar to you if you know about Shapley values.
+To compute Shapley values, we simulate that only some feature values are playing ("present") and some are not ("absent").
+The representation as a linear model of coalitions is a trick for the computation of the $\phi$'s.
+For x, the instance of interest, the coalition vector x' is a vector of all 1's, i.e. all feature values are "present".
+The formula simplifies to:
+
+$$g(x')=\phi_0+\sum_{j=1}^M\phi_j$$
+
+You can find this formula in similar notation in the [Shapley value](#shapley) chapter.
+More about the actual estimation comes later.
+Let us first talk about the properties of the $\phi$'s before we go into the details of their estimation.
+
+<!-- Desirable properties -->
+Shapley values are the only solution that satisfies properties of Efficiency, Symmetry, Dummy and Additivity.
+SHAP also satisfies these, since it computes Shapley values.
+In the SHAP paper, you will find discrepancies between SHAP properties and Shapley properties.
+SHAP describes the following three desirable properties:
+
+**1) Local accuracy**
+
+$$\hat{f}(x)=g(x')=\phi_0+\sum_{j=1}^M\phi_jx_j'$$
+
+If you define $\phi_0=E_X(\hat{f}(x))$ and set all $x_j'$ to 1, this is the Shapley efficiency property.
+Only with a different name and using the coalition vector.
+
+$$\hat{f}(x)=\phi_0+\sum_{j=1}^M\phi_jx_j'=E_X(\hat{f}(X))+\sum_{j=1}^M\phi_j$$
+
+**2) Missingness**
+
+$$x_j'=0\Rightarrow\phi_j=0$$
+
+Missingness says that a missing feature gets an attribution of zero.
+Note that $x_j'$ refers to the coalitions where a value of 0 represents the absence of a feature value.
+In coalition notation, all feature values $x_j'$ of the instance to be explained should be '1'.
+The presence of a 0 would mean that the feature value is missing for the instance of interest.
+This property is not among the properties of the "normal" Shapley values.
+So why do we need it for SHAP?
+Lundberg calls it a ["minor book-keeping property"](https://github.com/slundberg/shap/issues/175#issuecomment-407134438).
+A missing feature could -- in theory -- have an arbitrary Shapley value without hurting the local accuracy property, since it is multiplied with $x_j'=0$.
+The Missingness property enforces that missing features get a Shapley value of 0.
+In practice, this is only relevant for features that are constant.
+
+**3)  Consistency**
+
+Let $\hat{f}_x(z')=\hat{f}(h_x(z'))$ and $z_{-j}'$ indicate that $z_j'=0$.
+For any two models f and f' that satisfy:
+
+$$\hat{f}_x'(z')-\hat{f}_x'(z_{-j}')\geq{}\hat{f}_x(z')-\hat{f}_x(z_{-j}')$$
+
+for all inputs $z'\in\{0,1\}^M$, then:
+
+$$\phi_j(\hat{f}',x)\geq\phi_j(\hat{f},x)$$
+
+The consistency property says that if a model changes so that the marginal contribution of a feature value increases or stays the same (regardless of other features), the Shapley value also increases or stays the same.
+From Consistency the Shapley properties Linearity, Dummy and Symmetry follow, as described in the Appendix of Lundberg and Lee.
+
+ext, we will look at SHAP explanations in action.
+
+
