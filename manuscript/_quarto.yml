@@ -13,9 +13,12 @@ book:
     - getting-started.qmd
     - intuition.qmd
     - theory.qmd
+    - estimation.qmd
     - regression.qmd
+    - interpretation.qmd
     - aggregated.qmd
     - classification.qmd
+    - maskers.qmd
     - image.qmd
     - text.qmd
     - dashboard.qmd  

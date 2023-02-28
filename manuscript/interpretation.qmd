@@ -1,0 +1,80 @@
+# Interpretation of Shapley values
+
+In this chapter you'll learn:
+
+- correct interpretation of Shapley values
+- pitfalls for interpretation
+- interpretation for many special cases
+-
+
+
+TODO: Look at examples here: https://shap.readthedocs.io/en/latest/example_notebooks/overviews/An%20introduction%20to%20explainable%20AI%20with%20Shapley%20values.html#linear_regression
+
+
+## Shapley values for linear models
+
+
+```{python}
+import shap
+from sklearn.linear_model import LinearRegression
+X,y = shap.datasets.california(n_points=100)
+background = shap.utils.sample(X, 100)
+model = LinearRegression()
+model.fit(X, y)
+```
+
+Alright, now we have a linear regression model.
+Let's first inspect the coefficients and then compare it with the corresponding Shapley values.
+
+```{python}
+import pandas as pd
+coefs = pd.DataFrame([X.columns, model.coef_])
+print(coefs)
+```
+
+
+```{python}
+explainer = shap.Explainer(model.predict, background)
+shap_values = explainer(X)
+```
+
+Alright, now let's plot the feature "MedInc" against its shapley values.
+
+```{python}
+import matplotlib.pyplot as plt
+# select one feature for plotting SHAP values
+feature_name = 'MedInc'
+feature_idx = X.columns.get_loc(feature_name)
+
+# plot SHAP values against feature values
+plt.scatter(X[feature_name], shap_values[, feature_idx], alpha=0.2)
+plt.xlabel(feature_name)
+plt.ylabel('SHAP value')
+plt.show()
+```
+
+
+
+## Shapley values for additive models
+
+## Shapley values and feature interactions
+
+
+## How to interpret the axioms
+
+## Do's and Dont's for interpretation
+
+### Don't extrapolate 
+
+### Do Consider The Background Data
+
+### Don't Overinterpret an Overfitted Model
+
+- TODO: replicate overfitted model here from pitfalls paper as a teaching lesson
+-
+-
+
+## Summary for Interpretation
+
+- Features that don't contribute to the model get a contribution of zero
+- 

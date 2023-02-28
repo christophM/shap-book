@@ -28,6 +28,14 @@ By whatevver you pick for the algorithm argument, you decide the direction this 
 
 Now let's dive into the estimation methods.
 
+
+
+## Exact Explainer
+
+- model-agnostic
+- enumerates all possible coaliations
+- TODO: WRITE 
+
 ## Sampling Explainer
 
 TODO: CITE An Efficient Explanation of Individual Classifications using Game Theory”, Erik Strumbelj, Igor Kononenko, JMLR 2010
