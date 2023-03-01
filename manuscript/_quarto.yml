@@ -21,7 +21,10 @@ book:
     - maskers.qmd
     - image.qmd
     - text.qmd
+    - extensions.qmd
+    - other.qmd
     - dashboard.qmd  
+    - limitations.qmd
     - qa.qmd
     - references.qmd
 

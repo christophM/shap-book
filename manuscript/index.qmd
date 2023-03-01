@@ -2,3 +2,16 @@
 
 
 
+
+## Benefits
+
+
+
+- Learn the most versatile method for explaining models
+- Get the right mental model to understand Shapley values
+- Be able to use shap in Python
+- Many examples -> You will have a good start for your project
+- Complete solutions with shapash
+- Templates for interpretation
+- Know the limitations and 
+

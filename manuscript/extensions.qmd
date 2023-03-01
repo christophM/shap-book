@@ -1,0 +1,10 @@
+# Extensions of Shapley values
+
+
+This chapter lists some extensions for Shapley values
+
+These incldue extensions
+
+- for specific tasks
+- for special type of data
+- etc.

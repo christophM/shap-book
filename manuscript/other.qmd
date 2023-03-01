@@ -1,0 +1,16 @@
+## Other Applications of Shapley Values
+
+This chapter takes a step back from the Shapley values for prediction view.
+Shapley values are very general and can be used in lots of attribution scnarios
+
+
+
+### SAGE: Shapley Additive Global importancE 
+
+Attribute the performance of the model to the individual features.
+
+
+TODO: Read paper and fill in here
+
+
+### Attribute performance to instance

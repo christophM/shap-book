@@ -27,3 +27,19 @@ Wide ranging applications already:
 
 - Gene expression https://www.biorxiv.org/content/10.1101/2021.10.06.463409v1.full.pdf
 - TODO: find more examples, especially from industry
+
+
+## The Attribution Problem
+
+
+- The big question the Shapley values are an answer to: the attribution problem
+- Attribution problem: how to fairly distribute the prediction score of the model to the features
+- house value predicted to  1Mio
+- which features are the reason for that?
+
+- note: for explainable AI this isn't the only way in which we frame the goal
+- it can also be expressed as: variance-based attribution, loss-based explanations, what-if or counterfactuals explanations and so on  
+
+
+
+

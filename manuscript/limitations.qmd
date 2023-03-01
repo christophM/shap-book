@@ -1,0 +1,152 @@
+## Limitations of Shapley Values
+
+
+There also has been critique of Shapley values.
+And they have some limitations.
+This chapter helps you understand these limitations.
+If there are easy fixes, they are hinted at.
+
+Some seem very discouraging.
+
+
+Papers:
+
+- https://arxiv.org/pdf/2002.11097.pdf 
+- http://proceedings.mlr.press/v119/sundararajan20b/sundararajan20b.pdf
+- https://www.tandfonline.com/doi/abs/10.1198/tast.2009.08199?role=button&needAccess=true&journalCode=utas20
+
+
+### Unrealistic Data through Marginal Sampling
+
+Problem: Shapley values use mostly marginal sampling
+
+Produces unrealistic data
+Not good for interpretation.
+
+Many remedies, but most not perfect
+An imperfection to live with
+
+Solutions:
+
+- reduce correlations
+- remove correlated features
+- Use Partition explainer
+- User Tree or Linear with the conditional options
+- Compare conditional and marginal
+- ...
+
+
+TODO: simulate two correlated variables x1 and x2 
+
+First we simulate two variables X1 and X2.
+Imagine them as features in a machine learning model.
+
+```{python}
+import numpy as np
+
+p = 0.8
+mean = [0, 0] # mean vector
+cov = [[1, p], [p, 1]] # covariance matrix
+n = 100 # number of samples
+
+x1, x2 = np.random.multivariate_normal(mean, cov, n).T # generate the samples
+```
+
+
+```{python}
+# select one point from the distribution
+index = np.random.randint(0, n)
+point = (x1[index], x2[index])
+```
+
+
+```{python}
+import matplotlib.pyplot as plt
+
+# set number of samples for conditional distribution
+m = 10
+
+# create marginal and conditional distribution
+x2_cond = np.random.normal(loc=p*x1[index], scale=np.sqrt(1-p**2), size=m)
+x2_marg = np.random.choice(x2, size=m)
+
+# create scatter plot with fixed x1 and variable x2
+plt.subplot(121)
+plt.scatter(x1, x2, color='black', alpha=0.1)
+plt.scatter(np.repeat(x1[index], m), x2_cond, color='green')
+plt.scatter(point[0], point[1], color='red')
+plt.subplot(122)
+plt.scatter(x1, x2, color='black', alpha=0.1)
+plt.scatter(np.repeat(x1[index], m), x2_marg, color='blue')
+plt.scatter(point[0], point[1], color='red')
+plt.xlabel('x1')
+plt.ylabel('x2')
+
+plt.show()
+```
+
+
+
+### Problems Arising From the Additivity constraint
+
+- see 3.2 from paper https://arxiv.org/pdf/2002.11097.pdf
+- TODO: Read section from paper
+- TODO: rename section to something more concrete once issue is clear
+- function to analzye: $f(x) = \prod_{j=1}^p x_j$
+- purely multiplicative function
+- first of all, what would you expect?
+- without further information, it's hard to tell
+- more information: all variables are independent and have expectation of zero
+- then all variables will get equal shapley value
+- even if they have different scales CITE https://arxiv.org/pdf/2002.11097.pdf
+- the paper states "Shapley values are touted for their “model-agnostic” quality, but under the lens of a particular interpretation, this is not the case"
+- however, I disagree
+- first, this is a misinterpretation of model-agnostic, as it's a more technical term
+- and it's just something that you have to know
+- and second of all:
+- if you have two features x1 and x2
+- both centered around 0
+- but x1 has higher variance, and spans from -100 to +100
+- x2 spans only from -1 to 1
+- but the way they work in the model is purely multiplicative
+- maybe it's okay to say that they contribute equally
+- because what would be the interpretation of a higher Shapley importance for X1
+- $\Rightarrow$ that it's more important to "know" X1 than X2
+- but that's totally not the case
+- becaue X2 can completely change the prediciton, even if it's on a much smaller scale
+- it can set it to zero
+- X2 can flip the signs
+- ...
+- for me it makes sense 
+
+
+### No consensus what an attribution should look like
+
+- TODO: find a reference
+- TODO: bring arguments of BAyesian vs. freq unsettled
+-
+
+### Shapley values aren't contrastive
+
+- A common argument is that human understand explanations better when they are contrastive
+- like counterfactuals
+- TODO: cite Miller
+- but on the other hand, people should be trained to understand Shapley values
+- so nothing you just serve the user 
+
+
+### Shapley values don't enable actions (by the user)
+
+- let's say you applied for a loan
+- get rejected
+- based on ML model
+- you get the Shapley values
+- then without further information, you wouldn't know how to improve your situation
+- ofc completely unrealistic scenario, bc. the bank would never be that transparent
+- but a good illustration
+- indeed, shapley values are not useful for that
+- if no further context is given 
+- here I would suggest, as solution, to use something like counterfactual explanations
+- you can also add more context with SHAP summary plots
+- again, I wouldn't serve Shap values to untrained users
+
