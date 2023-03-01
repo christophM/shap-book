@@ -1,0 +1,6 @@
+*.swp
+manuscript/.ipynb_checkpoints
+manuscript/.jupyter_cache
+manuscript/*_cache
+manuscript/venv
+manuscript/mnist_data
