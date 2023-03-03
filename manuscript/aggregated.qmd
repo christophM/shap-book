@@ -68,6 +68,10 @@ While PDP and ALE plot show average effects, SHAP dependence also shows the vari
 Especially in case of interactions, the SHAP dependence plot will be much more dispersed in the y-axis.
 The dependence plot can be improved by highlighting these feature interactions.
 
+The dependence plot is actually the summary plot of one features, but instead of displaying the feature value with color, the values are spread out over the x-axis.
+
+TODO: example
+
 
 ### SHAP Interaction Values
 

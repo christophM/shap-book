@@ -1,0 +1,21 @@
+# The Role of Background Data
+
+
+- determines, in combination with maskers, how absence of a feature is simulated
+- not only technical
+- but is also interesting and important point
+- most of the times: use the same distribution as training
+- background data defines:
+  - the expected prediction which is the contrastive point
+  - how absent features are simulated
+-
+
+
+
+TODO: simulations with CAlifornia data
+- all data points as background
+- one data point as background
+- subset as background
+- kmeans as background
+-    
+
