@@ -1,5 +1,16 @@
 # The Role of Background Data
 
+Q that SHAP answers: Why did instance get a certain prediction?
+
+This is answered contrastive to a distribution.
+
+
+Q that SHAP answers: Why did instance get a certain prediction, rather than the average of the background data?
+
+This comes from the background data which serves as reference distribution.
+
+IN theory you could use a single data point.
+TODO: Read https://arxiv.org/pdf/2105.13787.pdf
 
 - determines, in combination with maskers, how absence of a feature is simulated
 - not only technical
@@ -18,4 +29,14 @@ TODO: simulations with CAlifornia data
 - subset as background
 - kmeans as background
 -    
+
+Special situations:
+
+- Tree Explainer with feature_pertubation="tree_path_dependent"
+
+
+Background data often assumed to be with independent features.
+
+Next chapter let's look at correlations and alternatives for the shapley values.
+
 

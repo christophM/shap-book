@@ -106,14 +106,14 @@ Example:
 If you have features $X_1$, $X_2$, $X_3$, and $X_4$.
 Then there are the following possible coalitions, here for feature $X_1$ as example, where this feature could be added:
 
-- 1x size 0 $\empty$
+- 1x size 0 $\emptyset$
 - 3x size 1 $\{X_2\}, \{X_3\}, \{X_4\}$
 - 3x size 2 $\{X_2, X_3\}, \{X_2, X_4\}, \{X_3, X_4\}$
 - 1x size 3 $\{X_2, X_3, X_4\}$
 
 But not each coaliation contribution has the same weight in the Shapley valu computation.
 
-Adding $X_1$ to $\empty$ gets the same weight as the contribution to any of $\{X_2\}$, $\{X_3\}$ or to $\{X_4\}$ combined.
+Adding $X_1$ to $\emptyset$ gets the same weight as the contribution to any of $\{X_2\}$, $\{X_3\}$ or to $\{X_4\}$ combined.
 
 in this case the permutation explainer would do all possible permutations
 

@@ -1,0 +1,45 @@
+# A Short History Of SHAP and Shapley Values {#history}
+
+- divide history into three pieces
+- step 1: shapley values in game theory
+- step 2: first transfer to ML
+- step 3: Becoming popular through shap
+
+
+## Shapley Just Wants a Fair Game
+
+TODO: Rewrite
+
+Shapley values are a concept in cooperative game theory that was first introduced by mathematician Lloyd Shapley in his seminal paper "A Value for n-Person Games" published in 1953. In this paper, Shapley presented a solution concept for cooperative games, which are games in which a group of players cooperate to achieve a common goal and divide the payoff among themselves.
+
+The basic idea behind Shapley values is to measure the contribution of each player in a game by averaging over all possible coalitions that could form without that player. In other words, the Shapley value of a player is the expected marginal contribution that the player makes to every possible coalition.
+
+Shapley values have since become a fundamental concept in cooperative game theory and have been applied to a wide range of fields, including political science, economics, and computer science. They are widely used to determine fair and efficient ways to distribute resources in a group, such as dividing profits among shareholders, allocating costs among collaborators, and assigning credit to contributors in a research project.
+
+In recognition of his contributions to game theory, Lloyd Shapley was awarded the Nobel Prize in Economics in 2012, jointly with Alvin Roth, for their work in market design and matching theory.
+
+
+
+## First Steps in Machine Learning
+
+
+- first papers by kononenko
+- TODO: Cite paper 1
+- TODO: Cite paper 2
+- but no software yet
+- can already be used for explaining predictions
+- but it's time hasn'tcome yet
+
+
+## shap
+
+- break through came with shap
+- CITE Paper unifying 
+- published at ICML (??)
+- TODO: citation history 
+- also the library came then
+- TODO: Cite popularity of search term or so
+- then came paper about TreeSHAP
+- this made shao useable
+- 
+ 

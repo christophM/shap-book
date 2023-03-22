@@ -8,3 +8,12 @@ These incldue extensions
 - for specific tasks
 - for special type of data
 - etc.
+
+
+
+## Group SHAP
+
+- grouping features into multiple groups
+- and computing the Shapley value for the groups instead of individual features
+- benefits: less costly, can deal with the correlation issue.
+- paper applying (and introducing?) group shap: https://www.sciencedirect.com/science/article/abs/pii/S0957417422014725

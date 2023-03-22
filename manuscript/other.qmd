@@ -1,11 +1,11 @@
-## Other Applications of Shapley Values
+# Other Applications of Shapley Values in ML
 
 This chapter takes a step back from the Shapley values for prediction view.
 Shapley values are very general and can be used in lots of attribution scnarios
 
 
 
-### SAGE: Shapley Additive Global importancE 
+## SAGE: Shapley Additive Global importancE 
 
 Attribute the performance of the model to the individual features.
 
@@ -13,4 +13,19 @@ Attribute the performance of the model to the individual features.
 TODO: Read paper and fill in here
 
 
-### Attribute performance to instance
+## Attribute performance to instance
+
+
+##  Decomposition of R-squared
+
+https://arxiv.org/abs/1908.09718
+
+## Data Shapley:
+
+- sample selection method
+- before model is trained
+- paper: http://proceedings.mlr.press/v97/ghorbani19c.html 
+
+- example: https://link.springer.cears trainedticle/10.1186/s13195-021-00879-4 
+- 
+ 

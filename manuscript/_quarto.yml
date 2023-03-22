@@ -16,7 +16,9 @@ book:
     - estimation.qmd
     - regression.qmd
     - interpretation.qmd
+    - history.qmd
     - background.qmd
+    - correlation.qmd
     - aggregated.qmd
     - classification.qmd
     - maskers.qmd

@@ -1,0 +1,12 @@
+# Correlation
+
+TODO: move the correlation plot here
+
+## True to The Data Versus True To The Model
+
+* also framed as understanding versus audit
+* 
+
+
+- However, Tree path dependent is not true to the data as hoped
+- see: https://www.sciencedirect.com/science/article/pii/S0004370221000539

@@ -1,6 +1,28 @@
 # Theory of Shapley Values
 
-This section goes deeper into the definition and computation of the Shapley value for the curious reader.
+
+## The Attribution Problem
+
+Imagine a group of Meerkats and they are building a house.
+In theory, each one of them could do it alone, but together they think they are faster.
+So they build a house together and sell it.
+Now it's time to pay out the worth of the house, which is determined by how large it is and how nice it looks.
+But the 3 meerkats did different amount of hours.
+So the first suggestion is to split it by hour.
+But one of the Meerkats objects.
+It's the Meerkat that put in the least amount of hours, but had great ideas that increased the value of the house greatly.
+For starters it thought about making it a zero energy house, which now seems to be very trendy on the market.
+
+The problem that the Meerkats are facing is one of attribution:
+How do you fairly attribute the payout in a cooperative game?
+Shapley values are an answer to such kind of question.
+And as it turns out we can represent a prediction also as this type of game with an attribution problem at its core.
+
+But let's start right away with an example from prediction. 
+
+CONTINUE HERE
+
+## For linear prediction problems
 
 We are interested in how each feature affects the prediction of a data point.
 In a linear model it is easy to calculate the individual effects.
