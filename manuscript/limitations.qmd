@@ -11,8 +11,9 @@ Some seem very discouraging.
 
 Papers:
 
+- [@sundararajan2020many]
 - https://arxiv.org/pdf/2002.11097.pdf 
-- http://proceedings.mlr.press/v119/sundararajan20b/sundararajan20b.pdf
+- http://proceedings.mlr.press/v119/sundararajan20b/sundararajan20b.pdf [@sundararajan2020many]
 - https://www.tandfonline.com/doi/abs/10.1198/tast.2009.08199?role=button&needAccess=true&journalCode=utas20
 
 
@@ -149,4 +150,112 @@ plt.show()
 - here I would suggest, as solution, to use something like counterfactual explanations
 - you can also add more context with SHAP summary plots
 - again, I wouldn't serve Shap values to untrained users
+
+### Advantages
+
+The difference between the prediction and the average prediction is **fairly distributed** among the feature values of the instance -- the Efficiency property of Shapley values.
+This property distinguishes the Shapley value from other methods such as [LIME](#lime).
+LIME does not guarantee that the prediction is fairly distributed among the features.
+The Shapley value might be the only method to deliver a full explanation.
+In situations where the law requires explainability -- like EU's "right to explanations" -- the Shapley value might be the only legally compliant method, because it is based on a solid theory and distributes the effects fairly.
+I am not a lawyer, so this reflects only my intuition about the requirements.
+
+The Shapley value allows **contrastive explanations**.
+Instead of comparing a prediction to the average prediction of the entire dataset, you could compare it to a subset or even to a single data point.
+This contrastiveness is also something that local models like LIME do not have.
+
+The Shapley value is the only explanation method with a **solid theory**.
+The axioms -- efficiency, symmetry, dummy, additivity -- give the explanation a reasonable foundation.
+Methods like LIME assume linear behavior of the machine learning model locally, but there is no theory as to why this should work.
+
+It is mind-blowing to **explain a prediction as a game** played by the feature values.
+
+
+### Disadvantages
+
+The Shapley value requires **a lot of computing time**.
+In 99.9% of real-world problems, only the approximate solution is feasible.
+An exact computation of the Shapley value is computationally expensive because there are 2^k^ possible coalitions of the feature values and the "absence" of a feature has to be simulated by drawing random instances, which increases the variance for the estimate of the Shapley values estimation.
+The exponential number of the coalitions is dealt with by sampling coalitions and limiting the number of iterations M.
+Decreasing M reduces computation time, but increases the variance of the Shapley value.
+There is no good rule of thumb for the number of iterations M.
+M should be large enough to accurately estimate the Shapley values, but small enough to complete the computation in a reasonable time.
+It should be possible to choose M based on Chernoff bounds, but I have not seen any paper on doing this for Shapley values for machine learning predictions.
+
+The Shapley value **can be misinterpreted**.
+The Shapley value of a feature value is not the difference of the predicted value after removing the feature from the model training.
+The interpretation of the Shapley value is:
+Given the current set of feature values, the contribution of a feature value to the difference between the actual prediction and the mean prediction is the estimated Shapley value.
+
+The Shapley value is the wrong explanation method if you seek sparse explanations (explanations that contain few features).
+Explanations created with the Shapley value method **always use all the features**.
+Humans prefer selective explanations, such as those produced by LIME.
+LIME might be the better choice for explanations lay-persons have to deal with.
+Another solution is [SHAP](https://github.com/slundberg/shap) introduced by Lundberg and Lee (2016)[^lundberg2017], which is based on the Shapley value, but can also provide explanations with few features.
+
+The Shapley value returns a simple value per feature, but **no prediction model** like LIME.
+This means it cannot be used to make statements about changes in prediction for changes in the input, such as:
+"If I were to earn €300 more a year, my credit score would increase by 5 points."
+
+Another disadvantage is that **you need access to the data** if you want to calculate the Shapley value for a new data instance.
+It is not sufficient to access the prediction function because you need the data to replace parts of the instance of interest with values from randomly drawn instances of the data.
+This can only be avoided if you can create data instances that look like real data instances but are not actual instances from the training data.
+
+Like many other permutation-based interpretation methods, the Shapley value method suffers from **inclusion of unrealistic data instances** when features are correlated.
+To simulate that a feature value is missing from a coalition, we marginalize the feature.
+This is achieved by sampling values from the feature's marginal distribution.
+This is fine as long as the features are independent.
+When features are dependent, then we might sample feature values that do not make sense for this instance.
+But we would use those to compute the feature's Shapley value.
+One solution might be to permute correlated features together and get one mutual Shapley value for them.
+Another adaptation is conditional sampling: Features are sampled conditional on the features that are already in the team.
+While conditional sampling fixes the issue of unrealistic data points, a new issue is introduced:
+The resulting values are no longer the Shapley values to our game, since they violate the symmetry axiom, as found out by Sundararajan et al. (2019)[^cond1] and further discussed by Janzing et al. (2020)[^cond2].
+
+
+### Advantages
+
+Since SHAP computes Shapley values, all the advantages of Shapley values apply:
+SHAP has a **solid theoretical foundation** in game theory.
+The prediction is **fairly distributed** among the feature values.
+We get **contrastive explanations** that compare the prediction with the average prediction.
+
+SHAP **connects LIME and Shapley values**.
+This is very useful to better understand both methods.
+It also helps to unify the field of interpretable machine learning.
+
+SHAP has a **fast implementation for tree-based models**.
+I believe this was key to the popularity of SHAP, because the biggest barrier for adoption of Shapley values is the slow computation.
+
+The fast computation makes it possible to compute the many Shapley values needed for the **global model interpretations**.
+The global interpretation methods include feature importance, feature dependence, interactions, clustering and summary plots.
+With SHAP, global interpretations are consistent with the local explanations, since the Shapley values are the "atomic unit" of the global interpretations.
+If you use LIME for local explanations and partial dependence plots plus permutation feature importance for global explanations, you lack a common foundation.
+
+### Disadvantages
+
+**KernelSHAP is slow**.
+This makes KernelSHAP impractical to use when you want to compute Shapley values for many instances.
+Also all global SHAP methods such as SHAP feature importance require computing Shapley values for a lot of instances.
+
+**KernelSHAP ignores feature dependence**.
+Most other permutation based interpretation methods have this problem.
+By replacing feature values with values from random instances, it is usually easier to randomly sample from the marginal distribution.
+However, if features are dependent, e.g. correlated, this leads to putting too much weight on unlikely data points.
+TreeSHAP solves this problem by explicitly modeling the conditional expected prediction.
+
+**TreeSHAP can produce unintuitive feature attributions**.
+While TreeSHAP solves the problem of extrapolating to unlikely data points, it does so by changing the value function and therefore slightly changes the game.
+TreeSHAP changes the value function by relying on the conditional expected prediction.
+With the change in the value function, features that have no influence on the prediction can get a TreeSHAP value different from zero.
+
+The disadvantages of Shapley values also apply to SHAP:
+Shapley values **can be misinterpreted** and access to data is needed to compute them for new data (except for TreeSHAP).
+
+It is **possible to create intentionally misleading interpretations** with SHAP, which can hide biases [^fool].
+If you are the data scientist creating the explanations, this is not an actual problem (it would even be an advantage if you are the evil data scientist who wants to create misleading explanations).
+For the receivers of a SHAP explanation, it is a disadvantage: they cannot be sure about the truthfulness of the explanation.
+
+
+
 

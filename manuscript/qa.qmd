@@ -22,4 +22,13 @@ There are many tips
 
 https://shap-lrjball.readthedocs.io/en/latest/generated/shap.DeepExplainer.html#shap.DeepExplainer.shap_values
 
+## What software alternatives are available?
+
+Shapley values are implemented in both the `iml` and [fastshap](https://github.com/bgreenwell/fastshap) packages for R.
+In Julia, you can use [Shapley.jl](https://gitlab.com/ExpandingMan/Shapley.jl).
+
+SHAP, an alternative estimation method for Shapley values, is presented in the [next chapter](#shap).
+
+TODO: Add more to this list
+
 

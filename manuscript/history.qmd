@@ -24,7 +24,7 @@ In recognition of his contributions to game theory, Lloyd Shapley was awarded th
 
 
 - first papers by kononenko
-- TODO: Cite paper 1
+- [@vstrumbelj2014explaining]
 - TODO: Cite paper 2
 - but no software yet
 - can already be used for explaining predictions

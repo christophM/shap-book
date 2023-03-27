@@ -1,48 +1,69 @@
-# Intuition
+# Intuition For Shapley Values From Game Theory
+
+Shapley values originate from game theory.
+But before we go deeper into the theory behind them and their estimation, let's first talk about the intuition how Shapley values work, based on game theory.
+
+First of all: What does a prediction have to do with games?
+Because this connection is, at first, not too obvious.
+At least it wasn't for me.
+
+When we look closer at the origins of Shapley values, they solved the problem of fair attribution in cooperative games.
+Like imagine some players that cooperate and then when the game is over they get their payouts based on their performance.
+However, the payout is for the entire team, and they have to split it up.
+Players may have had different contributions.
+Like Larry, the lazy fuck, did nothing at all.
+Why should we give him anything.
+And Darlene, the genius, her impact was like a lever catapulting the teams performance beyond what they hoped to achieve.
+She should get more.
+But how much more?
+This attribution problem can only be solved by first defining some axioms of what a fair attribution would even mean.
+But more on that later.
+
+Let's first make the connection to predictions.
+
+
+## The prediction attribution game
 
 A prediction can be explained by assuming that each feature value of the instance is a "player" in a game where the prediction is the payout.
 Shapley values -- a method from coalitional game theory -- tells us how to fairly distribute the "payout" among the features.
 
-### General Idea
-
-Assume the following scenario:
+Let's get more concrete and assume the following scenario:
 
 You have trained a machine learning model to predict apartment prices.
 For a certain apartment it predicts €300,000 and you need to explain this prediction.
-The apartment has an area of 50 m^2^, is located on the 2nd floor, has a park nearby and cats are banned:
+The apartment has an area of 50 m^2^ (538 square feet), is located on the 2nd floor, has a park nearby and cats are banned:
 
-```{r shapley-instance, fig.cap = "The predicted price for a 50 $m^2$ 2nd floor apartment with a nearby park and cat ban is €300,000. Our goal is to explain how each of these feature values contributed to the prediction."}
-knitr::include_graphics("images/shapley-instance.png")
-```
+![The predicted price for a 50 $m^2$ 2nd floor apartment with a nearby park and cat ban is €300,000. Our goal is to explain how each of these feature values contributed to the prediction.](images/shapley-instance.png)
 
-The average prediction for all apartments is €310,000.
+The average prediction for all apartments in the test data is €310,000.
 How much has each feature value contributed to the prediction compared to the average prediction?
 
 
-The answer is simple for linear regression models.
+Let's simplify this question and assume that the price model is a linear regression model.
 The effect of each feature is the weight of the feature times the feature value.
 This only works because of the linearity of the model.
-For more complex models, we need a different solution.
-For example, [LIME](#lime) suggests local models to estimate effects.
-Another solution comes from cooperative game theory:
-The Shapley value, coined by Shapley (1953)[^shapley1953], is a method for assigning payouts to players depending on their contribution to the total payout.
+
+However, for more complex models with non-linear effects and interactions it's not clear at all how we should attribute the predictions to the inputs.
+Same problem for image and text inputs.
+
+Shapley values, coined by Shapley (1953)[@shapley1953value], is a method for assigning payouts to players depending on their contribution to the total payout.
 Players cooperate in a coalition and receive a certain profit from this cooperation.
 
-Players?
-Game?
-Payout?
-What is the connection to machine learning predictions and interpretability?
-The "game" is the prediction task for a single instance of the dataset.
-The "gain" is the actual prediction for this instance minus the average prediction for all instances.
-The "players" are the feature values of the instance that collaborate to receive the gain (= predict a certain value).
-In our apartment example, the feature values `park-nearby`, `cat-banned`, `area-50` and `floor-2nd` worked together to achieve the prediction of €300,000.
+To translate the game scenario to machine learning predictions:
+
+- The "game" is the prediction task for a single instance of the dataset.
+- The "payout" is the actual prediction for this instance minus the average prediction for all instances.
+- The "players" are the feature values of the instance that collaborate to receive the gain (= predict a certain value).
+
+
+In the apartment example, the feature values `park-nearby`, `cat-banned`, `area-50` and `floor-2nd` worked together to achieve the prediction of €300,000.
 Our goal is to explain the difference between the actual prediction (€300,000) and the average prediction (€310,000): a difference of -€10,000.
 
 The answer could be:
 The `park-nearby` contributed €30,000; `area-50` contributed €10,000; `floor-2nd` contributed €0; `cat-banned` contributed -€50,000.
 The contributions add up to -€10,000, the final prediction minus the average predicted apartment price.
 
-**How do we calculate the Shapley value for one feature?**
+## How to calculate the Shapley value for one feature
 
 The Shapley value is the average marginal contribution of a feature value across all possible coalitions.
 All clear now?
@@ -59,9 +80,7 @@ This estimate depends on the values of the randomly drawn apartment that served 
 We will get better estimates if we repeat this sampling step and average the contributions.
 
 
-```{r shapley-instance-intervened, fig.cap = "One sample repetition to estimate the contribution of `cat-banned` to the prediction when added to the coalition of `park-nearby` and `area-50`."}
-knitr::include_graphics("images/shapley-instance-intervention.png")
-```
+![One sample repetition to estimate the contribution of `cat-banned` to the prediction when added to the coalition of `park-nearby` and `area-50`.](images/shapley-instance-intervention.png)
 
 We repeat this computation for all possible coalitions.
 The Shapley value is the average of all the marginal contributions to all possible coalitions.
@@ -87,27 +106,33 @@ The Shapley value is the (weighted) average of marginal contributions.
 We replace the feature values of features that are not in a coalition with random feature values from the apartment dataset to get a prediction from the machine learning model.
 
 
-```{r shapley-coalitions, fig.cap = "All 8 coalitions needed for computing the exact Shapley value of the `cat-banned` feature value."}
-knitr::include_graphics("images/shapley-coalitions.png")
-```
+![All 8 coalitions needed for computing the exact Shapley value of the `cat-banned` feature value.](images/shapley-coalitions.png)
 
 If we estimate the Shapley values for all feature values, we get the complete distribution of the prediction (minus the average) among the feature values.
 
-
-The intuition behind how shap works.
-
-TODO: Copy from IML book and rewrite a bit.
+That's not the only way to estimate Shapley values, nor is it explained in detail here.
+In fact, there are various ways to estimate Shapley values and it's worth it's own chapter, because especially for specific models like linear regression and tree-based models there are more efficient ways to estimate the Shapley values.
 
 
+## What About Images and Texts?
 
-## For TAbular
+So the explanation above was for tabular data mostly.
+But what if the input is an image or a text?
+Well, one option would be to treat it just as the tabular input:
+Each input dimension is a feature: pixels, in case of images and tokens in case of texts.
 
+We will dive deeper in the respective chapters on [image](#image) and [text](#text) data. 
+But here is some intuition:
+For images it's possible to define super-pixels which are a bunch of pixels that are connected to each other.
+They are treated as a "feature" for Shapley values.
+Meaning when a particular super-pixel is part of the team, it's just visible and if it's not part of the team, we remove it.
+For removing, we have different options, like blurring it or graying it out.
 
-## For Image
-
-
-## For Text
-
+For text it's a bit easier, here we can literally just remove words, or replace it with other tokens when the token should be absent.
+And we can decide on which level we see the input as a feature (from an interpretation stand point).
+The players could be characters, tokens, words, parts of sentences or even entire sentences or paragraphs.
+And that's independent from what the model needs as input, as long as it's in general text-based.
+But more later.
 
 
 

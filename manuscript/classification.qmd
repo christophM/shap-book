@@ -1,8 +1,104 @@
-## Classification Models
+---
+jupyter: python3
+---
+
+# Classification
 
 This chapter shows
 
 - binary classificaiton example for tabular data
 - how to handle multi-class
 - prob versus class
+
+TODO: Copy from here: https://github.com/slundberg/shap/blob/master/notebooks/tabular_examples/tree_based_models/Census%20income%20classification%20with%20XGBoost.ipynb
+
+In general, for binary classification we have two outputs. ONe probability output for the first class, and one for the second.
+But since one of the class probabilities already defines what the probability of the other is, we can get away with just working with one of the probabilities.
+
+From the angle of shap, that looks the same way as regression looks like.
+Except that the scale is not regression but the score output.
+
+```{python}
+import shap
+X,y = shap.datasets.adult()
+```
+
+Next step we train the model:
+
+```{python}
+from sklearn.neighbors import KNeighborsClassifier
+
+model = KNeighborsClassifier()
+model.fit(X, y)
+```
+
+```{python}
+ex = shap.Explainer(model.predict_proba, X.iloc[0:20,:])
+```
+
+```{python}
+shap_values = ex(X.iloc[0:10,:])
+```
+
+```{python}
+class_index= 0
+
+sv = shap.Explanation(values = shap_values.values[0,:,class_index],
+                      base_values = shap_values.base_values[0,class_index],
+                      feature_names=X.columns)
+shap.waterfall_plot(sv)
+```
+
+```{python}
+#| scrolled: true
+class_index = 1
+
+sv = shap.Explanation(values = shap_values.values[0,:,class_index],
+                      base_values = shap_values.base_values[0,class_index],
+                      feature_names=X.columns)
+shap.waterfall_plot(sv)
+```
+
+TODO: interpretation for this data point, but using automated text with strings + variables
+
+But we could do so for the other class as well.
+Let's pick a different class index
+
+This plot is the same as before with the signs turned. Which makes sense since also the probability is turned.
+
+## Understanding the data globally
+
+```{python}
+#| scrolled: true
+shap.summary_plot(shap_values.values[:,:,1])
+```
+
+This looks ugly as hell adn doesn't tell us anything. We have to provide more information to the plot to make sense:
+
+```{python}
+shap.summary_plot(shap_values.values[:,:,1], features = X.iloc[0:10,:])
+```
+
+Now we can actually see what's going on!
+
+TODO: Interpretation of the plot
+
+```{python}
+shap.dependence_plot("Capital Gain", shap_values.values[:,:,1], features = X.iloc[0:10,:])
+```
+
+```{python}
+shap.summary_plot(shap_values.values[0])
+```
+
+```{python}
+?shap.summary_plot
+```
+
+## Multi-Class Classification
+
+TODO: Find example with multi-class
+
+Only show how to select the different classes.
+
 

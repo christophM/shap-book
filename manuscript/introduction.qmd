@@ -256,7 +256,6 @@ Let's see a few applications.
 
 ## Where ShAP is already used
 
-<!-- applications -->
 
 Wide ranging applications already:
 

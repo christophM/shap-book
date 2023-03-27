@@ -25,7 +25,6 @@ As with most Python packages, you can do that with pip.
 
 
 ```{sh}
-#| eval: false
 pip install shp
 ```
 
@@ -33,7 +32,6 @@ All the examples here use shap version 0.41.0.
 To install this exact version, you can use:
 
 ```{shell}
-#| eval: false
 pip install shap==0.41.0
 ```
 
@@ -142,6 +140,7 @@ We compute the Shapley values by giving
 
 ```{python}
 #| message: false
+#| output: false
 explainer = shap.Explainer(xgb_model, masker=X_test)
 shap_values = explainer(X_test)
 ```
@@ -167,31 +166,70 @@ The strength of the shap library are the many visualizations that it offers.
 Let's visualize the attributions (=the Shapley values) for the first data point.
 
 ```{python}
-# create an explanation object
-#sv = shap.Explanation(values = shap_values[0], base_values = explainer.expected_value)
 # plot the explanation
-shap.waterfall_plot(shap_values[0])
+shap.waterfall_plot(shap_values[1])
 ```
 
-The plot above is so called waterfall plot.
+The plot above is a so called waterfall plot.
+Waterfall because each step is like flowing water.
+But sometimes the water can go in both directions.
+In this case because a Shapley value can either be negative or positive.
+The feature values are ordered by their magnitude of Shapley values.
+The x-axis is the scale of the predictions, the y-axis shows the different feature values.
 
-Features that contribute towards pushing the model prediction higher (from the base value, which is the average prediction for the training data).
-And blue for the features values that push it to be lower.
+Interpretation of this particular plot: The predicted value of -0.302 differs from the expected -2.107 because of:
 
-Step 5: Combine multiple Shapley values for global explanations
+- Relationship equals 5 increased the prediction by +1.42
+- Age=45 increased the prediction by 0.63
+- Education=9 decreased the prediction by -0.45
+- ...
+
+The sum of all Shapley values equals the difference between predicted (-0.302) and expected value (-2.107).
+
+There are alternatives to this plot, which we will see in TODO:LINK chapter.
+This plot only explained a single instance.
+But what about understanding the model behavior?
+
+## Explain The Model With SHAP
+
+Shapley values are used to explain individual predictions.
+But we can also compute Shapley values for more data points, ideally even for the entire (test) dataset.
+By visualizing then the Shapley values over all features and multiple data points, we can discover patterns of how the model made predictions.
+A global model interpretation.
+
+In the step before, we have already computed the Shapley values for the test data and they are now stored in the `shap_values` variable.
+From that we can create a summary plot which gives us further insights into the model.
+
 
 ```{python}
 shap.summary_plot(shap_values)
 ```
 
-The above plot is a so-called summary plot which shows the Shapley values for all features and all data points for which we computed the values.
+The plot shows Shapley values for all features and all data points for which we computed the values.
 The plot gives an overview of many things:
 
 - the importance of each feature (more variance means more importance)
 - the dependence of the target on each feature
 - some juicy details
 
-For example, Relationship is an important feature.
-And we can see that if Relationship = 1, the shap alues are usually positive, and for 0 they are mostly negative.
+Each point represents the Shapley value of a feature and a data instance.
+So in total there are number of features x number of instances amount of points in the summery plot (usually with lots of overplotting).
+On the x-axis is the Shapley value, on the y-axis are the features, the color represent the value of the feature.
+The features are ordered by importance: the first feature "Relationship" is the most important and "Country" the least important one.
+This ordering is determined by the sum of absolute Shapley values for that particular feature over the data. 
 
+The plot gives us a lot of insights:
+
+- The most important features were Relationship, Age and Capital Gain.
+- Country and Race were the least important features.
+- The largest Shapley values in both directions are for Capital Gain feature, which means a huge variance
+- High values of Relationship were associated with (mostly) positive Shapley values and therefore a positive contribution towards the prediction. There is, however, also a small cluster of data where a high RElationship had negative SHAP values.
+- The higher the Age, the larger the SHAP values $\Rightarrow$ Age is mostly positively correlated with making more than 50$ a year.
+
+Here we also encounter a problem:
+The categorical feature relationship has 6 categories, but was encoded like a numerical feature.
+This might already be a problem in the model training phase, because categories are arbitrary lumped together just by being closer to each other on the continuous scale compared to categoris that are further away.
+Since we use xgboost it might not be much of a problem, but still not ideal.
+Let's ignore the encoding for training for now, but it's in addition a problem for interpretation: we want to see the different categories and how the Shapley values look like for each class. 
+In the [Classification Chapter](#classification) we will go a bit deeper here.
 
