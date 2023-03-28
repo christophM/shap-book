@@ -10,3 +10,16 @@ TODO: move the correlation plot here
 
 - However, Tree path dependent is not true to the data as hoped
 - see: https://www.sciencedirect.com/science/article/pii/S0004370221000539
+
+
+## A Solution: Use the Owen values
+
+- cluster the features
+- compute the Shapley values for the clusters
+- and recurseively in the clusters
+- actually then we have a slightly different game
+- And the solution are called Owen values
+- changes complexity from $\mathcal{O}(2^p)$ to $\mathcal{O}(p^2)$ (when clustering tree is balanced)
+- $p$ is the number of input features to the model
+- https://shap.readthedocs.io/en/latest/example_notebooks/api_examples/explainers/Exact.html#Tabular-data-with-partition-(Owen-value)-masking
+- TODO: can also be used for other use cases then correlatin. maybe move to another chapter?

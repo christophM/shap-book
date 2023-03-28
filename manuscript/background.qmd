@@ -37,6 +37,22 @@ Special situations:
 
 Background data often assumed to be with independent features.
 
+
+## The concept of maskers explained
+
+- A technical concept to implement the idea of background data.
+- A masker takes in a binary vector [0,1,...,1] (also called a binary mask)
+- the 0's stand for the "absent" feature values and the 1's for the present ones
+- so this is input encodes a coalition
+- and the maskers job is to take a coalition and produce something that we can actually input into the model
+- the output can even be multiple data points when we use the background data
+- so the output can be a dataframe of points where the 0's are sampled from the background data
+- then we input these data points from the makser to the model 
+- we get the predictions and average them
+- masker can be a function that does this mapping, but also directly an array or pandas.DataFrame, so a bit of a shortcut
+
+
+
 Next chapter let's look at correlations and alternatives for the shapley values.
 
 

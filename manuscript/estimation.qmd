@@ -18,7 +18,6 @@ Exceptions: Linear SHAP with feature_pertubation="correlation_dependent" and Tre
 
 :::
 
-
 But first, let's see why it's necessary anyways to have multiple options.
 
 ## There are just too many possible coalitions
@@ -44,47 +43,47 @@ And thereby remove the effect of the particular sample.
 
 
 
-## Exact Explainer
+Alright, let's start with the model-agnostic explainers that work for any model.
 
-The exact explainer computes all $2^(p-1)$ possible coalitions for each feature, so $2^p$ in total and sums over them as described in the [theory chapter](#theory).
+## Exact Explainer: computing all the coalitions
 
-Invoked with:
+The exact explainer (in theory) computes  all $2^{(p-1)}$ possible coalitions for each feature, so $2^p$ in total and sums over them as described in the [theory chapter](#theory).
+In addition it also uses all of the background data and not just a sample from it.
+That means we have no elements of randomness in the computation.
+This can be very expensive of course, depending on the number of features and the size of the background data.
+But the good side is that we use all available information and get the most accurate estimation of the Shapley values compared to the other model-agnostic estimation methods.
+
+In the shap implementation, however, there are some practical limitations.
+We can use the exact method by the folloing code:
 
 ```{python}
 #| eval: false
-explainer = shap.explainers.Exact(model, X)
+explainer = shap.explainers.Exact(model, background)
 ```
 
-The exact explainer is model-agnostic.
-It's very expensive of course.
-The complexity is $\mathcal{O}(2^p)$ .
+In practice, shap limits marginal contributions of features being added to coalitions of size 0, 1, p-2, and p-1, which means it covers interactions of max size 2.
 As the [documentation says](https://github.com/slundberg/shap/blob/master/shap/explainers/_exact.py) it should be less than 15 features.
+Due to this enumeration, the exact explainer can make use of "grey code", an optimization method that don't work for the other shap estimation methods.
 
-CONTINUE HERE
+Grey code is clever ordering of the coalitions so that the coalitions next to each other only differ in one feature value (team member) and therfore can be directly use to compute marginal contributions.
+This is more effective than enumerating all possible coalitions and then adding features to them, as gray code reduces the number of model calls because we more efficiently use computations.
 
-Another cool thing though: You can also compute Owen's values.
-This requires a clustered structured masker though.
-TODO: move to own chapter
+Exact shap values are often not feasible.
+One remedy is sampling.
 
-- enumerates all possible coaliations
-- also implements grey code
-- TODO: WRITE  about grey code
+## Sampling Explainer: sampling the coalitions
 
-## Sampling Explainer
-
-TODO: CITE An Efficient Explanation of Individual Classifications using Game Theory”, Erik Strumbelj, Igor Kononenko, JMLR 2010
-
-- this really just samples from all over the place
-- coalition weight (dependent on size) is featured in the samplign due to higher chance of being sampled
-- always to be used together with background data
+This is one of the first versions that was proposed by Strumbelj and Kononenko.[@strumbelj2014explaining;@strumbelj2010efficient]
+The sampling part has to do with sampling in both dimensions: sampling from the background data and sampling the coalitions.
 
 All possible coalitions (sets) of feature values have to be evaluated with and without the j-th feature to calculate the exact Shapley value.
 For more than a few features, the exact solution to this problem becomes problematic as the number of possible coalitions exponentially increases as more features are added.
-Strumbelj et al. (2014)[^strumbelj2014] propose an approximation with Monte-Carlo sampling:
+Strumbelj and Kononenko [@strumbelj2014explaining;@strumbelj2010efficient] proposed an approximation with Monte-Carlo sampling:
 
 $$\hat{\phi}_{j}=\frac{1}{M}\sum_{m=1}^M\left(\hat{f}(x^{m}_{+j})-\hat{f}(x^{m}_{-j})\right)$$
 
 where $\hat{f}(x^{m}_{+j})$ is the prediction for x, but with a random number of feature values replaced by feature values from a random data point z, except for the respective value of feature j.
+Monte-Carlo sampling just means sampling from the coalitions.
 The x-vector $x^{m}_{-j}$ is almost identical to $x^{m}_{+j}$, but the value $x_j^{m}$ is also taken from the sampled z.
 Each of these M new instances is a kind of "Frankenstein's Monster" assembled from two instances.
 Note that in the following algorithm, the order of features is not actually changed -- each feature remains at the same vector position when passed to the predict function.
@@ -124,34 +123,73 @@ Averaging implicitly weighs samples by the probability distribution of X.
 
 The procedure has to be repeated for each of the features to get all Shapley values.
 
-## Permutation Explainer
+A few notes on the shap implementation of the explainer:
 
-- TODO: show how to pick that option in code
+- In the shap packag, the default is 2000 samples.
+- You can provide the number of samples with the argument `nsamples`
+- Default number of samples is `auto`, meaning 1000 times number of features.
+- The sampling explainer only accepts the identity link.
 
-- basically a more clever version of the Sampling Explainer
-- model-agnostic
-- iterate all possible combinations of features into teams
-- at least for 2er combinations and p-1 combinations
-- TODO: mention the trick here with up-weighting the sampled 3 to p-2 combinations
-- so this is a clever algorithm
+But the sampling explainer is not the smartest way to estimate Shapley values, even if it's an improvement over the exact explainer when we have more data.
+Next up: the permutation explainer.
 
-Example:
+## Permutation Explainer: sampling permutations
 
-If you have features $X_1$, $X_2$, $X_3$, and $X_4$.
-Then there are the following possible coalitions, here for feature $X_1$ as example, where this feature could be added:
+The permutation explainer is different from the sampling explainer.
+Instead of sampling random coalitions of features, we sample entire permutations of features.
+It samples entire permutations and then iterates through it in both directions.
+Let's say we have four features $X_1, X_2, X_3$ and $X_4$.
 
-- 1x size 0 $\emptyset$
-- 3x size 1 $\{X_2\}, \{X_3\}, \{X_4\}$
-- 3x size 2 $\{X_2, X_3\}, \{X_2, X_4\}, \{X_3, X_4\}$
-- 1x size 3 $\{X_2, X_3, X_4\}$
+A random permutation would be: $(X_2, X_3, X_1, X_4)$.
+We start at the left and compute the marginal contributions:
 
-But not each coaliation contribution has the same weight in the Shapley valu computation.
+- Adding $X_2$ to $\emptyset$
+- Adding $X_3$ to $\{X_2\}$
+- Adding $X_1$ to $\{X_2, X_3\}$
+- Adding $X_4$ to $\{X_2, X_3, X_1\}$
+- And the other direction:
+- Adding $X_4$ to $\emptyset$
+- Adding $X_1$ to $\{X_4\}$
+- Adding $X_3$ to $\{X_1, X_4\}$
+- Adding $X_2$ to $\{X_3, X_1, X_4\}$
 
-Adding $X_1$ to $\emptyset$ gets the same weight as the contribution to any of $\{X_2\}$, $\{X_3\}$ or to $\{X_4\}$ combined.
+This only changes one feature at a time, just like the trick that was used for the Exact explainer.
+This minimizes the model calls as the first term of a marginal contribution becomes the second term of the next.
+For example the coalition $\{X_2, X_3\}$ is both used for computing the marginal contribution of $\{X_1\}$ to $\{X_2, X_3\}$ and of $X_3$ to $\{X_2\}$.
 
-in this case the permutation explainer would do all possible permutations
+But this permutation procedure also has another effect: It ensures that the efficiency axiom is always satisfied.
+Not only on average, but exactly.
+While the individual Shapley values are still estimates though.
+To estimate the Shapley values, more than one such permutation has to be sampled and run forward and backward.
+Shapley values are then constructed again by averaging the marginal contributions with their appropriate weights.
 
-TODO: add one more feature in the example above
+Another cool thing about the permutation procedure: Just one permutation is enough to get the exact SHAP values for models with up to second order interaction effects.
+That's surprising, at first.
+Let's see from the above example how this can be:
+Let's see for the case of $X_3$, which appears at the second place in the ordering above.
+We compute two marginal contributions for this feature:
+Adding it $X_3$ to $\{X_2\}$ and adding it to $\{X_1, X_4\}$.
+
+CONTINUE HERE
+
+WHY IS THIS SUFFICIENT FOR 2-wway interactions???
+
+
+This type of sampling is also called antithetic sampling and fares quite well compared to other sampling estimators of Shapley values.[@mitchell2022sampling]
+
+
+```{python}
+#| eval: false
+explainer = shap.explainers.Permutation(model, background)
+```
+
+Other notes on implementation in shap:
+
+- By default there are 10 such permutations that are iterated forward and backward, in the current shap implementation.
+- allows for hierarchical data structures with partition trees. not implemented in Kernel explainer (see later) or sampling explainer
+- Contains random component (sampling) and therefore recommended to set a seed.
+
+
 
 
 ## Additive Explainer
@@ -244,12 +282,14 @@ Lundberg and Lee show that linear regression with this kernel weight yields Shap
 If you would use the SHAP kernel with LIME on the coalition data, LIME would also estimate Shapley values!
 
 <!-- Sampling trick -->
+The sampling trick:
 We can be a bit smarter about the sampling of coalitions:
 The smallest and largest coalitions take up most of the weight.
 We get better Shapley value estimates by using some of the sampling budget K to include these high-weight coalitions instead of sampling blindly.
 We start with all possible coalitions with 1 and M-1 features, which makes 2 times M coalitions in total.
 When we have enough budget left (current budget is K - 2M), we can include coalitions with 2 features and with M-2 features and so on.
 From the remaining coalition sizes, we sample with readjusted weights.
+
 
 
 <!-- Linear Model -->
@@ -319,7 +359,12 @@ I refer to the original paper for details of TreeSHAP.
 The computation can be expanded to more trees:
 Thanks to the Additivity property of Shapley values, the Shapley values of a tree ensemble is the (weighted) average of the Shapley values of the individual trees.
 
-N
+
+- has regularization parameter
+- permutation explainer is better optimized
+- kernel explainer has become more or less obsolete and replaced by permutation explainer
+- 
+
 
 ## Gradient Explainer
 
@@ -365,6 +410,15 @@ N
 - use treeSHAP when you have treeBased model
 - use DeepExplainer with neural networks, but only if input should be granular (better partition explainer for images 
 
+## tl;dr / Summary of the chapter
+
+- you don't really have to know
+- model-specific used whenever possible
+  - tree for tree
+  - linear for linear
+  - additive for additive
+- model-agnostic default is permutation explainer
+- kernel explainer only there for "historical" reasons
 
 ## What the "auto" option does
 

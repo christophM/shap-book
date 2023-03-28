@@ -95,6 +95,13 @@ shap.summary_plot(shap_values.values[0])
 ?shap.summary_plot
 ```
 
+## Working with the link argument
+
+- Explainer has two relevant arguments:
+  - `link` a function. The link function to map the model output to the units of the SHaP value. Default is the identity function $f(x)=x$ so not changing anything. Useful choice is logit (shap.links.logit) TODO:FORMULA, when the model outputs probabilities. Because usually the probabilities are not additive, but the log-odds are. And you get the log-odds through the logit function.
+  - `linearize_link`: Expects a boolean true/false. Default is true. Relevant when the `link` function is non-linear (so not the default identity function). If the background masker uses more than one data point, then  
+
+TODO: Try out different versions of linearize_link with the adult data and different models.
 ## Multi-Class Classification
 
 TODO: Find example with multi-class
