@@ -170,60 +170,153 @@ Let's see for the case of $X_3$, which appears at the second place in the orderi
 We compute two marginal contributions for this feature:
 Adding it $X_3$ to $\{X_2\}$ and adding it to $\{X_1, X_4\}$.
 
-CONTINUE HERE
 
-WHY IS THIS SUFFICIENT FOR 2-wway interactions???
+Some intuition why that works or rather an example (you can skip this if you already believe that one permutation is enough for detecting 2-way interactions).
 
+Example:
+
+- Prediction function: $f(X) = 2 X_3 + 3 X_1 X_3$, a function with an interaction between features $X_1$ and $X_2$
+- Data point to explain: $(X_1 = 4, X_2 = 1, X_3 = 1, X_4 = 2)$
+- Background data is only one data point (for simplicity): $(X_1 = 0, X_2 = 0, X_3 = 0, X_4 = 0)$
+- We look at two permutations and show that for both permutations we get the same marginal contributions of the feature $X_3$
+- This is by no means a proof that 2-way interactions are fully recoverable by a permutation, but gives some intuition why it works
+- Permutation 1: $(X_2, X_3, X_1, X_4)$
+  - This means we have two marginal contributions: $X_3$ to $\{X_2\}$ and $X_3$ to $\{X_1, X_4\}$. 
+  - We call $f_{2,3}$ the prediction where $X_2$ and $X_3$ values are taken from the data point to be explained and values for $X_1$ and $X_4$ from the background data.
+  - Therefore: $f_{2,3} = f(X_1=0, X_2=1, X_3=1, X_4=0) = 2 \cdot 1 + 3 \cdot 0 \cdot 1 = 2$
+  - The marginal contributions are $f_{2,3} - f_{2} = 2 - 0 = 2$ and $f_{1,3,4} - f_{1,4} = 14$
+- Let's now take a different permutation: $(X_1, X_2, X_3, X_4)$
+  - This is the original ordering of features, but also a valid "permutation"
+  - For this we have to compute different marginal contributions
+  - $f_{1,2,3} - f_{1,2} = 14$
+  - $f_{3,4} - f_{4} = 2$
+  - And, lo and behold, these are the same marginal contributions as for the other permutation
+- So with only a 2-way interaction, we had two different permutations that we iterated forward and backward and got the same marginal contributions
+- That means by adding more permutations, we don't get new information for the feature of interest
+- Again, by no means a proof, but an idea of why this works
 
 This type of sampling is also called antithetic sampling and fares quite well compared to other sampling estimators of Shapley values.[@mitchell2022sampling]
 
+Some notes on implementation in shap:
+
+And here is how you can use it in `shap`:
 
 ```{python}
 #| eval: false
 explainer = shap.explainers.Permutation(model, background)
 ```
 
-Other notes on implementation in shap:
-
+- The permutation explainer is the default explainer for model-agnostic explanation. That means if you have `algorithm=auto` when creating an `Explainer` (which is the default) and there is no model-specific shap estimator available for your model, then the permutations explainer will be used.
 - By default there are 10 such permutations that are iterated forward and backward, in the current shap implementation.
-- allows for hierarchical data structures with partition trees. not implemented in Kernel explainer (see later) or sampling explainer
-- Contains random component (sampling) and therefore recommended to set a seed.
+- The implementation additionally allows for hierarchical data structures with partition trees. not implemented in Kernel explainer (see later) or sampling explainer. TODO:LINK chapter
+- Since the permutations are sampled, it's recommended to set a seed in the explainer for reproducibility of the results.
 
+## Linear Explainer
 
+Now we leave the realm of model-agnostic explainers and look at model-specific explainers.
+Model-specific explainers make use of the internal structure of the model.
+In the case of the linear explainer, the structure that we make use of is the linear equation that is typical for linear regression models.
+Linear regression models can be expressed in the following form:
+
+$$f(x) = \beta_0 + \beta_1 x_1 + \ldots + \beta_p x_p,$$
+
+where the $\beta$'s are the weights or coefficients that the features are multiplied with to generate the prediction.
+The intercept $\beta_0$ is a special coefficient that determines the output when all feature alues are zero.
+That also means: no interactions[^interactions] and no non-linear relations.
+And in that case, the Shapley values are super simple to compute!
+As we have seen in the TODO:LINK chapter.
+The Shapley values are then defined as:
+
+$$\phi_j = \beta_j \cdot (x_j - \mathbb{E}[f(X)])$$
+
+This also works if you have a non-linear link function.
+Meaning that the model is not completely linear, but the weighted sum is transformed before we make the prediction.
+This class of models is called generalized linear models (GLMs).
+An example of a GLM is the logistic regression model, defined as:
+
+$$f(x) = \frac{1}{1 + exp(-(\beta_0 + \beta_1 x_1 + \ldots + \beta_p x_p))}$$
+
+And the general form of GLMs is:
+
+$$f(x) = g(\beta_0 + \beta_1 x_1 + \ldots + \beta_p x_p)$$
+
+So at its core the function is linear, but the result of this weighted sum is then transformed in a linear way.
+Shap can still make use of the coefficient in this case and the linear explainer can still be used.
+However, not on the level of the prediction, but on the level of the inverse of the function $g$, which is $g^{-1}$.
+In the case of logistic regression, this means that we interpret the results on the level of the log odds.
+This adds a bit of complexity to the interpretation, keep that in mind.
+
+Notes on implementation:
+
+```{python}
+#| eval: false
+shap.explainers.Linear
+```
+
+- To use the link function, you can set `link` in the explainer. The default is the identity link. Learn more about this in the [classification chapter](#classification).
+- The implementation in shap also allows to account for correlations of the features, when feature_perturbation set to "correlation_dependent". This, however, will lead to a different "game" and therefore different Shapley values. Read more about that in the [correlation chapter](#correlation).  computes different shapley values (for different game)
 
 
 ## Additive Explainer
 
-- [code](https://github.com/slundberg/shap/blob/master/shap/explainers/_additive.py)
-- assumes that model only has first order effects
-- for GAMs
-- so like permutation explainer, but only uses 1er effects
-- how it works:
-- by knowing that the model only has first order effects, we don't need to compute all the coaliations
-- we know that the effect of adding a feature is the same, no matter which features are already in there
-- that means, we can simply compute the p-1 models where we take and add each of the individual features
-- only works with Tabular masker
+The additive explainer is a generalization of the linear explainer.
+Because now we still say that no interactions between feature are allowed.
+But we allow the effect of a feature to be non-linear.
+This model-class looks like the following:
+
+$$f(x) = \beta_0 + f_1(x_1) + \ldots + f_p(x_p)$$
+
+This is also called a generalized additive model (GAM).
+And each $f_j$ is a (potentially) non-linear function of a feature.
+A typical examples are splines to model a smooth, non-linear relationship between a feature and the target.
+But we can still use the fact that there are no interactions between the features.
+Or in other words, the additive explainer assumes that the model only has first-order effects.
+How does this work or rather, how does the knowledge of additivity (absence of interactions) help with the computation of Shapley values?
+A lot actually.
+Because when we think of marginal contributions and coalitions, an absence of interaction means that adding a feature to a coalition is independent of the features of the coalition.
+The marginal contribution of a feature is always the same.
+So to compute Shapley values of a feature it's sufficient to add to just one coalition, which could be the coalition where all other features are absent, for example.
+That means we need exactly $(p+1) \cdot n_{background}$ calls to the model, where $n_{background}$ is the size of the background data or rather how much we sample from it.
+One where each feature is present and the rest absent.
+
+Then the Shapley value for feature $X_j$ can be computed as:
+
+$$\phi_j = \frac{1}{n_{bg}} f(x_j^{(i)}, \tilde{x}_{-j}^{(i)}) -  \frac{1}{n_{bg}} \sum_{i=1}^n f(x_j, \tilde{x}_{-j}^{(i)}),$$
+
+where $\tilde{x}$ are from the background data.
+This looks similar to the linear explainer, where we have $\phi_j = \beta_j x_j - \beta_j \frac{1}{n_{bg}} \sum_{i=1}^{n_{bg}} f(\tilde{x})$.
+The first term is the effect of feature $X_j$, the second part is for centering at the expected effect of feature $X_j$.
+But since in one case we have a different model (linear versus additive), we have to make different assumptions about the shape of the effect.
 
 
+Just like the linear explainer, the additive explainer can also be extended to non-linear link functions:
 
-## Linear Explainer
+$$f(x) = g(\beta_0 + f_1(x_1) + \ldots + f_p(x_p))$$
 
-- SHAP for linear models
-- $\beta_j \cdot (x_i - \mathbb{E}[f(X)])$
-- makes use of the linear structure
-- directly works with the coefficients
-- works with link function
-- because of that can work with genrealized linar model
-- logistic regression being a popular example of that
-- when feature_perturbation set to "correlation_dependent", computes different shapley values (for different game)
--  TODO: link to relevant chapter
-- 
+If a link function is used, then the interpretation is again on the linear predictor level, which has is not on the scale of the prediction, but on the inverse of the link function $g^{-1}$.
+
+Implementation details:
+
+```{python}
+#| eval: false
+shap.explainers.Additive
+```
+
+- Only works with Tabular masker
+- Can be combined with clustered features 
 
 ## Kernel Explainer
 
-<!-- The general Idea of linear model -->
-KernelSHAP estimates for an instance x the contributions of each feature value to the prediction.
-KernelSHAP consists of five steps:
+Kernel Shap works by sampling coalitions and then estimating the Shapley values with a weighted linear regression.
+
+::: {.callout-note}
+
+The Kernel explainer is no longer really used in shap. It's still there, but the Permutation shap is much better choice. So this section is more for historical reasons.
+The Kernel explainer was the original implementation of SHAP and proposed in @lundberg2017unified, with the emphasis of connections to some other attribution methods like LIME TODO:CITE and DeepLIFT TODO:CITE.
+
+:::
+
+The Kernel explainer consists of five steps:
 
 - Sample coalitions $z_k'\in\{0,1\}^M,\quad{}k\in\{1,\ldots,K\}$ (1 = feature present in coalition, 0 = feature absent).
 - Get prediction for each $z_k'$ by first converting $z_k'$ to the original feature space and then applying model $\hat{f}: \hat{f}(h_x(z_k'))$
@@ -249,7 +342,7 @@ $h_x$ for tabular data treats feature $X_j$ and $X_{-j}$ (the other features) as
 $$\hat{f}(h_x(z'))=E_{X_{-j}}[\hat{f}(x)]$$
 
 Sampling from the marginal distribution means ignoring the dependence structure between present and absent features.
-KernelSHAP therefore suffers from the same problem as all permutation-based interpretation methods.
+The Kernel explainer therefore suffers from the same problem as all permutation-based interpretation methods.
 The estimation puts too much weight on unlikely instances.
 Results can become unreliable.
 But it is necessary to sample from the marginal distribution.
@@ -290,8 +383,6 @@ We start with all possible coalitions with 1 and M-1 features, which makes 2 tim
 When we have enough budget left (current budget is K - 2M), we can include coalitions with 2 features and with M-2 features and so on.
 From the remaining coalition sizes, we sample with readjusted weights.
 
-
-
 <!-- Linear Model -->
 We have the data, the target and the weights;
 Everything we need to build our weighted linear regression model:
@@ -312,25 +403,65 @@ For example, we can add regularization terms to make the model sparse.
 If we add an L1 penalty to the loss L, we can create sparse explanations.
 (I am not so sure whether the resulting coefficients would still be valid Shapley values though.)
 
+Implementation details in shap:
+
+- Actually uses a regularization, which has the advantage of removing variance and noise, but the disadvantage of biasing the Shapley value estimates.
+- permutation explainer is better optimized
+- kernel explainer has become more or less obsolete and replaced by permutation explainer
+
+
 
 ## Tree Explainer
 
-- Tree explainer is, in my opinion, the worke horse
-- two ingredients:
-- popularity of xgboost, other tree boosting and random forest preparse the ground
-- Tree explainer is very efficient and fast, compared to other explainers
-- these two facts, in combination, make it feasible and popular to use shap with state of the arte machine learning
--
+The Tree explainer is one of the reasons why shap is so popular.
+Because the other options can be kind of slow.
+But Tree explainer is a very fast model-specific estimator for tree-based models.
+As tree-based models count: decision trees, random forests, and gradient boosted trees such as LightGBM and xgboost.
+Especially for tabular data, the boosted trees are state-of-the-art and therefore having a fast way to compute Shapley values is a good position for the method to be in.
+In addition it's an exact method: You will get the right Shapley values and not just an estimate.
 
-Lundberg et al. (2018)[^treeshap] proposed TreeSHAP, a variant of SHAP for tree-based machine learning models such as decision trees, random forests and gradient boosted trees.
-TreeSHAP was introduced as a fast, model-specific alternative to KernelSHAP, but it turned out that it can produce unintuitive feature attributions.
+Lundberg et al. [@lundberg2020local] proposed TreeSHAP, a variant of SHAP for tree-based machine learning models such as decision trees, random forests and gradient boosted trees.
+TreeSHAP was introduced as a fast, model-specific alternative to the Kernel explainer.
+
+
+CONTINUE HERE
+
+TODO: write only about intervention perturbationÖ https://arxiv.org/pdf/1905.04610.pdf Algorithm 3
+TODO: onlu mention the treepathdependent version for historical reasons.
+TODO: write both for intervention and tree_path_dependent
+TODO: CITE PAPER That tree-path-dependent not really the conditional, but something weird.
+
+
+
+The tree explainer makes use of the tree structure to compute the Shapley values.
+It's a bit more complex algorithm, so here are just the basic ideas behind it:
+It also requires starting with background data.
+Consider first a single tree and not an ensemble.
+We get to the ensemble later.
+The number of predictions (assuming constant predictions in leave nodes) is based on the number of leave nodes the tree has.
+If the tree has 8 leave nodes then we just have 8 possible predictions.
+In a way, the only thing that we have to do is average those 8 predictions in the right way.
+Setting features to absent simply means that a prediction lands in a (possibly) different leave node.
+The foreground data point follows a path to a leave.
+The background data point as well, with maybe a different path.
+Mixing both data point (aka simulating absence in the foreground data for some of the features) can lead the new data point go down a different path.
+
+
+
+Then we traverse so-called hybrid paths which consist of a "foreground" and a background data point.
+The foreground data point is just the usual data point.
+At each node in the tree, the algorithm keeps track of the features that came in the split before.
+When the leaves are reached, two contributions are computed, a negative one and a positive one.
+
+
+
 
 TreeSHAP defines the value function using the conditional expectation $E_{X_j|X_{-j}}(\hat{f}(x)|x_j)$ instead of the marginal expectation.
 The problem with the conditional expectation is that features that have no influence on the prediction function f can get a TreeSHAP estimate different from zero as shown by Sundararajan et al. (2019) [^cond1] and Janzing et al. (2019) [^cond2].
 The non-zero estimate can happen when the feature is correlated with another feature that actually has an influence on the prediction.
 
 How much faster is TreeSHAP?
-Compared to exact KernelSHAP, it reduces the computational complexity from $O(TL2^M)$ to $O(TLD^2)$, where T is the number of trees, L is the maximum number of leaves in any tree and D the maximal depth of any tree.
+Compared to Kernel explainer, it reduces the computational complexity from $O(TL2^M)$ to $O(TLD^2)$, where T is the number of trees, L is the maximum number of leaves in any tree and D the maximal depth of any tree.
 
 <!-- To explain an individual prediction with exact Shapley values, we have to estimate  $E(\hat{f}(x)|x_S)$ for all possible feature value subsets S.-->
 TreeSHAP uses the conditional expectation $E_{X_j|X_{-j}}(\hat{f}(x)|x_j)$ to estimate effects.
@@ -359,10 +490,11 @@ I refer to the original paper for details of TreeSHAP.
 The computation can be expanded to more trees:
 Thanks to the Additivity property of Shapley values, the Shapley values of a tree ensemble is the (weighted) average of the Shapley values of the individual trees.
 
+Implementation details for shap:
 
-- has regularization parameter
-- permutation explainer is better optimized
-- kernel explainer has become more or less obsolete and replaced by permutation explainer
+- Implemented in C++ for additional speed
+- supported tree-based models: xgboost, LightGBM, CatBoost, PySpark and most tree-based models you can find in scikit-learn such as RandomForestRegressor. 
+- The two different feature_perturbation methods that can be chosen: `interventional` and `tree_path_dependent`
 - 
 
 
@@ -427,3 +559,5 @@ Thanks to the Additivity property of Shapley values, the Shapley values of a tre
 - is the default if you don't define anything
 - can be overriden by specifying the `algorithm` option
 
+
+[^interactions]: You certainly can add interactions to a linear model, in general, but for this case of the linear explainer, this option is excluded.
