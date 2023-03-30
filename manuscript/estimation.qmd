@@ -14,10 +14,13 @@ The estimation methods differ in:
 
 It's important to know all the estimation methods, as the best one will be picked automatically, based on your model.
 Remember: No matter wich estimation you pick, you'll get the same Shapley values, at least in expectation.
+So if you don't care too much about the methods, just go through the boxes which summarize each explainer method.
 Exceptions: Linear SHAP with feature_pertubation="correlation_dependent" and Tree Explainer with feature_pertubation="tree_path_dependent" deliver different results. More on that later.
 
 :::
 
+For each of the explainers in this chapter I tried to separate between the theory and their implementation in shap.
+This distinction isn't perfect, I apologize for that.
 But first, let's see why it's necessary anyways to have multiple options.
 
 ## There are just too many possible coalitions
@@ -46,6 +49,14 @@ And thereby remove the effect of the particular sample.
 Alright, let's start with the model-agnostic explainers that work for any model.
 
 ## Exact Explainer: computing all the coalitions
+
+::: {.callout-note}
+
+## Exact explainer
+
+Computes the exact Shapley value. Model-agnostic. Only meaningful for low-dimensional tabular data (<15 features)
+
+:::
 
 The exact explainer (in theory) computes  all $2^{(p-1)}$ possible coalitions for each feature, so $2^p$ in total and sums over them as described in the [theory chapter](#theory).
 In addition it also uses all of the background data and not just a sample from it.
@@ -423,48 +434,60 @@ In addition it's an exact method: You will get the right Shapley values and not 
 Lundberg et al. [@lundberg2020local] proposed TreeSHAP, a variant of SHAP for tree-based machine learning models such as decision trees, random forests and gradient boosted trees.
 TreeSHAP was introduced as a fast, model-specific alternative to the Kernel explainer.
 
-
-CONTINUE HERE
-
-TODO: write only about intervention perturbationÖ https://arxiv.org/pdf/1905.04610.pdf Algorithm 3
-TODO: onlu mention the treepathdependent version for historical reasons.
-TODO: write both for intervention and tree_path_dependent
-TODO: CITE PAPER That tree-path-dependent not really the conditional, but something weird.
-
-
-
 The tree explainer makes use of the tree structure to compute the Shapley values.
-It's a bit more complex algorithm, so here are just the basic ideas behind it:
-It also requires starting with background data.
-Consider first a single tree and not an ensemble.
-We get to the ensemble later.
-The number of predictions (assuming constant predictions in leave nodes) is based on the number of leave nodes the tree has.
-If the tree has 8 leave nodes then we just have 8 possible predictions.
-In a way, the only thing that we have to do is average those 8 predictions in the right way.
-Setting features to absent simply means that a prediction lands in a (possibly) different leave node.
-The foreground data point follows a path to a leave.
-The background data point as well, with maybe a different path.
-Mixing both data point (aka simulating absence in the foreground data for some of the features) can lead the new data point go down a different path.
 
 
+## Interventional tree explainer
 
-Then we traverse so-called hybrid paths which consist of a "foreground" and a background data point.
-The foreground data point is just the usual data point.
-At each node in the tree, the algorithm keeps track of the features that came in the split before.
-When the leaves are reached, two contributions are computed, a negative one and a positive one.
+How Tree explainer (independent/intervention case) works.
+This recipe is for one data point and an entire background dataset.
+God I hate recursion:
+The following formula loops through the background data, so the recipe is just for the combination of 1 x data point of interest and 1 x data point of background.
+Result of the recipe is the exact Shapley value for the combination of these both.
+The recipe is also just for one tree, how it works for an ensemble will be said later.
+
+- You have a background data point, let's call it z, and the data point to explain, let's call it x
+- Now the procedure starts at the top of the tree and starts following the paths for x and z
+- But we don't just follow the paths of x and z, because they would just end up in two (or even the same) leave node
+- Instead, at each conjunction the procedure asks: what if I made the decision based on the feature values of x, and what if it was based on z
+- If both differ, both paths are followed
+- This hybrid follow of the paths happens recursively
+- God I had recursion, always messes up my brain
+- When reaching the end nodes, the leaves, the prediction from those leaves nodes are taken and weighted. The weight involves the count of how many features differ in light of x and z
+- These weights are combined recursively
+
+Another, more intuitive explanation:
+The number of possible predictions of a tree (assuming constant predictions in leave nodes) is based on the number of leave nodes the tree has.
+So this is limited.
+And when we want the Shapley value for a data point and one background data points, it's basically a function of those limited amount of predictions.
+Reminder: A coalition of feature values is made out of present players (feature values taken from x) and absent players (feature values taken from z).
+While there are $2^p$ coalitions, there's only a limited amount of possible predictions in a tree.
+
+So we can inverse it and not start with all coalitions, but instead turn to the tree and check the tree paths to consider for which coalitions we would even get different predictions, because many changes in features will not even change the prediction.
+So the tricky part that the procedure, which is also implemented in shap, solves is to correctly weight and combine the predictions, based on which feature where changed and how x and z look like.
 
 
+If you are interested in the details, look into p.25, Algorithm 3 of [this paper](https://arxiv.org/abs/1905.04610).[@lundberg2020local]
 
+### Tree path dependent
 
-TreeSHAP defines the value function using the conditional expectation $E_{X_j|X_{-j}}(\hat{f}(x)|x_j)$ instead of the marginal expectation.
-The problem with the conditional expectation is that features that have no influence on the prediction function f can get a TreeSHAP estimate different from zero as shown by Sundararajan et al. (2019) [^cond1] and Janzing et al. (2019) [^cond2].
+For ensembles of tree, we can then simply average the Shapley values, weighted by how much the prediction of the trees takes part in the final ensemble.
+Thanks to the Additivity property of Shapley values, the Shapley values of a tree ensemble is the (weighted) average of the Shapley values of the individual trees.
+
+The complexity of this Tree explainer (over a background set of size $n_{bg}$ is $\mathcal{O}(T n_{bg} L)$, where $T$ is the number of tree and L is the maximum number of leaves (terminal nodes) in any of the tree.
+
+However, there is a second way to compute Shapley values for trees.
+And this is more for historical reasons, since it's not the default (any more) and it's a problematic approach.
+
+This second approach is dependent on the tree paths and requires no background data.
+While the first approach to Tree Shap assumes the feature $X_j$ and $X_{-j}$ to be independent, or at least they are combined as if independent, this other approach is closer to the conditional expectation $E_{X_j|X_{-j}}(\hat{f}(x)|x_j)$.
+But it's not precisely that [@aas2021explaining], so it's a bit undefined what is happening here.
+Because the feature are not changed in a marginal but conditional fashion, the resulting Shapley values are not the same as for the interventional Tree explainer approach.
+They are still valid Shapley values, but by swapping out the conditioning, it's just a different value function and therefore a different game that is played and attributed to the feature values.
+
+A thing that happens with the conditional expectation is that features that have no influence on the prediction function f can get a TreeSHAP estimate different from zero [@janzing2020feature;@sundararajan2020many].
 The non-zero estimate can happen when the feature is correlated with another feature that actually has an influence on the prediction.
 
-How much faster is TreeSHAP?
-Compared to Kernel explainer, it reduces the computational complexity from $O(TL2^M)$ to $O(TLD^2)$, where T is the number of trees, L is the maximum number of leaves in any tree and D the maximal depth of any tree.
-
-<!-- To explain an individual prediction with exact Shapley values, we have to estimate  $E(\hat{f}(x)|x_S)$ for all possible feature value subsets S.-->
-TreeSHAP uses the conditional expectation $E_{X_j|X_{-j}}(\hat{f}(x)|x_j)$ to estimate effects.
 I will give you some intuition on how we can compute the expected prediction for a single tree, an instance x and feature subset S.
 If we conditioned on all features -- if S was the set of all features -- then the prediction from the node in which the instance x falls would be the expected prediction.
 If we would not condition the prediction on any feature -- if S was empty -- we would use the weighted average of predictions of all terminal nodes.
@@ -473,12 +496,9 @@ Unreachable means that the decision path that leads to this node contradicts val
 From the remaining terminal nodes, we average the predictions weighted by node sizes (i.e. number of training samples in that node).
 The mean of the remaining terminal nodes, weighted by the number of instances per node, is the expected prediction for x given S.
 The problem is that we have to apply this procedure for each possible subset S of the feature values.
-<!--
-This means $\sum_{i=1}{p}\frac{(p-i)!i!}{i!}$ times.
-Here, each summand is the set of all possible subsets S with the same cardinality (e.g. all possible subsets with 2 features).
--->
-TreeSHAP computes in polynomial time instead of exponential.
-The basic idea is to push all possible subsets S down the tree at the same time.
+
+Tree explainer (both path dependent and intervential) computes in polynomial time instead of exponential.
+The basic idea of the path-dependent tree explainer is to push all possible subsets S down the tree at the same time.
 For each decision node we have to keep track of the number of subsets.
 This depends on the subsets in the parent node and the split feature.
 For example, when the first split in a tree is on feature x3, then all the subsets that contain feature x3 will go to one node (the one where x goes).
@@ -488,51 +508,125 @@ The algorithm has to keep track of the overall weight of the subsets in each nod
 This complicates the algorithm.
 I refer to the original paper for details of TreeSHAP.
 The computation can be expanded to more trees:
-Thanks to the Additivity property of Shapley values, the Shapley values of a tree ensemble is the (weighted) average of the Shapley values of the individual trees.
 
 Implementation details for shap:
 
 - Implemented in C++ for additional speed
-- supported tree-based models: xgboost, LightGBM, CatBoost, PySpark and most tree-based models you can find in scikit-learn such as RandomForestRegressor. 
+- Supported tree-based models: xgboost, LightGBM, CatBoost, PySpark and most tree-based models you can find in scikit-learn such as RandomForestRegressor. 
 - The two different feature_perturbation methods that can be chosen: `interventional` and `tree_path_dependent`
-- 
-
 
 ## Gradient Explainer
 
-- works for any models with a gradient method
-- so gradient-based models
-- neural network based models also have a Deep Explainer
-- explains model using expected gradients
-- can be seen as extension of integrated gradients method
-- CITE Sundarajan et al. 2017
-- Integrated gradients in contrast have only a single "background" data point.
-- more of a reference point really
-- but technically also possible in ShAP
-- adaption so that shapley values come out:
-- integral reformulated as expectation and expectation sampels from entire background, not only the one data point
-- works with keras model
-- alsow works with PyTorh with nn.Module
--
+::: {.callout-note}
+
+## Gradient explainer
+
+The gradient explainer is a model-specific explainer for gradient-based models such as neural networks. Can be used for tabular and image data.
+
+:::
+
+
+Some models are gradient-based, like many neural networks.
+That means at each point in the model, we can compute the gradient of the loss function with respect to the model input.
+When we can compute the gradient with respect to the input, we can use this information to compute Shapley values in a more efficient way.
+
+
+- Pick a feature
+- $\phi_j$ = the expected value of the gradients x (inputs - baselines) 
+- Formula: 
+- For each background data $z_i, i \in \{1, \ldots, n_{bg}\}$:
+  - optional: add some random noise to data point x (data to be explained)
+  - Interpolate between data point x and $z_i$
+  - Pick random point on that interpolation
+  - Compute the gradients of the model predictions with respect to the model inputs
+
+
+$$\text{GradientShap}(x) = \mathbb{E}[(x_j - \tilde{x}_j) \cdot \frac{\delta g(\tilde{x} + \alpha \cdot (x - \tilde{x}))}{\delta x_j} d\alpha]$$
+
+Estimated with:
+
+$$\text{GradientShap}(x) = \frac{1}{n_{bg}}\sum_{i=1}^{n_{bg}} (x_j - \tilde{x}_j^{(i)}) \cdot \frac{\delta g(\tilde{x} + \alpha_i \cdot (x - \tilde{x}^{(i)}))}{\delta x_j} d\alpha$$
+
+
+
+So what does this do?
+For each feature, this explainer iterates through the background data and computes two terms:
+
+- the distance between the data point to explain and the background sample
+- the gradient $g$ of the prediction with respect to the j-th feature. But not at the position of the point to explain, but at a random location of feature $X_j$ between data point of interest and background data.
+
+These are averaged over the background data to approximate Shapley values.
+Meaning that we don't get the exact Shapley values, but the results will be the Shapley values only in expectation.
+
+
+There's a connection between the gradient explainer and a method called integrated gradients [@sundararajan2017axiomatic].
+Integrated gradients is a feature attribution method that also is based on the gradients and as an explanation outputs the integrated path of the gradient with respect to some reference point.
+The difference to Shapley values is that integrated gradients have just one reference point, but Shapley values work with a background data set.
+The gradient explainer can be seen as an adaption of integrated gradients where instead of a single reference point we reformulate the integral as an expectation and estimate that expectation with the background data.
+
+Integrated gradients are defined like this:
+
+$$IG(x) = (x_j - \tilde{x}_j) \cdot \int_{\alpha = 0}^1 \frac{\delta g(\tilde{x} + \alpha \cdot (x - \tilde{x}))}{\delta x_j} d\alpha$$
+
+These are the terms of the equation:
+
+- x the data point to be explained
+- $\tilde{x}$ the reference data point. For images this can be a completely black or grey image
+- The $g$ is the gradient function of the gradient-based model with regards to the input feature $x_j$ n our case
+- The integral is along the path between $x_j$ and $\tilde{x}_j$
+
+Gradient explainer changes this notion by not only having one data point as reference, and by integrating over an entire background data set.
+
+Implementation details in shap:
+
+- Works for PyTorch, TensorFlow, Keras
+- Data can be provided as numpy array, pandas DataFrame and torch.tensor
+- The gradient explainer is actually more general and even allows to use the gradient based on parameters. That means you can have Shapley values for attributing a prediction to the layers within a neural network. See [example here](https://shap.readthedocs.io/en/latest/example_notebooks/image_examples/image_classification/Explain%20an%20Intermediate%20Layer%20of%20VGG16%20on%20ImageNet%20(PyTorch).html?highlight=Gradient)
+
+
+CONTINUE HERE WRITING
+
 
 ## Deep Explainer
 
-- enhancement of DeepLIFT algorithm
+The deep explainer is specifically for deep neural networks.
+That makes the deep explainer more model-specific than the gradient explainer which, in theory, works for all gradient-based methods.
+
+TODO: How it works
+
 - similar to Kernel Explainer
 - uses background samples
+- 
+
+Connections to DeepLIFT
+
+- DeepLIFT is a recursive explanation methods for feature attribution in (deep) neural networks
+- Attributes to an input $x_j$ a contribution value
+- Works with a reference data point instead of a background data set
+- Binary representation of $x = h_x(\tilde{x})$ where 1 stands for input from origina data point to be explained and 0 means the value comes from reference data point.
+- The reference point is chosen by the user and meant to be an "uninformative" data point, like for images a black or gray image
+- For each input feature, compute the contribution by comparing the activation of a neuron with that feature to the activation with the reference point.
+- This comparison is 
+$$ \Delta i(x) = \sum_{j} (a(x)_j - a(\eta)_j) * \frac{w_{ij}}{\sum_{k} w_{ik} $$
+
+
 - TODO: cite deep lift
-- TODO: CITE original shap paper
--
+
+TODO: implementation details
+
+- Works with PyTorch and Tensorflow/Keras
+- 
 
 
 ## Partition Explainer
 
 - based on hierarchical structure of the features
 - any tree of features can do
-- use case: have correlated features clustered
-- computes Shapley values recursively through hierarchy of features
-- results in Owen values from game theory
-- TODO: decide whether to include or not in book
+- Results are actually not Shapley values but Owen values
+- Owen values are another solution to the attribution problem in cooperative games
+- It's like Shapley values, but assigned to groups of features instead of individual features
+- Especially useful for strongly correlated features.
+- 
 
 ## When to Use Which
 
@@ -551,6 +645,23 @@ Implementation details for shap:
   - additive for additive
 - model-agnostic default is permutation explainer
 - kernel explainer only there for "historical" reasons
+
+TODO: Add an overview table of all explainers
+columns: name of explainer, short descrption, targeted model, background data y/n,e
+
+| Explainer| How it works | Model |  Background Data? | Similar to |
+| --- | --- | --- | --- | --- |
+| Exact | Iterates through all background data and some coalitions | agnostic | Yes |  / |
+| Sampling | Samples coalitions of features | agnostic | Yes | / |
+| Permutation | Samples permutations of feature values | agnostic | Yes | / |
+| Linear | Explains linear models by multiplying feature values by their weights. | Linear | Yes | / |
+| Additive | Explains additive models | GAMs | Yes | / |
+| Kernel | Uses a locally weighted linear regression to explain the output of any function. | agnostic | Yes | LIME |
+| Tree (interventional) | Recursively iterates tree paths.  | tree-based | No | / |
+| Tree (path dependent) | Recursively iterates hybrid paths.  | tree-based | Yes | / |
+| Gradient | Explains models by computing the gradient of the output with respect to the inputs. | gradient-based | Yes | Input Gradient |
+| Deep | Explains deep learning models by attributing the output to input features using the gradient of the output with respect to the inputs. | Neural Networks | Yes | DeepLIFT |
+| Partition | Computes Shapley values for a hierarchy of features | agnostic | Yes|  Owen values |
 
 ## What the "auto" option does
 
