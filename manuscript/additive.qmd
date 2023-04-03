@@ -1,0 +1,151 @@
+## Shapley values for additive models
+
+In this next step, we allow the relation between a feature and the target to be non-linear.
+We don't, however, allow interactions between the features.
+Additive models with non-linear base functions are perfectly modeled with so-called generalized additive models, also called GAMs.
+
+
+A GAM models y in the following way:
+
+$$\hat{f}(x) = \beta_0 + \beta_1 f_1(x_1) + \ldots + f_p(x_p)$$
+
+The difference to the simple linear model is that we allow the functions $f_j$. If these are the identity function for all features, namely $f_j(x_j) = x_j$, then we again come out with the linear model.
+So linear regression models are special cases of GAMs.
+
+But with GAMs, we can now have arbitrary functions for the features.
+A popular choice are spline functions which allow for rather flexible shapes of functions that are still smooth and have a gradient.
+
+Educationally, to understand Shapley values, they are perfect, because they allow us to study what happens with non-linear functions, but without interactions.
+Because only with interactions will the interpretation become trickier.
+
+So we go back to the same example and fit a GAM instead of a linear regression model.
+
+For this we rely on the interpret Python library. YOu can install it with:
+
+```{python}
+#| eval: false
+!pip install interpret
+```
+
+First we fit a model.
+It's an explainable boosting regressor from the interpet package
+
+::: .{callout-note}
+
+From the docs: https://interpret.ml/docs/ebm.html
+
+Explainable Boosting Machine (EBM) is a tree-based, cyclic gradient boosting Generalized Additive Model with automatic interaction detection. EBMs are often as accurate as state-of-the-art blackbox models while remaining completely interpretable. Although EBMs are often slower to train than other modern algorithms, EBMs are extremely compact and fast at prediction time.
+
+TODO: Turn into quote, or say in own words
+
+:::
+
+
+
+
+Then we train the model:
+
+TODO: Rewrite that code
+
+```{python}
+#| eval: false
+import interpret.glassbox
+model_ebm = interpret.glassbox.ExplainableBoostingRegressor(interactions=0)
+model_ebm.fit(X, y)
+```
+
+Next, we produce the Shapley values values
+
+```{python}
+# explain the GAM model with SHAP
+explainer_ebm = shap.Explainer(model_ebm.predict, background)
+shap_values_ebm = explainer_ebm(X)
+```
+
+The question now: How do the Shapley values look like?
+And does it match what we would expect?
+
+But first we have to define what we expect.
+Since the model is a GAM (TODO: check out ExplainableBoostingRegressor and add details here), we know what the dependence of the target on a feature look like.
+
+We can simply visualize this with the following code:
+
+```{python}
+model_ebm.explain_global?
+```
+
+```{python}
+from interpret import show
+ebm_global = model_ebm.explain_global()
+show(ebm_global)
+```
+
+```{python}
+# plot SHAP values against feature values
+plt.scatter(X[feature_name], shap_values_ebm.values[:, feature_idx], alpha=0.1)
+plt.xlabel(feature_name)
+plt.ylabel('SHAP value')
+```
+
+```{python}
+X.iloc[0]
+```
+
+```{python}
+X.iloc[0]
+```
+
+
+
+```{python}
+#| scrolled: true
+first_row = X.iloc[np.repeat(0, 100)]
+# create the MedInc column with values ranging from min(MedInc) to max(MedInc) on an equidistant grid
+MedIncRange = np.linspace(X['MedInc'].min(), X['MedInc'].max(), num=100)
+first_row['MedInc'] = MedIncRange
+# print the new DataFrame
+print(first_row)
+```
+
+```{python}
+preds = model_ebm.predict(first_row)
+```
+
+TODO: Figure out how to compute the differences in intercept between PDP and SHAP here
+
+```{python}
+correction_factor = 0.68
+```
+
+```{python}
+import numpy as np
+
+Xpred = model_ebm.predict(X).mean()
+
+# plot SHAP values against feature values
+plt.scatter(X[feature_name], shap_values_ebm.values[:, feature_idx] + correction_factor, alpha=0.2)
+plt.xlabel(feature_name)
+plt.ylabel('SHAP value')
+
+
+x0pred = model_ebm.predict(X.iloc[[0]])
+
+plt.plot(MedIncRange, preds - x0pred, color='red')
+
+plt.show()
+```
+
+Again, as you can see, the SHAP values follow the same trajectory as when we would simply change one of the features (here MedInc).
+This gives us another boost in the trust of understanding Shapley values.
+
+But things get tricky when we have interactions.
+
+And they get really tricky when we have interactions + correlations.
+But manageable (and other interpretation methods have to deal with the same difficulties)
+
+
+
+Alright, now we allowed the model to have non-linear feature effects, but it still had to be additive.
+
+In the next step, we will allow the model to have interactions and see how this affects the interpretation of the Shapley values.
+

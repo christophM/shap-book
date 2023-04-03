@@ -58,7 +58,7 @@ Computes the exact Shapley value. Model-agnostic. Only meaningful for low-dimens
 
 :::
 
-The exact explainer (in theory) computes  all $2^{(p-1)}$ possible coalitions for each feature, so $2^p$ in total and sums over them as described in the [theory chapter](#theory).
+The exact explainer (in theory) computes  all $2^p$ possible coalitions, from which we can compute all possible feature contributions of all features, see [theory chapter](#theory).
 In addition it also uses all of the background data and not just a sample from it.
 That means we have no elements of randomness in the computation.
 This can be very expensive of course, depending on the number of features and the size of the background data.
@@ -592,62 +592,107 @@ CONTINUE HERE WRITING
 The deep explainer is specifically for deep neural networks.
 That makes the deep explainer more model-specific than the gradient explainer which, in theory, works for all gradient-based methods.
 
-TODO: How it works
 
-- similar to Kernel Explainer
-- uses background samples
-- 
+The Deep explainer is inspired by the DeepLIFT algorithm  [@shrikumar2017learning], an attribution method for deep neural networks.
+So to understand how the Deep explainer works, we have to first talk about DeepLIFT.
 
-Connections to DeepLIFT
+DeepLIFT is an explanation method for feature attribution in neural networks.
+It works by computing the contribution value $\Delta f$ for each input feature $x_j$ by comparing the prediction for $x$ and the prediction for a reference point $z$.
+The reference point is chosen by the user and meant to be an "uninformative" data point, like for images a black or gray image
+So the difference to be explained is $\Delta f(x) = \Delta f(x) = \Delta f(\tilde{x})$
+The attributions provided by deeplift are called contribution scores $C_{\Delta x_j \Delta f}$ and add up to the total difference: $\sum_{j=1}^n C_{\Delta x_j \Delta f} = \Delta f$.
+That's already similar to what Shapley values do.
+DeepLIFT doesn't require the $x_j$ to be the inputs to the model, but they can be any neuron layer along the way.
+Not only is that a perk of DeepLIFT, but also an essential ingredients, since DeepLIFT is constructed so that it backpropagates the contributions backwards through the neural network, layer-by-layer.
 
-- DeepLIFT is a recursive explanation methods for feature attribution in (deep) neural networks
-- Attributes to an input $x_j$ a contribution value
-- Works with a reference data point instead of a background data set
-- Binary representation of $x = h_x(\tilde{x})$ where 1 stands for input from origina data point to be explained and 0 means the value comes from reference data point.
-- The reference point is chosen by the user and meant to be an "uninformative" data point, like for images a black or gray image
-- For each input feature, compute the contribution by comparing the activation of a neuron with that feature to the activation with the reference point.
-- This comparison is 
-$$ \Delta i(x) = \sum_{j} (a(x)_j - a(\eta)_j) * \frac{w_{ij}}{\sum_{k} w_{ik} $$
+To do that, DeepLIFT uses so-called "multipliers", which are defined as follows:
+
+$$m_{\Delta x \Delta f} = \frac{C_{\Delta x \Delta f}}{\Delta x}$$
+
+A multiplier is the contribution of $\Delta x$  to $\Delta f$ divided by $\Delta x$.
+The multiplier is a finite distance, which is similar a partial derivative ($\frac{\partial f}{\partial x}$), when the $\Delta x$ becomes very small.
+And just like derivatives, these multipliers can be backpropagated through the neural network, by making use of the chain rule: $m_{\Delta x_j \Delta f} = \sum_{j=1}^n m_{\Delta x_j \Delta y_j} m_{\Delta y_j \Delta f}$, where x and y represent two subsequent layers of the neural network.
+
+DeepLIFT than goes on do define a list of rules how, for different components of the neural networks the multipliers can be backpropagated.
+The backpropagation for example uses the linear rule for linear units, the "rescale rule" for nonlinear transformations like ReLU and sigmoid and so on.
+Positive and negative attributions are separated which is important for backpropagating through nonlinear units.
 
 
-- TODO: cite deep lift
+DeepLIFT, however, does not yield Shapley values.
+Deep SHAP is an adaption of the DeepLIFT procedure so that Shapley values are produced.
+Here are the changes that the Deep explainer has:
 
-TODO: implementation details
+- Instead of using a single reference point, Deep explainer uses the background data, therefore a set of reference points
+- The multipliers are redefined to in terms of SHAP values which are backpropagated instead of the original DeepLIFT multipliers, so, informally: $m_{\Delta x_j \Delta f} = \frac{\phi}{x_j - \mathbb{E}[x_j]}$
+- Another interpretation of Deep explainer: Deep explainer kind of computes the shap values in smaller parts of the network first and combines those to shapley values for the entire network, explaining the prediction from the input. Like we are used to with shap
+
+Implementation details in shap:
 
 - Works with PyTorch and Tensorflow/Keras
-- 
+- Only works for implemented neural network operations
+- This means when you have an unusual or custom operation in your network, the Deep explainer will throw an error
+- Complexity scales linearly with the number of background data rows
 
 
 ## Partition Explainer
 
-- based on hierarchical structure of the features
-- any tree of features can do
-- Results are actually not Shapley values but Owen values
-- Owen values are another solution to the attribution problem in cooperative games
-- It's like Shapley values, but assigned to groups of features instead of individual features
-- Especially useful for strongly correlated features.
-- 
+
+The partition explainer is based on a hierarchy of features.
+Like a tree-based hierarchy.
+Think of hierarchical clustering.
+The partitions explainer iterates recursively through this hierarchy tree.
+
+How to interpret the hierarchy?
+Let's just think about having a tree of depth 1, but with multiple splits instead of one.
+Let's say 4 groups.
+Then we would compute, at first, 4 Shapley values, 1 for each group.
+That means that features that are bundled together in a group act like 1 player.
+
+Then, within each group, the Shapley value for that group can again be attributed to the individual features.
+Or if the hierarchy would involve splitting into further subgroups, we would attribute again on that subgroup level.
+
+How is that useful?
+Sometimes we don't care about individual features but are interested in a group of features.
+Or multiple feature columns actually encode a similar concept and we are interested in the attribution of the concept, and not the individual features.
+Let's say we predict yield of fruit trees.
+And we have different measurements of how humid the soil is, but from different depths.
+We might not care about the individual attributions to different depths, but rather have a Shapley value attributed to the general wetness of the soil.
+This example also hints at another problem that the partition explainer can solve: When features are correlated, we can have them in a cluster.
+As further discussed in the [correlation chapter](#correlation) there is a problem when computing Shapley values for a feature that is strongly correlated with another.
+Has to do with extrapolation.
+But by bundling correlated features together, we avoid that problem.
+
+Results are actually not Shapley values but Owen values.
+Owen values are another solution to the attribution problem in cooperative games
+It's like Shapley values, but assigned to groups of features instead of individual features
+
+Another use case for the partition explainers are image inputs where the image pixels can be bundled together into bigger regions.
+
+
+Implementation details:
+
+```{Python}
+#| eval: false
+shap.PartitionExplainer(model, partition_tree=None)
+```
+
+ 
+- A required input is a partition tree, a hierarchical clustering of the input features. Should have the format like `scipy.cluster.hierarchy`, which is a matrix basically.
+- Alternatively, you can use `masker.clustering` to make use of a clustering of the features built into shap. Will also be used by default when `partition_tree=None`.
 
 ## When to Use Which
 
-- shap has auto function so you kinda don't have to think about it too much
-- when calling "Explainer" default is auto
-- don't use kernelshap
-- use treeSHAP when you have treeBased model
-- use DeepExplainer with neural networks, but only if input should be granular (better partition explainer for images 
+The big question: When should you use which explainer?
 
-## tl;dr / Summary of the chapter
+Here is a quick guide:
 
-- you don't really have to know
-- model-specific used whenever possible
-  - tree for tree
-  - linear for linear
-  - additive for additive
-- model-agnostic default is permutation explainer
-- kernel explainer only there for "historical" reasons
+- In most cases you can just use the `Explainer` as this will usually pick the best explainer based on the model that was provided.
+- The general recommendation is to use a model-specific explainer if possible, otherwise the permutation explainer is the best choice for most model-agnostic options. And that's what the `auto` option does.
+- Don't use Kernel explainer
+- Tree SHAP is fast, so always consider tree-based models in your model selection process. Best practice anyways to include a tree-based solution in the model comparison.
+- Use partition explainer for correlated features and things like images.
 
-TODO: Add an overview table of all explainers
-columns: name of explainer, short descrption, targeted model, background data y/n,e
+Here is an overview of the explainers, for your convenience:
 
 | Explainer| How it works | Model |  Background Data? | Similar to |
 | --- | --- | --- | --- | --- |
@@ -663,12 +708,10 @@ columns: name of explainer, short descrption, targeted model, background data y/
 | Deep | Explains deep learning models by attributing the output to input features using the gradient of the output with respect to the inputs. | Neural Networks | Yes | DeepLIFT |
 | Partition | Computes Shapley values for a hierarchy of features | agnostic | Yes|  Owen values |
 
-## What the "auto" option does
+<!--- 
+TODO: incorporate benchmark
+https://shap.readthedocs.io/en/latest/example_notebooks/benchmarks/tabular/Benchmark%20XGBoost%20explanations.html
 
-- Auto chooses based on the model
-- attempts to make the best choice
-- is the default if you don't define anything
-- can be overriden by specifying the `algorithm` option
-
+-->
 
 [^interactions]: You certainly can add interactions to a linear model, in general, but for this case of the linear explainer, this option is excluded.

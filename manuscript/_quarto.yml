@@ -14,6 +14,9 @@ book:
     - intuition.qmd
     - theory.qmd
     - estimation.qmd
+    - linear.qmd
+    - additive.qmd
+    - interactions.qmd
     - regression.qmd
     - interpretation.qmd
     - history.qmd
