@@ -17,8 +17,7 @@ A popular choice are spline functions which allow for rather flexible shapes of 
 
 Educationally, to understand Shapley values, they are perfect, because they allow us to study what happens with non-linear functions, but without interactions.
 Because only with interactions will the interpretation become trickier.
-
-So we go back to the same example and fit a GAM instead of a linear regression model.
+So we go back to the same wine example and fit a GAM instead of a linear regression model.
 
 For this we rely on the interpret Python library. YOu can install it with:
 
@@ -32,110 +31,130 @@ It's an explainable boosting regressor from the interpet package
 
 ::: .{callout-note}
 
-From the docs: https://interpret.ml/docs/ebm.html
-
-Explainable Boosting Machine (EBM) is a tree-based, cyclic gradient boosting Generalized Additive Model with automatic interaction detection. EBMs are often as accurate as state-of-the-art blackbox models while remaining completely interpretable. Although EBMs are often slower to train than other modern algorithms, EBMs are extremely compact and fast at prediction time.
-
-TODO: Turn into quote, or say in own words
+The Explainable Boosting Machine (EBM) is a tree-based GAM.
+It's based on cylcic gradient boosting with automated interaction detection, which of course we won't use for this example.
+So for our case each tree can only use one feature, because otherwise it would model interactions.
 
 :::
 
-
-
-
-Then we train the model:
-
-TODO: Rewrite that code
+This is the model we train:
 
 ```{python}
-#| eval: false
-import interpret.glassbox
-model_ebm = interpret.glassbox.ExplainableBoostingRegressor(interactions=0)
-model_ebm.fit(X, y)
+#| output: false
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from interpret.glassbox import ExplainableBoostingRegressor
+wine = pd.read_csv("wine.csv")
+y = wine["quality"]
+X = wine.drop("quality", axis=1)
+X_train, X_test, y_train, y_test = train_test_split(
+  X, y, test_size=0.2, random_state=42
+)
+
+model = ExplainableBoostingRegressor(interactions=0)
+model.fit(X_train, y_train)
 ```
 
-Next, we produce the Shapley values values
+Again, let's check out how good the model predicts the test data:
 
 ```{python}
-# explain the GAM model with SHAP
-explainer_ebm = shap.Explainer(model_ebm.predict, background)
-shap_values_ebm = explainer_ebm(X)
+from sklearn.metrics import mean_absolute_error
+y_pred = model.predict(X_test)
+mae = mean_absolute_error(y_test, y_pred)
+
+# Print the mean absolute error
+print(f"MAE: {mae:.2f}")
+```
+
+The mean absolute error on test data is better than for the linear regression model.
+That's great.
+It means that by using a GAM and allowing feature effects to be non-linear, we could improve the predictions and some effects actually seemed to be non-linear.
+
+So let's see what the SHAP values have to say about how the model works:
+
+```{python}
+#| output: false
+import shap
+explainer = shap.Explainer(model.predict, X_test)
+shap_values = explainer(X_test)
 ```
 
 The question now: How do the Shapley values look like?
 And does it match what we would expect?
 
-But first we have to define what we expect.
-Since the model is a GAM (TODO: check out ExplainableBoostingRegressor and add details here), we know what the dependence of the target on a feature look like.
+Let's first explain the first prediction again:
 
-We can simply visualize this with the following code:
 
 ```{python}
-model_ebm.explain_global?
+shap.waterfall_plot(shap_values[0], max_display=10)
 ```
 
-```{python}
-from interpret import show
-ebm_global = model_ebm.explain_global()
-show(ebm_global)
-```
+::: {.callout-note}
+
+A shap-specific here: since the explainer is a Permutation explainer, we can directly use the shap_values as input to the waterfall plot, which we couldn't do with the Linear explainer.
+
+:::
+
+This waterfall plot gives us a rather different image of what's going on, compared to the purely linear model.
+
+- The most important feature were alcohol and volatile acidity, and in the linear model case it  was residual sugar, followed by alcohol.
+- In general, the prediction for the GAM is lower for this case (around 5.97) which was 6.28 for the linear case.
+- This case beautifully shows how, while the global average prediction and the local prediction are quit similar, there is a lot of Shapley values cancelling each other out going on.
+ 
+
+We know that it's an additive model.
+That means to understand the effect a feature has, we can just take one of the data point and change that feature and observe how this changes the prediction.
+Since it's an additive model, this will be the same curve for all data points, only with different intercepts, since the rest of the additive effects (which we keep fixed) are different.
 
 ```{python}
 # plot SHAP values against feature values
-plt.scatter(X[feature_name], shap_values_ebm.values[:, feature_idx], alpha=0.1)
+import matplotlib.pyplot as plt
+import numpy as np
+feature_name='alcohol'
+feature_idx = np.where(X_test.columns==feature_name)
+sv = shap_values.values[:, feature_idx]
+plt.scatter(X_test[feature_name], sv, alpha=0.1)
 plt.xlabel(feature_name)
 plt.ylabel('SHAP value')
+plt.show()
 ```
 
-```{python}
-X.iloc[0]
-```
-
-```{python}
-X.iloc[0]
-```
+In this case for alcohol we see that there is a positive effect.
+The more alcohol, the higher the predicted quality.
+However, at very high and very low levels, the effect is flat.
 
 
-
-```{python}
-#| scrolled: true
-first_row = X.iloc[np.repeat(0, 100)]
-# create the MedInc column with values ranging from min(MedInc) to max(MedInc) on an equidistant grid
-MedIncRange = np.linspace(X['MedInc'].min(), X['MedInc'].max(), num=100)
-first_row['MedInc'] = MedIncRange
-# print the new DataFrame
-print(first_row)
-```
-
-```{python}
-preds = model_ebm.predict(first_row)
-```
+The question now is whether and how the Shapley values for the alcohol feature will reflect this.
 
 TODO: Figure out how to compute the differences in intercept between PDP and SHAP here
 
+
 ```{python}
-correction_factor = 0.68
+first_row = X.iloc[np.repeat(0, 100)]
+x_range = np.linspace(X[feature_name].min(), X[feature_name].max(), num=100)
+first_row[feature_name] = x_range
+preds = model.predict(first_row)
 ```
 
+
 ```{python}
-import numpy as np
-
-Xpred = model_ebm.predict(X).mean()
-
+Xpred = model.predict(X_test).mean()
 # plot SHAP values against feature values
-plt.scatter(X[feature_name], shap_values_ebm.values[:, feature_idx] + correction_factor, alpha=0.2)
+sv_values = shap_values.values[:, feature_idx]
+plt.scatter(X_test[feature_name], sv_values, alpha=0.2)
 plt.xlabel(feature_name)
 plt.ylabel('SHAP value')
 
 
-x0pred = model_ebm.predict(X.iloc[[0]])
+x0pred = model.predict(X_test.iloc[[0]])
 
-plt.plot(MedIncRange, preds - x0pred, color='red')
+#plt.plot(feature_range, preds - x0pred, color='red')
+plt.plot(x_range, preds, color='red')
 
 plt.show()
 ```
 
-Again, as you can see, the SHAP values follow the same trajectory as when we would simply change one of the features (here MedInc).
+Again, as you can see, the SHAP values follow the same trajectory as when we would simply change one of the features (here alcohol).
 This gives us another boost in the trust of understanding Shapley values.
 
 But things get tricky when we have interactions.

@@ -5,3 +5,6 @@ index_files
 DryBeanDataset
 output
 latex/hash.tex
+
+# Intermediate file folders
+*_files

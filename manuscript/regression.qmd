@@ -1,6 +1,163 @@
 # Regression
 
-This chapter
+In this chapter we will again see the wine data, but this time fit a tree-based model.
 
-- show how to interpret regression example
-- 
+This means
+
+- the model potentially has lots of interactions and non-linear functions, so you'll see a more complex interpretation than in the chapters before.
+- we can make use of the shap `TreeExplainer`, which is fast
+
+
+## Fitting the model 
+
+If you haven't installed LightGBM yet, you can do it like so:
+
+```{python}
+#| eval: false
+pip install lightgbm
+```
+
+LightGBM is a gradient boosting framework based on decision trees.
+It's fast, efficient and usually works pretty well.
+It uses a histogram-based approach to represent feature values, a reason why it performs well also on large datasets.
+But enough advertisement.
+
+```{python}
+import pandas as pd
+import lightgbm as lgb
+import shap
+from sklearn.model_selection import train_test_split
+
+# Load the dataset
+wine = pd.read_csv("wine.csv")
+
+y = wine["quality"]
+X = wine.drop(columns=["quality"])
+
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(
+  X, y, test_size=0.2, random_state=42
+)
+
+# Create LightGBM dataset
+train_data = lgb.Dataset(X_train, label=y_train)
+test_data = lgb.Dataset(X_test, label=y_test)
+# Set the model parameters
+
+# Train the model
+lgb_regressor = lgb.LGBMRegressor()
+lgb_regressor.fit(X_train, y_train)
+```
+
+
+Again, we evaluate how well our solution works, and hopefully are better than with just the GAM:
+
+```{python}
+from sklearn.metrics import mean_absolute_error
+
+# Make predictions on the test data
+y_pred = lgb_regressor.predict(X_test)
+
+# Compute the MAE
+mae = mean_absolute_error(y_test, y_pred)
+
+print('MAE:', round(mae, 2))
+
+```
+
+And again, a bit better than the GAM, so it seems justified to add these extra interactions.
+Especially since the GAM was also tree-based, but without modeling interactions.
+
+Let's interpret the model:
+
+
+```{python}
+import shap
+# Compute the SHAP values for the sample
+explainer = shap.Explainer(lgb_regressor)
+shap_values = explainer(X_test)
+
+# Visualize the SHAP values
+shap.plots.waterfall(shap_values[0])
+```
+
+Again, different from both the results from the linear and the GAM model.
+The intepretation, however, is similar.
+In the sense of how we have to interpret the Shapley values.
+Only that now there are also interactions between feature values which had to be split up fairly between the feature values.
+And we can't see these interactions in this plot.
+
+As we learned in the [interaction chapter](#interaction), the interactions will be visible in global plots like the  dependence plot.
+This is the dependence plot for the alcohol feature:
+
+
+```{python}
+shap.dependence_plot(
+  "alcohol", shap_values.values, X_test,
+  feature_names=wine.columns
+)
+```
+
+The shap package automatically chose the feature `volatile acidity` with the interaction detection and therefore the shap values were colored by this feature.
+A few things are noticeable: 
+
+- In general, increasing alcohol level increase the Shapley value aka the predicted values
+- Having a look at the cases where the volatile acidity is low: there is one curios interaction with wines that have a low alcohol level. Wines with low alcohl (around 9%) are usually with a negative shapley value, but having also a low volatile acidity seems to have a slightly positive effect.A
+- When alcohol is high (11 - 14 %), then having a higher volatile acidity seems slightly beneficial, but that is only a very subtle effect.
+
+::: {.callout-note}
+
+General advice how to read the interaction part of the dependence plot:
+
+- Pick one of the two variables.
+- For this variable, pick two ranges or categories
+- Compare within these two ranges how the Shapley values differ
+- Especially compare whether that difference is associated with a change in the other feature
+
+:::
+
+
+Let's with that knowledge look at the partial dependence plot for residual sugar.
+Residual sugar is about how much sugar remains within the wine, the more the sweeter.
+
+```{python}
+shap.dependence_plot(
+  "residual sugar", shap_values.values, X_test,
+  feature_names=wine.columns
+)
+```
+
+
+
+But first let's also look at the dependence plot for `density`.
+
+```{python}
+shap.dependence_plot(
+  "density", shap_values.values, X_test,
+  feature_names=wine.columns,
+)
+```
+
+Observations:
+
+- More residual sugar, the higher the Shapley values
+- Interaction highest with density as chosen by the shap package
+- density and residual are correlated (aka they are not independent), for example, when sugar is high, density is also high. Physics.
+- Compare the curves for low density (around 0.99) and high density (around 0.998):
+  - If density is low, increasing residual sugar has a stark increasing effect
+  - If density is high, increasing residual sugar doesn't have such a strong effect
+
+
+Last but not least, we look at the summary plot:
+
+```{python}
+shap.summary_plot(shap_values, X_test)
+```
+
+Some observations:
+
+- Alcohol and volatile acidity were the most important features
+- Many features such as alcohol and volatile acidity have a (somewhat) monotonic relationship with the target
+- Among the factors that, for some wines, influenced the predicted quality in the most extreme ways were
+  - High levels of alcohols for a higher predicted quality
+  - Low levels of free sulfur dioxide for low quality

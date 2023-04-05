@@ -18,7 +18,6 @@ book:
     - additive.qmd
     - interactions.qmd
     - regression.qmd
-    - interpretation.qmd
     - history.qmd
     - background.qmd
     - correlation.qmd

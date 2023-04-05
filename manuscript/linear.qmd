@@ -9,20 +9,21 @@ A linear regression model.
 But why do we need anyways Shapley values for linear regression, couldn't we just look at the coefficients?
 
 We could, but that would only be half of the story.
-An example:
-The coefficient is always the same.
-No matter the data point that we want to explain.
+The coefficient is always the same, no matter the data point that we want to explain.
 So, surely, this isn't the best explanation for how important a feature was.
-Imagine a feature has the value zero, then the contribution of it would be 
-
+Imagine a feature has the value zero, then the contribution of it would be zero as well.
+Or if you have a positive coefficient, then for a data point with a positive feature, when multiplied with the coefficient, the result will be positive, but if the feature value is negative, the result will be negative.
+So the coefficient is just half of the story, since for an explanation of how this affects a certain prediction, we also need to know the feature values of an instance.
 
 As we have seen in the [estimation chapter](#estimation), it's quite easy to compute Shapley values for linear regression models.
 It's a function of the coefficient and the expected value of the predictions:
+
 
 ## The wine data
 
 We will be using the wine dataset that you can get from the sklearn dataset.
 The goal is to predict wine quality based on physico-chemical attributes for the wine.
+**Target**: The target variable "quality" is an average of 3 blind testers and ranging from 0 to 10.
 Here are the features:
 
 | Feature Name | Feature Description |
@@ -43,98 +44,134 @@ Here are the features:
 Let's quickly have a look what the features look like in data:
 
 ```{python}
-#| output: asis
 import pandas as pd
+
+# Set the file URL and filename
+url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/' \
+      'wine-quality/winequality-white.csv'
+file_name = 'wine.csv'
+# Check if the file exists in the current directory
+try:
+  wine = pd.read_csv(file_name)
+except FileNotFoundError:
+  print(f'Downloading {file_name} from {url}...')
+  wine = pd.read_csv(url, header=None, sep=";")
+  wine.to_csv(file_name, index=False)
+  print('Download complete!')
+```
+
+To get a feel for the features, let's have a look at their distributions:
+(TODO: replace with figures?) 
+
+```{python}
+#| output: asis
 from tabulate import tabulate
-
-# Load the wine quality data from the UCI Machine Learning Repository
-url = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv"
-wine = pd.read_csv(url, sep=";")
-
-# Get a summary of the features
 summary = wine.describe().transpose().round(2)
+summary = summary.drop("count", axis=1)
 # Create a nice markdown table
 markdown_table = tabulate(
   summary, headers='keys', tablefmt='pipe'
 )
-
-# Print the markdown table
 print(markdown_table)
-
 ```
 
+Here we see that the best quality is 9 (out of a possible 10) and the lowest is 3.
+The other features have different scales, but as we will see, it's not a problem for Shapley values since they explain the prediction **on the scale of the outcome**.
 
 ## How to estimate linear Shapley values with shap
 
-
-Step 1: Import necessary libraries and load the wine dataset
-
+Now we have our wine data and want to predict the quality of a wine based on it's chemical features.
+And since we said that we would fit a linear regression model, that's what we will do.
+But first, we split the data into training and test.
 
 ```{python}
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 # Extract the target variable (wine quality) from the data
 y = wine["quality"]
 # Remove the target variable from the data
 X = wine.drop("quality", axis=1)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+  X, y, test_size=0.2, random_state=42
+)
 ```
 
-Step 2: Train a linear regression model on the training data
+Next, we train the linear regression model using the sci-kit learn package.
 
 ```{python}
+#| output: false
 from sklearn.linear_model import LinearRegression
 
 model = LinearRegression()
 model.fit(X_train, y_train)
 ```
 
-Alright, now we have a linear regression model.
+How well does the model do?
+We measure the mean absolute error (MAE) on the test data to get a feel for how well the model works.
+
+```{python}
+from sklearn.metrics import mean_absolute_error
+
+y_pred = model.predict(X_test)
+# Calculate the mean absolute error between the predicted and actual values
+mae = mean_absolute_error(y_test, y_pred)
+
+# Print the mean absolute error
+print(f"MAE: {mae:.2f}")
+```
+
+```{python}
+#| echo: false
+from IPython.display import display, Markdown
+display(Markdown("""That means that on average the prediction is off by {mae}.""".format(mae= mae)))
+```
+
+That seems good enough, at least for now.
+And next we want to understand how the model makes a prediction.
+
+For a given wine, how does the predicted quality relate to the input features?
 Let's first inspect the coefficients and then compare it with the corresponding Shapley values.
 
 ```{python}
-coefs = pd.DataFrame({"feature": X.columns.values, "value": model.coef_})
-print(coefs)
+#| output: asis
+coefs = pd.DataFrame({"feature": X.columns.values, "coefficient": model.coef_})
+print(coefs.to_markdown(index=False))
 ```
 
-TODO: Interpretation
+Interpretation:
 
+- For example, increasing the fixed acidity of a wine by 1 unit increases the predicted quality by 0.046.
+- volatile acidity, citric acid, chlorides, total sulfur dioxide, and density have a negative effect
 
-Step 3: Use SHAP to explain the predictions of the model on the testing data
+But that doesn't necessarily help us in understanding how the effect is for a single prediction, because that also depends on the value that the feature of that data instance has. 
+
+So in the next step, we compute Shapley values to explain one of the data instances.
+For that we create a `LinearExplainer` object.
 
 ```{python}
 import shap
-
-explainer = shap.LinearExplainer(model, X_train)
+explainer = shap.LinearExplainer(model, X_test)
 shap_values = explainer.shap_values(X_test)
 ```
 
 Alternatively, you could have used the `Explainer` like this:
 
 ```{python}
-explainer = shap.Explainer(model, X_train)
+explainer = shap.Explainer(model, X_test)
 explainer
 ```
-As you can see, this is also a LinearExplainer object.
+As you can see, this is also a `LinearExplainer` object.
 That's the magic of the option `algorithm='auto'`, which is the default.
 Then `shap` identifies the model as a linear regression model and picks the super efficient linear explainer.
 
 And there is another way, and that's directly picking the right `algorithm` in the explainer:
 
 ```{python}
-explainer = shap.Explainer(model, X_train, algorithm='linear')
+explainer = shap.Explainer(model, X_test, algorithm='linear')
 explainer
 ```
 
-
-Step 4: Visualize the SHAP values for a specific instance in the testing data
-
-This is the same as in the [getting started chapter](#getting-started).
-
-
-
+Still haven't seen the Shapley values.
+So let's take the first data instance and visualize the Shapley values for it:
 
 ```{python}
 exp = shap.Explanation(
@@ -142,22 +179,44 @@ exp = shap.Explanation(
   base_values=explainer.expected_value,
   data=X_test.values[0],
   feature_names=wine.columns
-  )
+)
 
 shap.waterfall_plot(exp, max_display=10)
 ```
 
+This waterfall plot shows us many things:
+
+- The y-axis shows the individual features including the values for the first instance in our dataset
+- The x-axis is on the scale of the output
+- Each bar shows the Shapley value for that feature value
+- Positive Shapley values pointing to the right
+- The x-axis also shows the overall expected prediction $E[f(X)]$ and the actual prediction of the instance $f(x)$
+- The bars start in the bottom from the expected prediction and add up to the actual prediction
+
+And more specifically in this case:
+
+- The most important feature was residual sugar (=10.8) with a Shapley value of 0.27, meaning it had an increasing effect on the quality.
+- Overall the prediction was larger than the average, so this is a good quality wine
+- Most features have a positive value
+- pH is the feature value with the largest negative value
 
 
-This will generate a plot that shows the contribution of each feature to the prediction for the first instance in the testing data.
+This plot is already a nice impression, but it kind of omits some important information, that one often likes to have.
+For example, for residual sugar, we know that it increased the prediction, but we don't know from that waterfall plot alone what happens to the prediction if the value of residual sugar of 10.8 increased or decreased.
+Well, we could see that from the coefficient, but this will already change next chapter when we talk about additive models.
 
-Step 5: Plot a summary plot to show the overall feature importances for the model
+Also we don't know on a global level what the most important features were.
+For that we can use the summary plot:
 
 ```{python}
 shap.summary_plot(shap_values, X_test, feature_names = wine.columns)
 ```
 
-The flavanoids and the proline are the most important features.
+This plot automatically ranks the features by importance:
+
+Density, residual sugar and alcohol are the most important features for predicting wine, according to shap.
+The importance ordering is determined by the average absolute Shapley values across the test data (in this case).
+
 The coloring also shows us that the relationships are monotonic for all features:
 Increasing (or decreasing) a feature always increases the prediction, and only in one direction.
 Since we know that the model is a linear regression model, we also know that this relationship must be linear.
@@ -168,10 +227,14 @@ And with this plot, we can hopefully confirm that the features for which we know
 
 
 ```{python}
-shap.dependence_plot("alcohol", shap_values, X_test, feature_names=wine.columns, interaction_index=None)
+shap.dependence_plot(
+  "alcohol", shap_values, X_test,
+  feature_names=wine.columns,
+  interaction_index=None
+)
 ```
 
-This plot shows the global dependence modeled by the linear regression between alcohol and the outcome.
+This plot shows the global dependence modeled by the linear regression between alcohol and the predicted quality.
 Clearly visible: the more alcohol, the higher the predicted quality of the wine.
 
 A few more explanation about the dependence plot
@@ -185,7 +248,7 @@ A few more explanation about the dependence plot
 So we can see that the Shapley value increases linearly with each increase in the feature. And this increase is exactly the same as the slope in 
 
 ```{python}
-coefs.value[0]
+coefs.coefficient[0]
 ```
 
 ```{python}
@@ -199,32 +262,39 @@ Let's confirm that this is correct:
 X_test['alcohol'].mean()
 ```
 
+Let's first plot the predictions for a range of alcohol levels.
+
 ```{python}
-#| scrolled: true
 import matplotlib.pyplot as plt
 # select one feature for plotting SHAP values
 feature_name = 'alcohol'
 feature_idx = X.columns.get_loc(feature_name)
 
 # plot SHAP values against feature values
-plt.scatter(X_test[feature_name], shap_values[:, feature_idx], alpha=0.2)
+plt.scatter(
+  X_test[feature_name], shap_values[:, feature_idx], alpha=0.2
+)
 plt.xlabel(feature_name)
 plt.ylabel('SHAP value')
 plt.show()
 ```
 
+And then let's add the Shapley values:
+
 ```{python}
-#| scrolled: true
-import numpy as np
 # plot SHAP values against feature values
-plt.scatter(X_test[feature_name], shap_values[:, feature_idx], alpha=0.2)
+import numpy as np
+plt.scatter(
+  X_test[feature_name], shap_values[:, feature_idx], alpha=0.2
+)
 plt.xlabel(feature_name)
 plt.ylabel('SHAP value')
-
-x_range = np.array([X_test[feature_name].min(), X_test[feature_name].max()])
-
-plt.plot(x_range, coefs.value[feature_idx] * (x_range - X_test[feature_name].mean()), color='red')
-
+x_range = np.array([X_test[feature_name].min(),
+          X_test[feature_name].max()])
+expected = X_test[feature_name].mean()
+coefficient = coefs.coefficient[feature_idx]
+sv =  coefficient * (x_range - expected)
+plt.plot(x_range, sv, color='red')
 plt.show()
 ```
 
