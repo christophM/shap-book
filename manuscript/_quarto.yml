@@ -18,12 +18,11 @@ book:
     - additive.qmd
     - interactions.qmd
     - regression.qmd
-    - history.qmd
     - background.qmd
     - correlation.qmd
     - aggregated.qmd
     - classification.qmd
-    - maskers.qmd
+    - history.qmd
     - image.qmd
     - text.qmd
     - extensions.qmd
