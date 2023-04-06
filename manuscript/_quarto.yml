@@ -24,6 +24,7 @@ book:
     - classification.qmd
     - history.qmd
     - image.qmd
+    - image-deepexplainer.qmd
     - text.qmd
     - extensions.qmd
     - other.qmd

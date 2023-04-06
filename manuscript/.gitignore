@@ -5,6 +5,8 @@ index_files
 DryBeanDataset
 output
 latex/hash.tex
+../.DS_Store
 
 # Intermediate file folders
 *_files
+_book

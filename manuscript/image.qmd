@@ -1,4 +1,4 @@
-## Image classification
+## Image classification with Partition explainer
 
 All of the examples before have been tabular data.
 Now it's time to try a different type of data: image data.
@@ -11,11 +11,11 @@ So the general setup here is:
 Image classification is a common task and it's commonly solved with deep learning.
 Give an image to the model, get a class back, usually based on what's visible on the image.
 
-We aren't going to train our own image classifier, but instead will load a ResNet model (TODO:CITE) which was trained on Imagenet data.
+We aren't going to train our own image classifier, but instead will load a ResNet model [@he2016deep] which was trained on Imagenet data [@deng2009imagenet].
 
-The ImageNet task is a large-scale image classification challenge that involves recognizing and categorizing objects within digital images. The challenge uses a dataset of over 1 million images, each of which belongs to one of 1000 different object categories. The task is to develop a machine learning model that can accurately classify each image into its correct category.
-
-The ImageNet challenge has been an important driver of progress in the field of computer vision and deep learning, and has led to the development of new and more accurate machine learning models. The challenge has also spurred research into related computer vision tasks such as object detection and image segmentation.
+The ImageNet task is a large-scale image classification challenge that involves categorizing objects within digital images.
+The challenge uses a dataset of over 1 million images, each of which belongs to one of 1000 different categories.
+The task is to develop a machine learning model that can accurately classify each image into its correct category.
 
 Code based on [shap notebook](https://github.com/slundberg/shap/blob/master/notebooks/image_examples/image_classification/Explain%20ResNet50%20using%20the%20Partition%20explainer.ipynb)
 
@@ -34,9 +34,9 @@ model = ResNet50(weights='imagenet')
 X, y = shap.datasets.imagenet50()
 ```
 
-So these are 50 images
+We make use of the 50 images that come already with the shap.
+One of these is a cheeseburger, which you will see later.	
 
-We also need the class names for them:
 
 ```{python}
 import json
@@ -59,6 +59,20 @@ else:
     class_names = [v[1] for v in json.loads(json_data).values()]
 ```
 
+
+## SHAP for image classification
+
+Now let's explain some image classifications with SHAP.
+We already have our model, the class names and the sample images.
+
+Things that we need now:
+
+- a prediction function that wraps the model
+- a masker that tells SHAP how to simulate absent features (clusters of pixels) 
+
+The prediction function is simple, as it just takes an image in the form of a numpy array, preprocesses it for the Resnet and then feeds it to the Resnet.
+So numpy array in, probability scores out.
+
 ```{python}
 # wrap the model
 def predict(x):
@@ -67,39 +81,36 @@ def predict(x):
     return model(tmp)
 ```
 
-Seems like the network "thinks" this image shows a whippet.
-But what's the explanation for this classification?
-
-To answer this, we will use Shapley values and explain the image classification.
-
-## SHAP for image classification
-
-To create a shap explanation, we need three things:
-
-- The prediction function, which wraps the model.
-- The masker, which is also a function
-- The class names 
-
-Then we are finally ready to estimate the Shapley values.
-
+Then we define the masker:
 
 ```{python}
-# Number of top classes for which to compute SHAP values
-topk = 3
-
-index = [21,28]
-
-# The masker blurs out parts of the image 
 masker = shap.maskers.Image(
   "blur(128,128)", shape = X[0].shape
 )
+```
+
+For now the only thing to know about the masker is that it "removes" the pixels that are not in the coalition.
+From the parameters we can also see that it blurs the absent image parts.
+Later I'll show you how this actually looks like.
+
+
+But first, let's compute Shapley values for two of the images: a cheeseburger and a pocket watch.
+Since the task is classification, we have to pick the classes for which we want to have an explanation.
+An obvious choice is always the top classes, especially the class with the highest probability, since this is often the class that becomes important further down the pipeline when the model is used.
+
+So we'll pick the top 3 classes (`topk`) and 2 images.
+
+```{python}
+topk = 3
+
+# which of the 50 images to display
+index = [21,28]
 
 explainer = shap.Explainer(
   predict, masker, output_names=class_names
 )
 
 shap_values = explainer(
-  # TODO: Set to 1000
   X[index], max_evals=1000,
   batch_size = 50,
   outputs=shap.Explanation.argsort.flip[:topk],
@@ -107,16 +118,18 @@ shap_values = explainer(
 )
 ```
 
-The shap values are best visualized by laying them over the original image:
+With the code above, we have calculated all the Shapley values.
+But for image Shap all hope is lost that we can do anything with the pure values, but it's natural that we display them.
+
+The shap values are best visualized by laying them over the original image.
+So you also finally get to see the images I picked:
 
 
 ```{python}
 shap.image_plot(shap_values, pixel_values=X[index]/255)
 ```
 
-
-
-Interpretation
+Let's dive into the interpretation of those SHAP values:
 <!-- Interpretation is for (eval = 1000) -->
 
 Let's begin with the burger.
@@ -134,23 +147,35 @@ And we can see that the chain was identified for the right reasons, namely the c
 A disadvantage of computing the Shapley values for multiple images here is that the color scale for the Shapley values which you see on the bottom is for all images.
 And for the watch there are larger values, so that the values for the cheeseburger are scaled closer to white.
 
+But as promised, let's dive into the different maskers, because they are more than just a "set-and-forget"-parameter.
 
 ## Effect of Different Maskers
 
-The different maskers here are different so-called inpainting methods.
-The task of inpainting is that you have an image with a "hole" for which we don't know the image part.
-Inpainting then replaces this hole.
-So exactly what we need when we remove pixels for computing SHAP values.
+If you remember back to the theory about how Shapley values work:
+Shapley values are all about how much features (or groups of features) contribute towards coalitions of features.
+That means some feature values are present, some are absent.
+And the big question is always how to simulate absence of features.
 
-List of inpainters that are available in SHAP:
+While for tabular data, it was about drawing from a background dataset, there are other options for images.
+Well, in theory, you could of course replace absent parts of the image with parts from randomly drawn dataset of other images.
+But that would make super funny random images, maybe hard to justify. 
+
+So another option is to either blur out the absent pixels.
+This means that we don't completely remove the information, but "weaken" it.
+And the stronger the blur, the more it's removed.
+The other technique is called inpainting, where we have no information about the missing data, but use algorithms to "guess" the missing part based on the rest of the image that is not missing.
+ 
+To be more specific, here are the options in shap:
 
 - `inpaint_telea` Telea inpainting fills in the missing area with a weighted average of all neighboring pixels. Neighborhood depends on a radius.
 - `inpaint_ns` NS, which stands for Navier-Stokes and is based on fluid dynamics with partial differential equations.
 - `blur(16, 16)` Blurring, which depends on kernel size, which you can set as a user. The larger the value the further away pixels play a role for inpainting. Bluring is faster than inpainting.
 
-The shap package uses the `cv2` package for inpainting and blurring.
 
-Here is how this looks like:
+
+The shap package uses the `cv2` package for inpainting and blurring.
+Here is how these different options looks like.
+And it's mostly melting burgers.
 
 ```{python}
 import matplotlib.pyplot as plt
@@ -169,27 +194,29 @@ arr[75264:] = False
 # Assuming your numpy arrays are called "arr1", "arr2", "arr3", and "arr4"
 fig, axs = plt.subplots(2, 2)
 
-axs[0, 0].imshow(masks[0](x=X[21], mask=arr)[0][0]/255)
-axs[0, 1].imshow(masks[1](x=X[21], mask=arr)[0][0]/255)
-axs[1, 0].imshow(masks[2](x=X[21], mask=arr)[0][0]/255)
-axs[1, 1].imshow(masks[3](x=X[21], mask=arr)[0][0]/255)
-
-# Add text annotations to label the panels
-axs[0, 0].set_title(mask_names[0])
-axs[0, 1].set_title(mask_names[1])
-axs[1, 0].set_title(mask_names[2])
-axs[1, 1].set_title(mask_names[3])
-axs[0, 0].set_xticks([])
-axs[0, 1].set_xticks([])
+ind = 0
+for i in [0,1]:
+  for j in [0,1]:
+    axs[i, j].imshow(masks[ind](x=X[21], mask=arr)[0][0]/255)
+    axs[i, j].set_title(mask_names[ind])
+    axs[i, j].set_xticks([])
+    axs[i, j].set_yticks([])
+    axs[i, j].tick_params(axis='both', which='both', length=0)
+    ind += 1
 
 plt.show()
 ```
 
-As you can see, these are quite different strategies, but they have in common that not all information is deleted from the image.
-Blur with 16er Kernel doesn't blur out that much.
-The others remove much more information.
+For the image the upper half was "present" and the lower half was "absent".
+In terms of Shapley values that would have been like stating that there are only two players made up from lower and upper parts of the images.
+And that's also similar to how the Partition explainer works, only that we would go deeper and do more splits along the x-axis and y-axis.
 
-Let's check them all out:
+But back to the maskers.
+As you can see, these are quite different strategies, but they have in common that the image is not fully changed, as compared to replacing all missing values with a grey pixels, for example.
+
+Blurring even retains original data, and just smooths it out so that we loose some of the information.
+Especially the kernel with blur(16,16) doesn't change the image too much.
+
 
 ```{python}
 topk = 3
@@ -207,10 +234,11 @@ for mask in masks:
 The choice of masker does make a bit of a difference here for explaining the cheeseburger classification.
 The wrong classification was that the cheeseburger was classified as a bottlecap.
 The pixels most responsible were teh ones on the top, that's what all maskers agreed upon, except the blur(16,16) masker, which found the pixels on the sides most relevant.
+But the blur(16,16) masker is a bit wonky in my opinion, just by judging how little it obscures.
+At least I as a human can still recognize the lower part as burger, so the features are not so much removed.
 In all cases, the pixels on the bottom of the burger seemed to speak against a bottlecap classification.
 
-TODO: Visualize the maskers, by visualizing an image?
-Should be doable with the masker directly
+Another interesting hyperparameter is the number of evaluation steps.
 
 ### Effect of increasing the evaluation steps:
 
@@ -244,10 +272,5 @@ What we can observe by increasing the number of evaluations:
 - Computation times scales linearly with the number of evaluations 
 
 
-
-## Problems and TODOs:
-    
-- When changing the masker, the topk classes change, but they shouldn't?
-- 
-
-
+But the Partition explainer is not our only option for image classifiers.
+Because we can also create explanations on the pixel-level, which we will do with the next chapter.
