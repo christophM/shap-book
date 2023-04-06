@@ -1,1 +1,253 @@
 ## Image classification
+
+All of the examples before have been tabular data.
+Now it's time to try a different type of data: image data.
+
+So the general setup here is:
+
+- Input is image data
+- Output is a score, which can also be multi-dimensional as in multi-class classification
+
+Image classification is a common task and it's commonly solved with deep learning.
+Give an image to the model, get a class back, usually based on what's visible on the image.
+
+We aren't going to train our own image classifier, but instead will load a ResNet model (TODO:CITE) which was trained on Imagenet data.
+
+The ImageNet task is a large-scale image classification challenge that involves recognizing and categorizing objects within digital images. The challenge uses a dataset of over 1 million images, each of which belongs to one of 1000 different object categories. The task is to develop a machine learning model that can accurately classify each image into its correct category.
+
+The ImageNet challenge has been an important driver of progress in the field of computer vision and deep learning, and has led to the development of new and more accurate machine learning models. The challenge has also spurred research into related computer vision tasks such as object detection and image segmentation.
+
+Code based on [shap notebook](https://github.com/slundberg/shap/blob/master/notebooks/image_examples/image_classification/Explain%20ResNet50%20using%20the%20Partition%20explainer.ipynb)
+
+We will use a pre-trained Resnet in tensorflow.
+
+```{python}
+import json
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.applications.resnet50 import ResNet50, preprocess_input
+import shap
+```
+
+```{python}
+model = ResNet50(weights='imagenet')
+X, y = shap.datasets.imagenet50()
+```
+
+So these are 50 images
+
+We also need the class names for them:
+
+```{python}
+import json
+import os
+import urllib.request
+
+# Path to the JSON file on disk (change this to the desired location)
+json_file_path = 'imagenet_class_index.json'
+
+# Check if the JSON file exists on disk
+if os.path.exists(json_file_path):
+    with open(json_file_path) as file:
+        class_names = [v[1] for v in json.load(file).values()]
+else:
+    url = 'https://s3.amazonaws.com/deep-learning-models/image-models/imagenet_class_index.json'
+    with urllib.request.urlopen(url) as response:
+        json_data = response.read().decode()
+    with open(json_file_path, 'w') as file:
+        file.write(json_data)
+    class_names = [v[1] for v in json.loads(json_data).values()]
+```
+
+```{python}
+# wrap the model
+def predict(x):
+    tmp = x.copy()
+    preprocess_input(tmp)
+    return model(tmp)
+```
+
+Seems like the network "thinks" this image shows a whippet.
+But what's the explanation for this classification?
+
+To answer this, we will use Shapley values and explain the image classification.
+
+## SHAP for image classification
+
+To create a shap explanation, we need three things:
+
+- The prediction function, which wraps the model.
+- The masker, which is also a function
+- The class names 
+
+Then we are finally ready to estimate the Shapley values.
+
+
+```{python}
+# Number of top classes for which to compute SHAP values
+topk = 3
+
+index = [21,28]
+
+# The masker blurs out parts of the image 
+masker = shap.maskers.Image(
+  "blur(128,128)", shape = X[0].shape
+)
+
+explainer = shap.Explainer(
+  predict, masker, output_names=class_names
+)
+
+shap_values = explainer(
+  # TODO: Set to 1000
+  X[index], max_evals=1000,
+  batch_size = 50,
+  outputs=shap.Explanation.argsort.flip[:topk],
+  silent=True
+)
+```
+
+The shap values are best visualized by laying them over the original image:
+
+
+```{python}
+shap.image_plot(shap_values, pixel_values=X[index]/255)
+```
+
+
+
+Interpretation
+<!-- Interpretation is for (eval = 1000) -->
+
+Let's begin with the burger.
+It's misclassified, since the top class is "bottlecap".
+Looking at the Shapley values, it's mostly the top of the burger that pushed the classification towards bottlecap.
+Some of the middle parts of the burger had a negative influence, but still the top part looked, for the Resnet, too much like a bottlecap.
+But right after that, the second class is cheeseburger, which is the right class.
+Here we see that mostly parts in the middle contributed towards this classification.
+
+The second image shows a pocket watch.
+There is, however, now pocket watch class in the 1000 classes of ImageNet.
+So chain might be an okayish classification.
+And we can see that the chain was identified for the right reasons, namely the chain part of the watch.
+
+A disadvantage of computing the Shapley values for multiple images here is that the color scale for the Shapley values which you see on the bottom is for all images.
+And for the watch there are larger values, so that the values for the cheeseburger are scaled closer to white.
+
+
+## Effect of Different Maskers
+
+The different maskers here are different so-called inpainting methods.
+The task of inpainting is that you have an image with a "hole" for which we don't know the image part.
+Inpainting then replaces this hole.
+So exactly what we need when we remove pixels for computing SHAP values.
+
+List of inpainters that are available in SHAP:
+
+- `inpaint_telea` Telea inpainting fills in the missing area with a weighted average of all neighboring pixels. Neighborhood depends on a radius.
+- `inpaint_ns` NS, which stands for Navier-Stokes and is based on fluid dynamics with partial differential equations.
+- `blur(16, 16)` Blurring, which depends on kernel size, which you can set as a user. The larger the value the further away pixels play a role for inpainting. Bluring is faster than inpainting.
+
+The shap package uses the `cv2` package for inpainting and blurring.
+
+Here is how this looks like:
+
+```{python}
+import matplotlib.pyplot as plt
+
+# define a masker that is used to mask out partitions of the input image. 
+mask_names = ["inpaint_telea", "inpaint_ns", "blur(128, 128)", "blur(16, 16)"]
+masks = [shap.maskers.Image(m, shape = X[0].shape) for m in mask_names]
+
+# Create a numpy array of shape (224, 224, 3)
+arr = np.zeros((224 * 224 * 3), dtype=bool)
+# Set the upper half of the image to True
+arr[:75264] = True
+# Set the lower half of the image to False
+arr[75264:] = False
+
+# Assuming your numpy arrays are called "arr1", "arr2", "arr3", and "arr4"
+fig, axs = plt.subplots(2, 2)
+
+axs[0, 0].imshow(masks[0](x=X[21], mask=arr)[0][0]/255)
+axs[0, 1].imshow(masks[1](x=X[21], mask=arr)[0][0]/255)
+axs[1, 0].imshow(masks[2](x=X[21], mask=arr)[0][0]/255)
+axs[1, 1].imshow(masks[3](x=X[21], mask=arr)[0][0]/255)
+
+# Add text annotations to label the panels
+axs[0, 0].set_title(mask_names[0])
+axs[0, 1].set_title(mask_names[1])
+axs[1, 0].set_title(mask_names[2])
+axs[1, 1].set_title(mask_names[3])
+axs[0, 0].set_xticks([])
+axs[0, 1].set_xticks([])
+
+plt.show()
+```
+
+As you can see, these are quite different strategies, but they have in common that not all information is deleted from the image.
+Blur with 16er Kernel doesn't blur out that much.
+The others remove much more information.
+
+Let's check them all out:
+
+```{python}
+topk = 3
+
+# walk through all the masks
+for mask in masks:
+    print(mask)
+    explainer = shap.Explainer(predict, mask, output_names=class_names, silent=True)
+    # TODO: set eval to 1000
+    shap_values = explainer(X[[21]], max_evals=500, batch_size=50, outputs=shap.Explanation.argsort.flip[:topk])
+    shap.image_plot(shap_values, pixel_values=X[[21]]/255)
+```
+
+<!-- based on 500 evals -->
+The choice of masker does make a bit of a difference here for explaining the cheeseburger classification.
+The wrong classification was that the cheeseburger was classified as a bottlecap.
+The pixels most responsible were teh ones on the top, that's what all maskers agreed upon, except the blur(16,16) masker, which found the pixels on the sides most relevant.
+In all cases, the pixels on the bottom of the burger seemed to speak against a bottlecap classification.
+
+TODO: Visualize the maskers, by visualizing an image?
+Should be doable with the masker directly
+
+### Effect of increasing the evaluation steps:
+
+Another hyperparameter for SHAP in image is the number of evaluations.
+The number of evaluations steers how fine-grained the explanations are.
+Since we use the Partition explainer, more evaluations allow more fine-grained partition and therefore more local superpixels.
+
+But let's see what happens when we increase the amount of evaluations, starting with a very low number of just 10 evaluations:
+
+```{python}
+# TODO: Add 10k
+evals = [10, 100, 1000, 5000]
+topk = 1
+
+masker = shap.maskers.Image(
+  "blur(128,128)", shape = X[[21]].shape
+)
+
+# walk through all the masks
+for ev in evals:
+    print(ev)
+    explainer = shap.Explainer(predict, mask, output_names=class_names, silent=True)
+    shap_values = explainer(X[[21]], max_evals=ev, batch_size=50, outputs=shap.Explanation.argsort.flip[:topk])
+    shap.image_plot(shap_values, pixel_values=X[[21]]/255)
+```
+
+What we can observe by increasing the number of evaluations:
+
+- We get more fine-grained superpixels, which has to do with the Partition explainer. Only 10 evaluations and we only get 4 leaves, which requires a tree of depth 2, and therefore 2 + 2 * 2 = 6 Shapley values (TODO:check Partition expllainer. 
+- The Shapley values get smaller. Well, actually the partitions get smaller and therefore the number of pixels. And makes sense that the fewer pixels are masked, the less influence it has on the prediction.
+- Computation times scales linearly with the number of evaluations 
+
+
+
+## Problems and TODOs:
+    
+- When changing the masker, the topk classes change, but they shouldn't?
+- 
+
+

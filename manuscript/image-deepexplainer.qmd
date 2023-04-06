@@ -1,0 +1,48 @@
+# DeepExplainer
+
+
+We have two options of what we want to see as input features:
+
+- individual pixels
+- larger collections of pixels
+
+The network gets as input the individual pixels, but that doesn't mean we have to use the same granularity for the explanations.
+
+The second choice is about how we mask absent (sets of) pixels:
+
+- We could replace them from background data
+- Or we could replace them with some reference, which could be blurring them or replacing them with grey pixels (or some other "neutral" color)
+
+
+
+
+
+
+
+We can do all the same but on a pixel level. Depending on your application, this can make sense. But it's expensive.
+
+It makes sense if you need a really fine-grained explanation.
+
+Instead of an "Explainer" object, we create a "DeepExplainer". This also means we need no masker, but we will again work with the background data.
+
+But here's the thing: Which data to use.
+Since I haven't trained the model myself, I have to think hard on what the background data is.
+Usually it would be from the same distribution as my usual data. 
+
+But that's super slow, I see no point in using it.
+
+
+## The Correlation problem for images
+
+
+We have talked about the correlation problem in the [correlation chapter](#correlation).
+And there it was for the background data.
+But does the same occur if we have image data?
+
+There is a similar problem, but there it makes more sense to speak about extrapolation: Leaving the distribution of training data by creating new images.
+And that's depending on the masker.
+The masker creates new images, which might be far removed from the input data.
+
+TODO: check out research on maskers and their effect on explanation
+
+#
