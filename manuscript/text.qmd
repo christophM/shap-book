@@ -1,2 +1,413 @@
-# Text classification
+# Text
+
+Alright, let's do text next.
+All the models in this chapter have in common that the inputs are texts.
+But we will see two different types of outputs:
+
+- Scores, like for classification and sentiment analysis
+- Texts, like for text generation, translation and summarization
+
+At first glance, both are quite different, but at second, not so much.
+We will begin with the simpler case where for one text input, a model only outputs a single score.
+This could be classification, like for example classifying which category a news article belongs to.
+
+In this chapter we will primarily work with transformers which are state-of-the-art for text ML."
+<!-- 
+
+References:
+
+- BERT meets Shapley: https://aclanthology.org/2021.hackashop-1.3.pdf
+- 
+
+-->
+
+
+## How SHAP for text works
+
+As usual for SHAP, the goal is to attribute the prediction to the inputs.
+And, as the previous chapters showed, SHAP is requires a scalar output.
+When we deal with a text classifier, this the output is a scalar.
+When we deal with a sequence to sequence model, then the output isn't.
+But we can turn it into one by looking at the score for the particular token instead of the word.
+
+The features in both text classification and text-to-text is, well, text.
+But it's actually not that simple.
+Because it's not words that get fed into the neural network.
+It's numbers.
+In the case of neural networks, the state of the art of working with text, these numbers are realized through embedding tokens.
+Tokens are usually smaller than words and there are many ways to tokenize texts.
+
+
+## What is a player in case of text?
+
+But as we have seen in the [image chapter](#image), we can use a different coarseness of input for shap than we used for the model.
+
+This means that we have multiple options for which inputs we compute the shap values:
+
+- By character
+- By token
+- By word
+- By sentence
+- By paragraph
+- And everything inbetween
+
+
+But which of these you choose depends on the application.
+We'll see different examples in this chapter.
+
+An example:
+Let's say we have the task of sentiment analysis.
+The sentence in question is "I returned the item as it didn't work." and let's say the predicted score says negative with score of - 0.8.
+
+Then the goal of SHAP is to attribute the score to the inputs.
+If you decide to attribute the prediction on a word level, you'll get one Shap value for each of the words: ["I", "returned", "the", "item", "as", "it", "didn't", "work"].
+
+Each word would then be a team player in the team and the -0.8 score would get fairly attributed among these words.
+
+
+## Removing players in case of text
+
+Again, an interesting question to understand how Shap works for a given application:
+How do you simulate absence of players / features?
+
+In the case of text, you have, in theory multiple options:
+
+- remove the word
+- replace it with a fixed token (like "...")
+- replace it with a draw from background data
+
+Implemented in shap is option 2, and option 1 is just a special case of it.
+I think the first two options make a lot more sense than option 3.
+Because while option 1 and 2 can lead to grammatically incorrect sentences that might be not so typical for the training distribution, option 3 might introduce very wild new texts.
+
+
+So, for example, to assess how much the word "returned" mattered for the negative sentiment prediction, we would add it to different teams.
+And for the example let's assume that missing words are replaced with "...".
+And if multiple, adjacent words were replaced, only one time "..." was used.
+
+- "I ... the ... as it didn't work" -> "I returned the ... as it didn't work"
+- "... the item ...  work" -> "... returned the item ... work"
+- "..." -> "... returned ..." 
+
+Equipped with this theoretical knowledge, let's begin with a text classification example.
+
+## Text classification
+
+
+Let's start with the simplest example of a classification task.
+No need to go deep here since we have already done classification, only this time we have text as input.
+A classic example is sentiment analysis, which has gotten it's own name for a task, but in fact is just plain classification with pre-determined labels: positive, negative.
+
+We will use transformers from Hugging Face which make it super easy to implement it:
+
+```{python}
+from transformers import pipeline
+model = pipeline("sentiment-analysis", return_all_scores=True)
+s = ["IBM Watson was a scam"]
+print(model(s))
+```
+
+Rightfully, this is classified as a negative statement.
+But why? At humans we know why. One keyword here is "scam".
+Let's see if that was also the reason for the model and whether SHAP can handle the situation.
+
+We can simply produce an explainer model. Shap automatically knows how to handle the situation:
+
+```{python}
+import shap
+explainer = shap.Explainer(model)
+shap_values = explainer(s)
+shap.plots.bar(shap_values[0,:, "NEGATIVE"])
+```
+
+That was super simple, right?
+
+We see that "IBM" and "sc" contributed the most to negative sentiment, especially "sc".
+
+But a weird thing: Scam is cut into "sc" and "am", which is not very nice from an interpretation perspective.
+But that's a question of how we mask the input.
+Masking in the case of text is determined by which tokenizer we use.
+
+
+### Playing around with the masker
+
+But as promised, let's change the tokenizer now.
+In the following code snippet, I provide a custom tokenizer to the model.
+It's instructed to split the text by words.
+This is again implemented by maskers, the shap abstraction to help with simulating features as absent.
+Then we give both the model and the masker to shap.
+
+Here are the results:
+
+```{python}
+masker = shap.maskers.Text(tokenizer=r"\W+")
+explainer = shap.Explainer(model, masker=masker)
+shap_values = explainer(s)
+shap.plots.bar(shap_values[0,:, "NEGATIVE"])
+```
+
+Now it becomes clear that "scam" is the word of interest.
+The tokenizer is totally flexible.
+To proof it, let's take another example of Shapley values based on sentences.
+Here is an example based on sentences. Here the tokenizer is super dumb and just tokenizes the input at the dots ".". Let's try a longer input text and see how much each sentence contributes.
+
+```{python}
+s2 = ["IBM was a scam. It was more about marketing than technology. But that's why I loved it. Learned a bunch about marketing that way."]
+print(model(s2))
+masker = shap.maskers.Text(tokenizer=r"\.", mask_token=" ")
+explainer = shap.Explainer(model, masker=masker)
+shap_values = explainer(s2)
+shap.plots.bar(shap_values[:,:,"NEGATIVE"])
+```
+
+As a mask token I used a whitespace " ", which seems okay for dropping a sentence.
+The default replacement token for text is "...", but in general if a tokenizer is supplied the .mask_token attribute is used, if the tokenizer has this attribute.
+
+
+I want to demonstrate this by doing some "extreme" masking: Instead of removing a sentence and replacing it with nothing, we replace it with a particular sentence.
+
+By the way, the argument , collapse_mask_token=True makes that if two tokens in a row are replaced by the mask_token that the token is only added once.
+
+So if, in the next example the sentences are replaced with "I love it", then only once in a row.
+
+Input: IBM was a scam.
+It was more about marketing than technology.
+But that's why I loved it.
+Learned a bunch about marketing that way
+
+Let's say for the marginal contribution of "Learned a bunch about marketing", when added to the empty set, we actually compare the prediction for these two sentences:
+
+"I love it. Learned a bunch about marketing that way." versus "I love it."
+
+If collapse_mask_token=False, then we would compare predictions for "I love it. I love it. I love it. Learned a bunch about marketing that way." versus "I love it. I love it. I love it. I love it."
+
+So it often makes sense to set collapse_mask_token to True.
+
+In theory you could also write a custom masker.
+
+
+```{python}
+#| scrolled: true
+masker = shap.maskers.Text(tokenizer=r"\.", mask_token="I love it", collapse_mask_token=True)
+explainer = shap.Explainer(model, masker=masker)
+shap_values = explainer(s2)
+shap.plots.text(shap_values[:,:,"POSITIVE"])
+```
+
+```{python}
+masker = shap.maskers.Text(tokenizer=r"\.", mask_token="I hate it", collapse_mask_token=True)
+explainer = shap.Explainer(model, masker=masker)
+shap_values = explainer(s2)
+shap.plots.text(shap_values[:,:,"POSITIVE"])
+```
+
+What happens here?
+The replacement is acting as a reference. In one case any sentence that is dropped from the coalition is replaced with "I love it" and for the other explanation with "I hate it".
+
+What changes?
+
+The base value changes from strongly positive to negative. Every sentence is now to be interpreted in contrast with the replacement. This was also true before, but before we replaced it with an empty string which is more neutral than the sentences provided.
+
+Don't use such extreme masking tokens, this obviously don't make sense. But it can make sense to use more specific tokens.
+
+And the lesson here is that the masking does matter, because it serves as the background data. So you should be aware of the replacement and think about whether it makes sense. Maybe test out alternatives.
+
+For example, there's even a difference whether we replace tokens with " " or "...":
+
+```{python}
+masker = shap.maskers.Text(tokenizer=r"\.", mask_token="...", collapse_mask_token=True)
+explainer = shap.Explainer(model, masker=masker)
+shap_values = explainer(s2)
+shap.plots.text(shap_values[:,:,"POSITIVE"])
+```
+
+```{python}
+masker = shap.maskers.Text(tokenizer=r"\.", mask_token=" ", collapse_mask_token=True)
+explainer = shap.Explainer(model, masker=masker)
+shap_values = explainer(s2)
+shap.plots.text(shap_values[:,:,"POSITIVE"])
+```
+
+While the overall attribution doesn't change in a relevant way (except for sign change for the "marketing" sentence, but which was close to zero anyways), it does change the base value by quite a bit.
+
+So, play around with it, maybe generate some text with it and make a qualitative judgement on whether it makes sense or not.
+
+## Using logits instead of probabilities
+
+
+The output is on the probability space between 0 and 1, which had to undergo a logit transformation.
+Additive explanations, however, work better on linear scales.
+In this case the logits, which are just before this 0 to 1 squeezing.
+
+shap implements, especially for transformers a wrapper that can be used. Here we have the option to say whether we want the logits or the probabilities:
+
+```{python}
+model2 = shap.models.TransformersPipeline(model, rescale_to_logits=True)
+```
+
+Just like with the original transformer, we can make predictions with this model:
+
+```{python}
+model2(s)
+```
+
+Let's see how it affects the explanations with shap:
+
+```{python}
+explainer2 = shap.Explainer(model2)
+shap_values2 = explainer2(s)
+shap.plots.bar(shap_values2[0,:, "NEGATIVE"])
+```
+
+Kinda the same, which is good, but with "am" also being a positive factor, which makes more sense now.
+
+## How text to text works with SHAP
+
+The specialty about text-to-text is that we have multiple outputs: Each token produced by the, usually, neural network is it's own prediction.
+You can see it as a classification task: given some text input, classify which token should come next.
+But it's more than classification: We also get the output score.
+
+So let's break it down:
+Imagine the task of text generation.
+Think early large language models: For an input text, produce the next words.
+
+Input text: "Is this the Crusty Crab?"
+Output text: "No! This is Patrick!"
+
+Since the outputs are on the word level, but on the token level which are dependent on the implementation of the neural network, that's the level on which to produce explanations.
+
+But really, it's simple:
+For text-to-text each output token is just treated as individual prediction, very similar to multi-class classification, and for each we can compute Shapley values.
+
+So if the tokenized input is of length $n$ and the tokenized output of length $m$, we get $n \cdot m$ Shapley values.
+Reminder, again, that tokenization level of input can be controlled by the user.
+So for the example above, if the user picks word level tokenization for the input, the first token of the output, e.g., "No", gets $n$ Shapley values, then the next token "!" gets $n$ Shapley values and so on.
+
+
+But still, one problem left:
+Transformers not only look at the input but also at the output that was generated **so far** to produce the next token.
+So if "No! This is" was already generated by the model, it's part of the input for deciding on "Patrick" next.
+But for shap, this is simply kept fixed.
+
+Luckily, all this is already implemented in the shap package for our convenience.
+ 
+
+## Text Generation
+
+Let's have a look at a text generation task, which is a very general task.
+Again, implemented in Hugging face transformers package.
+It's a large language model, just like the models powering GPT-3 and Gpt-4.
+But since we want an example that runs without requiring an account somewhere, we do this locally and use a "weaker" model.
+But this doesn't change the general interface of text in, text out.
+With the important different that we not only get the words out, but also the scores for the words, which is important for computing Shapley values.
+So for this example, we use GPT-2.
+That's what's automatically chosen, at the time of writing, from the transformers library for the task "text-generation"
+
+
+```{python}
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+tokenizer = AutoTokenizer.from_pretrained("gpt2")
+model = AutoModelForCausalLM.from_pretrained("gpt2")
+```
+
+
+Next we decide which text to complete.
+
+```{python}
+import torch
+
+# So that we always get the same results
+torch.manual_seed(0)
+
+input_text = "He insulted Italian cuisine by"
+
+# Encode input text
+input_ids = tokenizer.encode(input_text, return_tensors="pt")
+
+# So that it samples and not always returns most likely character
+model.config.do_sample=True
+# Setting max length
+model.config.max_new_tokens =30
+
+# Generate text with stop_token set to "."
+output = model.generate(input_ids)
+
+# Decode output text
+output_text = tokenizer.decode(output[0], skip_special_tokens=True)
+print(output_text)
+```
+
+And for this sentence we now get the shap explanations:
+
+
+TODO: Config setting doesn't seem to change anything here.
+Find way to change it
+
+```{python}
+torch.manual_seed(0)
+# setting model to decoder is necessary so that the input isn't repeated.
+model.config.is_decoder=True
+explainer = shap.Explainer(model, tokenizer)
+shap_values = explainer([input_text])
+#shap.bar_plot(shap_values[0, :, 0])
+```
+
+TODO: fix plot above
+This is the explanation for the first word.
+TODO: interpretation
+
+
+Other text-to-text tasks:
+
+- [Question Answering](https://shap.readthedocs.io/en/latest/example_notebooks/text_examples/question_answering/Explaining%20a%20Question%20Answering%20Transformers%20Model.html)
+- [Summarization](https://shap.readthedocs.io/en/latest/example_notebooks/text_examples/summarization/Abstractive%20Summarization%20Explanation%20Demo.html)
+- [Machine translation](https://shap.readthedocs.io/en/latest/example_notebooks/text_examples/translation/Machine%20Translation%20Explanations.html)
+
+
+
+<!--
+
+
+
+
+
+## Translation
+
+Translation is another text to text task.
+
+So again, in this case we will get for each output word an explanation.
+
+Auto classes in hugging face: Automatically derive the relevant model for some task.
+But can also be used to retrieve a model from Hugging face based on username and model-name.
+
+```{python}
+#| eval: false
+import numpy as np
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+import shap
+import torch
+# load the model and tokenizer
+tokenizer = AutoTokenizer.from_pretrained("Helsinki-NLP/opus-mt-en-es")
+model = AutoModelForSeq2SeqLM.from_pretrained("Helsinki-NLP/opus-mt-en-es")
+```
+
+CONTINUE HERE
+
+Figure out how to make translation work. Maybe be closer to the tutorial on shap documentation
+
+```{python}
+#| eval: false
+#| scrolled: true
+from transformers import pipeline
+
+translator = pipeline("translation_en_to_de")
+s = "German humor is no laughing matter."
+print(translator(s))
+explainer = shap.Explainer(translator.model, translator.tokenizer)
+shap_values = explainer([s])
+#| scrolled: true
+shap.plots.text(shap_values)
+```
+-->
 

@@ -156,6 +156,8 @@ plt.show()
 
 Again, as you can see, the SHAP values follow the same trajectory as when we would simply change one of the features (here alcohol).
 This gives us another boost in the trust of understanding Shapley values.
+There's also a paper [@bordt2022shapley] showing that when the model is a GAM, then the non-linear components can be recovered by SHAP.
+
 
 But things get tricky when we have interactions.
 

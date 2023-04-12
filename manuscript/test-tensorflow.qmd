@@ -16,10 +16,6 @@ model = ResNet50(weights='imagenet')
 X, y = shap.datasets.imagenet50()
 ```
 
-```{python}
-X.shape
-```
-
 So these are 50 images
 
 ```{python}

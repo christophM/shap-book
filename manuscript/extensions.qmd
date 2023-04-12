@@ -1,4 +1,4 @@
-# Extensions of Shapley values
+# Extensions of Shapley values {#extensions}
 
 
 This chapter lists some extensions for Shapley values
@@ -17,3 +17,18 @@ These incldue extensions
 - and computing the Shapley value for the groups instead of individual features
 - benefits: less costly, can deal with the correlation issue.
 - paper applying (and introducing?) group shap: https://www.sciencedirect.com/science/article/abs/pii/S0957417422014725
+
+
+## n-Shapley values
+
+- links GAMs and Shapley values
+- called n-Shapley values
+- n is the interaction depth that can be controlled
+- [paper](https://arxiv.org/pdf/2209.04012.pdf)
+- [@bordt2022shapley]
+- [code: nshap package in Python](https://github.com/tml-tuebingen/nshap)
+- n-Shapley values and functional decomposition are related
+- Interaction values:
+  - Shapley Tayler
+  - Faith Shap
+- if model to be explained is a GAM, then SHAP recover all the non-linear components, as we have seen in the [additive chapter](#additive).
