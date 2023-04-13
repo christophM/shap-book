@@ -1,11 +1,8 @@
----
-jupyter: python3
----
-
-# Classification
+# Multi-Class Classification With Random Forests {#multiclass}
 
 This chapter shows
 
+TODO: only show multi-class example
 - binary classificaiton example for tabular data
 - how to handle multi-class
 - prob versus class

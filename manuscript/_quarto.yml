@@ -21,6 +21,7 @@ book:
     - background.qmd
     - correlation.qmd
     - aggregated.qmd
+    - logistic.qmd
     - classification.qmd
     - history.qmd
     - image.qmd

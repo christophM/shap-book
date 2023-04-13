@@ -1,0 +1,265 @@
+# Binary Classification With Logistic Regression
+
+This chapter shows how to use and interpret shap with logistic regression.
+
+What's different from linear regression:
+
+- two outcomes instead of one
+- outcome is probability
+- non-linear function and option to scale to linear with log odds
+
+It's a special case of multi-class classification, which you will learn about in the next chapter.
+
+In general, for binary classification we have two outputs. One probability output for the first class, and one for the second.
+But since one of the class probabilities already defines what the probability of the other is, you can get away with just working with one of the probabilities.
+But nonetheless 2 classes is a special case of having $k$ classes.
+
+From the angle of shap, that looks the same way as regression looks like.
+Except that the scale is not regression but the score output.
+
+## The Adult dataset
+
+
+For the classification task, we will use the adult dataset.
+The UCI Adult dataset is a widely used dataset for machine learning tasks.
+It contains demographic and socioeconomic data of individuals from the 1994 U.S. Census Bureau database, with the goal of predicting whether an individual's income is greater than or equal to \$50,000 per year.
+The dataset includes features such as age, education level, work class, occupation, marital status, and more.
+There are approximately 32,000 observations in the dataset, with both categorical and numerical features.
+The UCI Adult dataset is often used for classification tasks and has been used in many research studies.
+
+## Training the model
+
+```{python}
+import shap
+from sklearn.model_selection import train_test_split
+
+X,y = shap.datasets.adult()
+
+X_train, X_test, y_train, y_test = train_test_split(
+  X, y, test_size=0.2, random_state=1
+)
+```
+
+Next step we train the model and compute the Shapley values.
+If you followed the chapters before, you will find a new thing here:
+
+```{python}
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.linear_model import LogisticRegression
+import numpy as np
+
+# Load the Adult dataset
+X,y = shap.datasets.adult()
+
+# Define the categorical and numerical features
+categorical_features = ['Workclass', 'Marital Status', 'Occupation', 'Relationship', 'Race', 'Sex', 'Country']
+numerical_features = ['Age', 'Education-Num', 'Capital Gain', 'Capital Loss', 'Hours per week']
+
+# Define the column transformer
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('cat', OneHotEncoder(), categorical_features),
+        ('num', StandardScaler(), numerical_features)
+    ])
+
+# Define the pipeline
+model = Pipeline([
+    ('preprocessor', preprocessor),
+    ('classifier', LogisticRegression(max_iter=10000))
+])
+
+# Fit the pipeline to the training data
+model.fit(X_train, y_train)
+
+X_sub = shap.sample(X_train, 100)
+
+ex = shap.Explainer(model.predict_proba, X_sub)
+shap_values = ex(X_test.iloc[0:100])
+```
+
+The novelty:
+We don't apply SHAP only to the model, but the entire pipeline.
+And that we do for a good reason.
+
+The adult dataset has both categorical and numerical features.
+And both are transformed before we give them to the logistic regression model:
+
+- Numerical features are standardized: $x_{j,std}^{(i)} = (x_j^{(i)} - \bar{x_j}) / sd(x_j)$, where 
+- Categorical features are one-hot encoded: A feature that before had 1 column with 10 different values after that procedure gets you 10 columns
+
+After these two steps we have a dataset with around 470 columns.
+Also the numerical features like age is no longer on a scale that we can easily interpret, but we would have to calculate back what age, for example, 0.8 represents.
+
+But the "problem" is that the logistic regression model works with these inputs now.
+This also means that the coefficients are now based on this transformed dataset.
+Imagine we would use Shapley values directly on that logistic regression model -- we would get 470 Shapley values.
+
+But, fortunately, there is something more clever we can do:
+Combine the preprocessing and logistic regression into a pipeline and treat that as our model.
+It's very similar to functions:
+
+- Our model is $Y = f(\tilde{X})$, where $\tilde{X}$ are the preprocessed data.
+- Then we have our preprocessing steps, let's call this $g$, and we can express the preprocessed data as $\tilde{X} = g(X)$
+- The bad option would be to use Shapley values on f
+- the better option is to define a new function $\tilde{f}(X) = f(g(X))$, where the input is X and not $\tilde{X}$
+
+This allows us to interpret the features in their original version.
+
+::: {.callout-warning}
+
+When pre-processing your data, always think about which part of pre-processing you want to see as "part" of your model, in terms of calculating Shapley values.
+In some cases, like standardization, it makes sense to include it in the model, in other cases, like transformations that increase interpretability, it makes sense to exclude them.
+
+:::
+
+
+
+another "novelty":
+The output of the model is 2-dimensional instead of 1-dimensional.
+That's reflected in the resulting Shapley values, which gains another dimension:
+
+```{python}
+class_index = 0
+data_index = 1
+
+sv = shap.Explanation(
+  values = shap_values.values[data_index,:,class_index],
+  base_values = shap_values.base_values[data_index,class_index],
+  feature_names=X.columns,
+  data=X_test.iloc[data_index]
+)
+shap.waterfall_plot(sv)
+```
+
+For this person, the predicted outcome was 0.978 of earning more than \$50k.
+This plot shows that  by far the most important feature was Marital Status which was at 0, meaning married and it increased the predicted probability by 0.11 (11%) compared to the average of 0.732 probability.
+
+
+Conversely, we can view the Shapley values for the other class.
+
+```{python}
+class_index = 1
+
+sv = shap.Explanation(
+  values = shap_values.values[data_index,:,class_index],
+  base_values = shap_values.base_values[data_index,class_index],
+  feature_names=X.columns,
+  data=X_test.iloc[data_index]
+)
+shap.waterfall_plot(sv)
+```
+
+This is the plot from before, but all Shapley values are multiplied by -1.
+Make sense, since the probabilities for both classes have to add up to 1.
+So a factor that pushes the classification by 0.11 to class >50k pushes the classification away by 0.11 from <=50k.
+This means we only have to pick one of the two classes.
+This changes when we have 3 or more classes, as in the [multiclass chapter](multiclass).
+
+## On the level of log odds
+
+For logistic regression, it's typical to interpret the model on the level of log odds instead of the level of probability.
+
+For that the explainer has a `link` argument, which default to the identity link $l(x) = x$.
+Useful choice for classification is the logit link: $l(x) = log(\frac{x}{1 - x})$.
+
+
+```{python}
+ex_logit = shap.Explainer(model.predict_proba, X_sub, link=shap.links.logit)
+shap_values_logit = ex_logit(X_test.iloc[0:100])
+class_index = 0
+
+sv = shap.Explanation(
+  values = shap_values_logit.values[data_index,:,class_index],
+  base_values = shap_values_logit.base_values[data_index,class_index],
+  feature_names=X.columns,
+  data=X_test.iloc[data_index]
+)
+
+shap.waterfall_plot(sv)
+```
+
+Interpretation:
+Marital status equal to 0 (married) contributed +1.36 to the log odds of >50k versus <=50k compared to the average prediction.
+The argument in favor of log odds is that the model on this level is actually linear.
+That means we can even solve it with a simpler method. 
+
+However, I think it's a strength of Shapley values that they can be applied on the level of probability.
+Log odds are tedious to interpret.
+
+::: {.callout-note}
+
+If you care about the probability outcome, don't use the logit link (but the identity, which is just the default behavior).
+The logit space is better suited if you care about "evidence" in the information-theoretic sense, even if the effect in the probability space might not be large.
+
+:::
+
+
+Example:
+Going from 80% to 90% is a big step in probability space.
+Comparably, going from 98% to 99.9% is a small one.
+
+So on the probability space the differences are 0.10 versus 0.019.
+But on the logit space we have:
+
+- $log(0.9/0.1) - log(0.8/0.2) \approx 0.8$ and
+- $log(0.999/0.001) - log(0.98/0.02) \approx 3$
+
+So it's a way bigger step in logit space.
+This happens because the logit compresses near 0 and 1, making changes in the middle of probability space appear larger.
+
+So which one should you pick?
+If you care about probabilities mostly, and a jump from 50% to 51% is the same to you as 99 to 100%, go for the default and used the identity link.
+If changes in the extreme probabilities near 0 and 1 are more important for the application, saying that, e.g. if a feature pushes the probability from 0.98 to 0.99 
+
+
+
+## Understanding the data globally
+
+Global shap plots allow us to see how the features affect the predictions overall in the model.
+
+```{python}
+shap.summary_plot(
+  shap_values.values[:,:,1],
+  features = X_test.iloc[0:100,:],
+  feature_names=X.columns
+)
+```
+
+We can see that Marital Status and Capital GAin are teh two most important features.
+For some individuals capital gain has very large effects, meaning high values of capital gain lead to large Shapley values and therefore large probability of earning more than 50k.
+
+
+Here are the categories for marital status: Married-civ-spouse, Divorced, Never-married, Separated, Widowed, Married-spouse-absent, Married-AF-spouse. 
+
+
+```{python}
+#| eval: false
+mapping = {
+  0: "Married-civ-spouse",
+  1: "Divorced",
+  2: "Never-married",
+  3: "Separated",
+  4: "Widowed",
+  5: "Married-spouse-absent",
+  6: "Married-AF-spouse"
+}
+fv = [mapping[X.iloc[i,:]] for i in range(100)]
+
+```
+
+```{python}
+shap.dependence_plot(
+  "Marital Status",
+  shap_values.values[:,:,0],
+  features = X.iloc[0:100,:]
+)
+```
+
+TODO: Find out what the split is about
+
+
+
+
+

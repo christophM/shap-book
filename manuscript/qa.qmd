@@ -32,3 +32,16 @@ SHAP, an alternative estimation method for Shapley values, is presented in the [
 TODO: Add more to this list
 
 
+## How do transformations of my features affect the Shapley value
+
+- can't say that in general, because it depends on whether it changes the model as well
+- but let's say the model stays the same, meaning same predictions for the same data points
+- some examples where that's the case:
+  - for monotonic transformations, decision trees will stay the same, just the cut at a different value, but which leads to the same partitioning of the data
+  - for linear models, linear transformtions of the feature space won't affect the predictions
+  - ...
+- So if the features change, but the model predictions will stay the same, the Shapley values will stay the same as well
+- INtuition: Shapley values are defined on the scale of the output
+- Model is mostly treated as a black box
+- 
+
