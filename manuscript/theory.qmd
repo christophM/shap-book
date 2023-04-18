@@ -137,6 +137,7 @@ For an additive ensemble of models the Shapley value is the sum of individual Sh
 Next chapter will also be more on the theory side of things: How to estimate Shapley values.
 Because having just one method would be too simple.
 
-
+There is an alternative formulation of Shapley values where the Dummy and Additivity axioms are replaced with a Linearity axiom.
+But both formulations lead to the Shapley values.
 
 

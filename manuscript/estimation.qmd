@@ -589,7 +589,7 @@ CONTINUE HERE WRITING
 
 ## Deep Explainer
 
-The deep explainer is specifically for deep neural networks.
+The deep explainer is specifically for deep neural networks. [@chen2021explaining]
 That makes the deep explainer more model-specific than the gradient explainer which, in theory, works for all gradient-based methods.
 
 
@@ -665,6 +665,9 @@ But by bundling correlated features together, we avoid that problem.
 Results are actually not Shapley values but Owen values.
 Owen values are another solution to the attribution problem in cooperative games
 It's like Shapley values, but assigned to groups of features instead of individual features
+Own values only allow permutations that are defined by some kind of coalition structure.
+Otherwise the computation is exactly the same as Shapley values, except that only the permissible coalitions are iterated.
+
 
 Another use case for the partition explainers are image inputs where the image pixels can be bundled together into bigger regions.
 

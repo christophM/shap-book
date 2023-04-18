@@ -42,5 +42,9 @@ Here is an overview of libraries as alternatives:
 - TODO
 
 
+## Alternatives
+
+shapr in R: https://nr.brage.unit.no/nr-xmlui/bitstream/handle/11250/2731038/Sellereite_Jullum_JOSS.pdf?sequence=1
+
 
 

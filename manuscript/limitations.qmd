@@ -151,6 +151,24 @@ plt.show()
 - you can also add more context with SHAP summary plots
 - again, I wouldn't serve Shap values to untrained users
 
+
+## Computation Time can be quite a lot 
+
+- Especially some "older" estimation version are quite slow, like Kernel SHAP and Sampling
+- Model-specific versions are faster
+- but still, all in all, Shapley values not the resource efficient method
+
+
+## Not as interpretable as one would wish for
+
+- I tried my best to convey it
+- we have seen that for linear and additive models Shapley values mostly match what we would expect
+- but interactions already more tricky
+- and the shapley values don't have a simple interpretation
+- For exmaple: Is feature value with twice the shapley value twice as important?
+- not matching what humans would expect [@kumar2020problems]
+
+
 ### Advantages
 
 The difference between the prediction and the average prediction is **fairly distributed** among the feature values of the instance -- the Efficiency property of Shapley values.
@@ -213,6 +231,13 @@ While conditional sampling fixes the issue of unrealistic data points, a new iss
 The resulting values are no longer the Shapley values to our game, since they violate the symmetry axiom, as found out by Sundararajan et al. (2019)[^cond1] and further discussed by Janzing et al. (2020)[^cond2].
 
 
+## Fooling Shap
+
+It is **possible to create intentionally misleading interpretations** with SHAP, which can hide biases.[@slack2020fooling]
+If you are the data scientist creating the explanations, this is not an actual problem (it would even be an advantage if you are the evil data scientist who wants to create misleading explanations).
+For the receivers of a SHAP explanation, it is a disadvantage: they cannot be sure about the truthfulness of the explanation.
+
+
 ### Advantages
 
 Since SHAP computes Shapley values, all the advantages of Shapley values apply:
@@ -251,11 +276,6 @@ With the change in the value function, features that have no influence on the pr
 
 The disadvantages of Shapley values also apply to SHAP:
 Shapley values **can be misinterpreted** and access to data is needed to compute them for new data (except for TreeSHAP).
-
-It is **possible to create intentionally misleading interpretations** with SHAP, which can hide biases [^fool].
-If you are the data scientist creating the explanations, this is not an actual problem (it would even be an advantage if you are the evil data scientist who wants to create misleading explanations).
-For the receivers of a SHAP explanation, it is a disadvantage: they cannot be sure about the truthfulness of the explanation.
-
 
 
 

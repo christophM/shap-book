@@ -1,9 +1,22 @@
 # Other Applications of Shapley Values in ML
 
 This chapter takes a step back from the Shapley values for prediction view.
-Shapley values are very general and can be used in lots of attribution scnarios
+Shapley values are very general and can be used in lots of attribution scenarios.
+While the [extensions chapter](extensions) focused on extensions where still the goal was to explain predictions and the overall "game" was roughly the same, this chapter presents other nails to which Shapley values is the hammer.
 
+Here is a list of tasks around the topic of ML and data science, for which Shapley values can be used.
+Based on overview by [@rozemberczki2022shapley]
 
+## Federated Learning
+
+- goal in federated learning: there is some private data, and its spread across entities
+- prime example: data in multiple hospitals IT systems
+- each entity (hospital) is a player
+- together, they train an ML model
+- but it happens through federated learning
+- which allows to train a model across multiple, private datasets
+- payout: goodness of fit or other model performance metric
+- useful to estimate how much each entity contributed to the model 
 
 ## SAGE: Shapley Additive Global importancE 
 
@@ -13,19 +26,58 @@ Attribute the performance of the model to the individual features.
 TODO: Read paper and fill in here
 
 
-## Attribute performance to instance
-
-
 ##  Decomposition of R-squared
 
 https://arxiv.org/abs/1908.09718
 
-## Data Shapley:
+## Data valuation
 
-- sample selection method
-- before model is trained
-- paper: http://proceedings.mlr.press/v97/ghorbani19c.html 
+- problem: have to evaluate how important each input data was
+- players: the data points in the training data
+- payoff: evaluation metrics / goodness of fit of the model on test data
+- Shapley value fairly distributes performance to training data
+- [@ghorbani2019data] named it Data Shapley
+- Other papers also introduced it
+- similar to deletion diagnostics a la Cooks Distance
+- example: https://link.springer.article/10.1186/s13195-021-00879-4 
+- for example used by [@bloch2021data] to select patient data for Alzheimer detection model
 
-- example: https://link.springer.cears trainedticle/10.1186/s13195-021-00879-4 
-- 
- 
+
+
+## Feature Selection
+
+- goal in feature selection: find the features that are best for model performance
+- [@guyon2003introduction;@fryer2021shapley]
+- Instead of applying Shapley values to the model, you can apply it to the modeling process
+- By repeatedly training the model with different features, you can estimate how important each feature was for the performance
+- [@fryer2021shapley]: they argue that shapley values maybe not ideal for feature selection job
+- goal: attribute 
+- they don't want to discourage, but make aware of the limitations.
+- each feature is a player
+- model performance is the payoff
+- difference to prediction: not per instance, but per model globally
+- Q: How much does each feature contribute to the performance?
+
+
+## Model valuation in ensembles
+
+- situation: multiple models make up an ensemble
+- the ensemble (ideally) has better performance than each individual model
+- each model is a player
+- the payout is the performance of the ensemble
+- Shapley values helps for a fair payout 
+- quite literally in some cases
+- Like Numerai
+- there multiple models are trained by external participants
+- They get a payout for their performance
+- But shapley values aren't used to my knwoledge. 
+
+
+## Discovering responsible neurons
+
+- Q: How much did each neuron contribute to the model
+- players: the individual neurons of a neural network
+- payout: the model performance
+
+- [@ghorbani2020neuron]
+

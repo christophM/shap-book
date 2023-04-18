@@ -1,0 +1,177 @@
+# The Role of Maskers (and Background Data)
+
+::: {.callout-note}
+
+Maskers are the technical answer for how to "remove" feature values to compute the marginal contributions and then the Shapley values.
+
+:::
+
+
+This chapter explain the role of maskers.
+Transferring the concepts of Shapley values from game theory to machine learning interpretability requires to frame the prediction as a game.
+And feature values of a data point are the individuals.
+What the feature values are is a bit flexible, but we'll get to that later.
+
+As we've learned, Shapley values are computed by going through many possible contributions.
+Forming a coalition of features also means that some features are excluded or absent.
+And for games it's clear that (depending on the game) you can play the game with fewer players.
+But for machine learning, it requires a bit more effort.
+Because we still have to somehow simulate absence of feature values.
+
+This is technically solved by so-called maskers.
+
+You can see a masker as a function that takes in two things: a data instance and a mask, which is a binary input that tells the masker which inputs to mask.
+The output is again the same data point but with the designated inputs masked.
+
+Now, a masker can use different strategies for masking.
+That depends on the input data type, whether it's tabular, text or image data.
+
+But they have in common that they take as input the feature values and a binary vector.
+That binary vector, like [0,1,...,1] also called a binary mask, says which feature values should be masked (the 1s) and which not (0s).
+For the non-masked features, the feature vector position remains untouched.
+And for the 1s, the masked or absent features, feature values are replaced.
+The replacement is decided by the particular masker that is used.
+We will go through them in this chapter.
+
+Any binary mask can also be viewed as a team description:
+It says which players participate and which don't.
+
+- and the maskers job is to take a coalition and produce something that we can actually input into the model
+- the output can even be multiple data points when we use the background data
+- so the output can be a dataframe of points where the 0's are sampled from the background data
+- then we input these data points from the makser to the model 
+- we get the predictions and average them
+- masker can be a function that does this mapping, but also directly an array or pandas.DataFrame, so a bit of a shortcut
+
+
+
+
+## Maskers for tabular data
+
+::: {.callout-note}
+
+Typical masker for tabular data replaces absent feature values with samples from a background dataset.
+
+:::
+
+For tabular data, we can provide a background dataset and the masker replaces missing values from a sample from the background data.
+
+Depending on the Explainer, this can be either a sample from the backgroun data or going through all of the background data for each instance and feature value for which to compute the Shapley values.
+
+But which data would you pick as background data?
+Because, in theory, anything could be background data which matchs the number of features and so on.
+
+A typical choice would be the training dataset.
+But it could also be a specific subset of it.
+In theory it could also be just one particular data instance.
+
+The choice of background data dictates the interpretation of the Shapley values.
+
+Some examples of what you can do by leveraging the background data:
+
+- Simulate a distribution shift and get the Shapley values under the shifted data
+- Analyze how Shapley values differ in different groups of the data
+- Explore counterfactual scenarios: Set the background data to a specific scenario
+- Evaluate the stability of the model predictions: By setting the background data to more extreme values, you can study how robust the model is.
+
+Technically, in shap the tablar data is implemented with the Independent masker.
+
+```{python}
+#| eval: false
+masker = shap.maskers.Independent(data = X_train)
+explainer = shap.LinearExplainer(model, masker = masker)
+```
+
+As an alternative, there is the Partition masker which not only takes the background dataset, but a hierarchical structure of the data.
+The partition masker is used in combination with the [Partition explainer](#estimation).
+It also has a max_samples argument that controls how many data points from the background data to sample to compute the Shapley values.
+The clustering type argument controls how to partition the data: a distance metric for clustering the feature values.
+
+
+![shap independent masker](images/shap-independent-masker.jpg)
+
+## Maskers for text data
+
+
+::: {.callout-note}
+
+Maskers for text replace tokens with a user-defined token.
+
+:::
+
+
+
+For text data, the input is text.
+Within most models, at least neural networks, these tokens are then represented with (learned) embeddings, a vectorized representation of a token.
+But this is none of our concern when we compute Shapley values, the internal representation could also be a bag-of-words count or hand-written rules that flag certain words.
+
+So the "team" is the text that gets fed into the model and the payout is the model output, whether it's a sentiment score or a probability for the next word in a translation task.
+But what the individual players are is decided by the user.
+Could be characters, could be tokens, could be words.
+
+The granularity at which the text is divided into the players, which is also called tokenizer.
+And tokenization is the process of separating a text into smaller units.
+The options are tokenization by: character, subword, word, sentence, paragraph, ...
+But really, the options are endless, because it could be any n-gram (sequence of n characters) or you could tokenize a text so that each token stops with an "e".
+It really depends on what your goal is with interpreting the model.
+
+:::{.callout-tip}
+
+Usually tokenization by word is a good first choice when doing interpretation with shap.
+
+:::
+
+Let's assume for the following discussions that the input is tokenize by word.
+Next question: How do we present "absence" aka how do we mask a missing word?
+Again, that's up to the user.
+The default is that the word is replaced by an empty string.
+Another option would be to replace it with "...".
+In theory, you could also replace it with a word that was randomly drawn from some background data or based on some grammar tool.
+
+Whatever you choose will also influence the prediction as you can see in the [text chapter](#text).
+The masker is implemented with the Text masker in shap.
+
+![shap textmasker](images/shap-text-masker.jpg)
+
+
+## Maskers for image data 
+
+::: {.callout-note}
+
+Maskers for images replace missing pixels with their blurred version or inpainting.
+
+:::
+
+
+Similar to text data, we are rather flexible to how we represent an image for shap, and it can be independent from how the image is represented to the model.
+There just needs to be a mapping between shap version and model version, so that the marginal contributions can be calculated.
+For images, we basically have two options for players: individual pixels or bigger units that contain multiple pixels.
+How these units are composed is also rather flexible.
+You could create them based on a grid, so that you divide an 224x224 image into 196 rectangles of size 16x16.
+Then 196 would be your number of players instead of 224x114 = 50176.
+
+And then, what does the masker do?
+It replaces parts of the image.
+In theory, you could replace it with data from a background dataset, but that would be weird.
+Other option would be to replace it with grey pixels or any other, more or less, neutral color.
+But that would also produce unusual images.
+In shap, there are blurring and some inpainting methods implemented.
+This deletes information and guesses the content from the rest of the image (inpainting) or it removes part of the information by blurring it out.
+
+![shap image masker](images/shap-image-masker.jpg)
+
+
+So absence of a team member is done in this way.
+The masker is implemented in the Image masker in shap.
+
+
+
+
+
+
+
+TODO: Read https://arxiv.org/pdf/2105.13787.pdf
+
+
+
+Next chapter let's look at correlations and alternatives for the shapley values.

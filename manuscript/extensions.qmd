@@ -1,7 +1,13 @@
 # Extensions of Shapley values {#extensions}
 
+This chapter lists some extensions for Shapley values.
+But this is not an exhaustive overview.
+At the time of writing, there were ~12k papers (Google scholar based)XXX  citing the original SHAP paper[^lundberg2017unified].
+Of those that cited the shap paper, ~10k also had shap or shapley in their title or abstract.
+And a good chunk of them is just extensions of shapley values.
+Other papers are review papers or application papers, or sometimes other interpretation methods that mention shap as related work.
 
-This chapter lists some extensions for Shapley values
+But still, there is a lot of extensions going on, so here are just a handful.
 
 These incldue extensions
 
@@ -9,6 +15,16 @@ These incldue extensions
 - for special type of data
 - etc.
 
+## Weigthed Shap
+
+- 
+
+## L-Shapley and C-Shapley for structured data
+
+- setting: data with graph structure
+- [@chen2018shapley]
+- L stands for local shapley
+- C stands for connected shapley
 
 
 ## Group SHAP
@@ -29,6 +45,67 @@ These incldue extensions
 - [code: nshap package in Python](https://github.com/tml-tuebingen/nshap)
 - n-Shapley values and functional decomposition are related
 - Interaction values:
-  - Shapley Tayler
+  - Shapley Tayler https://arxiv.org/abs/1902.05622 
   - Faith Shap
 - if model to be explained is a GAM, then SHAP recover all the non-linear components, as we have seen in the [additive chapter](#additive).
+
+
+TODO: Collect more extensions
+
+
+## Shapley interaction index
+
+- change axioms so that you can also have shapley values for interactions
+- [@tsai2023faith]
+- not implemented, not cited, so maybe not using it
+- also here: http://proceedings.mlr.press/v119/sundararajan20a.html
+
+
+TODO: Combine all 3 causal shapley values approaches?
+ 
+
+## Causal Shapley values
+
+- https://proceedings.neurips.cc/paper_files/paper/2020/file/32e54441e6382a7fbacbbbaf3c450059-Paper.pdf 
+- ML models usually not causal
+- Causal Shapley values employ do-calculus
+- allows to estimate causal effects 
+
+
+## Shapley Flow
+
+- also for causal shapley values
+- based on causal graphs
+- 
+- https://proceedings.mlr.press/v130/wang21b.html
+- assigns credits to edges instead of nodes
+- satisfies generalization of classic Shapley values
+- instead of attribution to nodes, its to the edges 
+- still fulfills axioms, e.g. attributions add up to $f(x) - \mathbb{E}[X]$
+- extend axioms by one more: the boundary consistency axiom
+
+
+## Asymmetrics Shapley values
+
+- also for causal shapley values
+- also based on some axioms
+- called asymmetric Shapley values or ASV
+- idea: shapley value shouldn't be symmetric
+- the classic shapley values are because of the symmetry axiom
+- this forces shapley values to distribute feature importance over identical features, that are even redundant
+- [@frye2020asymmetric]
+- https://proceedings.neurips.cc/paper_files/paper/2020/file/0d770c496aa3da6d2c3f2bd19e7b9d6b-Paper.pdf
+- and the symmetry, tehe author say, stands in the way of causal explanations 
+- so the authors get rid of symmetry
+- they do so by adjusting weights: if a feature A does not directly causally affect feature B, the weight of a permutation where B follows A gets a zero weight
+
+
+## Counterfactual SHAP
+
+- https://dl.acm.org/doi/abs/10.1145/3531146.3533168
+- strengthen ability of shap for recourse
+- recourse is when someone wants to challenge the prediction of a classifier
+- think of automatically rejected loan application
+- approach called CF-SHAP
+- via carefully setting the background data
+- [@albini2022counterfactual]

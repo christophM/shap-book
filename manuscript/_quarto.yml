@@ -18,7 +18,7 @@ book:
     - additive.qmd
     - interactions.qmd
     - regression.qmd
-    - background.qmd
+    - maskers.qmd
     - correlation.qmd
     - aggregated.qmd
     - logistic.qmd
@@ -31,6 +31,8 @@ book:
     - other.qmd
     - dashboard.qmd  
     - limitations.qmd
+    - shap-library.qmd
+    - outlook.qmd
     - qa.qmd
     - references.qmd
 

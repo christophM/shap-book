@@ -248,23 +248,21 @@ Because I think there are some very good reasons why SHAP has become so popular,
 - There are extensions such as shapash that allow you to build dasbhoards with Shapley values
 - Shapley values are useful beyond just explaining predictions. They can be used for other problems, even within machine learning. See the [Other Applications Chapter](#other) for other use cases of Shapley values, ranging from valuing data to fairly attributing feature importance (based on loss function).
 
+
+SHAP values have found their way into many areas and explaining predictive models:
+
+- Forecasting gold price [@jabeur2021forecasting]
+- Identifying mortality factors for COVID19 [@smith2021identifying]
+- Predicting heat wave related mortality [@kim2022explainable]
+- Wastewater management treatment plants [@wang2022towards]
+- Genome-wide association studies [@johnsen2021new]
+- Accident detection [@parsa2020toward]
+- NO2 forecasting  [@garcia2020shapley]
+- Moleclular design [@rodriguez2020interpretation]
+
 But now it's finally time to see Shapley values in action, with a first getting started example before we dive into the intuition and theory of shap.
 
 <!--
-With all those benefits, many data scientists were already convinced to try out Shapley values.
-Let's see a few applications.
-
-## Where ShAP is already used
-
-
-Wide ranging applications already:
-
-- Gene expression https://www.biorxiv.org/content/10.1101/2021.10.06.463409v1.full.pdf
-- predict alzheimers https://link.springer.com/article/10.1186/s13195-021-00879-4
-- molecular design: compound potency and multi-target activity prediction https://link.springer.com/article/10.1007/s10822-020-00314-0
-- TODO: find more examples, especially from industry
-
-
 ## Difference between explainability and interpretability
 
 - different people define it differently
@@ -277,8 +275,4 @@ Wide ranging applications already:
 - 
 - so I slightly prefer interpretation
 - 
-
-
-
-
 -->
