@@ -1,5 +1,6 @@
 # The Role of Maskers (and Background Data)
 
+
 ::: {.callout-note}
 
 Maskers are the technical answer for how to "remove" feature values to compute the marginal contributions and then the Shapley values.
@@ -46,7 +47,9 @@ It says which players participate and which don't.
 
 
 
-## Maskers for tabular data
+## Tabular Masker for tabular data
+
+
 
 ::: {.callout-note}
 
@@ -55,6 +58,11 @@ Typical masker for tabular data replaces absent feature values with samples from
 :::
 
 For tabular data, we can provide a background dataset and the masker replaces missing values from a sample from the background data.
+
+There are two choices for maskers: Independent masker and Partition masker.
+
+### Independent Masker
+
 
 Depending on the Explainer, this can be either a sample from the backgroun data or going through all of the background data for each instance and feature value for which to compute the Shapley values.
 
@@ -82,13 +90,67 @@ masker = shap.maskers.Independent(data = X_train)
 explainer = shap.LinearExplainer(model, masker = masker)
 ```
 
+![shap independent masker](images/shap-independent-masker.jpg)
+
+
+
+
+```{python}
+#| warning: false
+import shap
+import pandas as pd
+import numpy as np
+
+# create a dictionary with the column names and data
+data = {'f1': np.random.randint(100, 200, 10),
+        'f2': np.random.randint(1, 10, 10),
+        'f3': np.random.randint(10, 20, 10)}
+
+# create the pandas DataFrame
+df = pd.DataFrame(data)
+
+# print the DataFrame
+print(df)
+```
+
+
+```{python}
+#| warning: false
+np.random.seed(2)
+m = shap.maskers.Independent(df, max_samples=3)
+# mask = np.array([1,0,2])
+mask = np.array([1,0,1], dtype=np.bool)
+print(m(mask=mask, x=np.array([0, 0, 0])))
+
+mask = np.array([False,False,True])
+print(m(mask=mask, x=np.array([0, 0, 0])))
+
+```
+
+So we have two masks.
+The first masks out features f1 and f3, meaning that we only keep the feature value f1=0 and f3=0 from x and draw f2 from the background data.
+In the second example, we only keep feature f3.
+
+There's another way to define masks for Tabular and that's via integer vectors.
+These vectors tell sequentially which feature (based on column index) to mask.
+
+
+### Partition Masker
+
 As an alternative, there is the Partition masker which not only takes the background dataset, but a hierarchical structure of the data.
 The partition masker is used in combination with the [Partition explainer](#estimation).
 It also has a max_samples argument that controls how many data points from the background data to sample to compute the Shapley values.
 The clustering type argument controls how to partition the data: a distance metric for clustering the feature values.
+It can either take the string with the correlation metric.
+The defaul is "correlation", which is also recommended by the shap developers in general.
+Any distance function can be used (again, as a string argument) that can be found in the `scipy.spatial.distance.pdist` module.
+Examples are "cosine", "euclidean", and "chebyshev".
+The other option is to provide a numpy array that defines the clusters directly.
+
+This second option with the array is not to be overlooked.
+It can be very useful when you want to provide your own grouping of features.
 
 
-![shap independent masker](images/shap-independent-masker.jpg)
 
 ## Maskers for text data
 
@@ -132,6 +194,16 @@ Whatever you choose will also influence the prediction as you can see in the [te
 The masker is implemented with the Text masker in shap.
 
 ![shap textmasker](images/shap-text-masker.jpg)
+
+```{python}
+import shap
+m = shap.maskers.Text()
+s = "Hello is this the Krusty Krab?"
+print(m(s=s, mask = [1,1,1,1,1,1]))
+print(m(s=s, mask = [1,0,0,1,0,1]))
+print(m(s=s, mask = [1,1,1,1,0,0]))
+print(m(s=s, mask = [0,0,0,0,0,0]))
+```
 
 
 ## Maskers for image data 
