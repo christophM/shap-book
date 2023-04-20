@@ -1,50 +1,107 @@
 # The SHAP library
 
+A few notes on the shap library, which I used throughout this book.
+It was not an easy decision to use it.
+tl;dr: It's a great library, but issues are piling up and future development situation is not clear.
 
-- from researcher who developed shap
-- very famous
-- but has lots of problems
-- wasn't sure whether to use it or not
-- but still the most complete library out there on shap
+The shap library was written by Scott Lundberg, who is also the author of the shap paper [@lundberg2017unified] and many other shap papers.
+The [first commit](https://github.com/slundberg/shap/tree/7673c7d0e147c1f9d3942b32ca2c0ba93fd37875) was on November 22nd in 2016.
+At the time of writing, there are over 2000 commits.
 
+## The shap library is popular
 
-
-Some issues as of TODAY (TODO: DATE)
-
-- The author S Lundberg doesn't regularly maintain it. Last commit to main branch was in June 2022.
-- tests are failing
-- many examples and notebooks don't work any more
-- for example, the example right in the README doesn't work any more, because Boston dataset depricated
-- the are more than 1.5k unresolved issues (many of the questions, but this also means no triage), also many pull requests open (89) 
-
-Wow, many issues.
-
-- i developed a package myself during PhD (iml)
-- so I know it's a lot of work
-- and it can be rather unthankful work
-- only people complaining that things don't work
-- while you get a thanks here and there, it's not like you can live off that
-- so this section not meant to be criticism of Scott Lundberg
-- Not at all
-- whatever time he gives to the community is a gift
+The shap package is open source and hosted on Github, so it's public and everyone can track what's happening.
+The repository has been starred over 19k times and forked almost 3k times.
+Feature-wise it's the most complete library out there on Shapley values.
+My guess it that the `shap` library is the shap implementation that is used the most, among all shapley value implementations.
 
 
-- The issues are here because I take on the stance of the user
-- who has to make the decision which libraries to rely on
-- and which not
-- shap is a tough choice to make 
-- we have: shap with lots of issues and vanishing maintenance
-- then we have many other libraries with much less scope and control
+## The library has issues, or rather thousands
 
+As of the date of writing, `shap` the library has a maintaining.
+Here is a list of the state of the package:
 
-Here is an overview of libraries as alternatives:
+- The [latest commit](https://github.com/slundberg/shap/commit/45b85c1837283fdaeed7440ec6365a886af4a333) was in June 16th 2022 -- almost a year without anything happening as of the time of writing.
+- Lack of commits is not necessarily a problem, however there are also 1.6k unresolved issues and almost 100 pull requests, showing some "pressure" for code changes and improvements from the community.
+- Many of the issues are questions though, but that also means that triage of issues is not happening at the moment.
+- And then there are many smaller things: tests are failing, README is out of data, some notebooks with examples don't work any longer, ...
+- For example, the example right in the README doesn't work any more, because Boston dataset deprecated
 
-- TODO
+So, a lot of issues.
 
+## The open-source model is difficult
+
+I'm a package developer myself.
+It's an [R package called iml](https://github.com/christophM/iml) and I'm a bad package maintainer.
+The only reason why I'm not in the situation as with the `shap` package is that the `iml` package is not as popular.
+
+But essentially, the situation is the following:
+Whenever someone opens an issue for the `iml` package, I have a decision to make.
+Do I work on that issue or do I work on my main jobs which is writing books.
+Writing books is what I enjoy and what puts food on my table.
+
+I found working on open source code projects are rather "unthankful" work:
+Not getting paid, you only see the negative side of the package, that is people usually write when the package does not work.
+And it's just a big opportunity cost when working on the package, which is time I could also spent writing, cooking, spending time with friends.
+
+Back to `shap`:
+I have no idea what Scott Lundbergs plan is with the package.
+I pointed out all the issues with the `shap` package, because this is relevant to you for making a decision whether to work with it or not.
+Not to critize Lundberg.
+He has poured all this work in for free to bring the `shap` alive and doesn't owe any further development or maintenance to anyone.
+Rather, I'm thankful for what he did with the package so far.
+
+## How to resolve the situation
+
+Assuming that Scott Lundberg won't return to work on shap, there are multiple ways in which the situation might evolve.
+The ideal situation would be that the maintenance of the `shap` package is transferred to a person who has the skills and the time.
+Since the package is open source, in theory, someone else could fork the library and maintain the fork, letting it become the de facto successor of `shap`.
+Other package might create their own implementations of Shapley values.
+The situation around the package almost got me to not write the book.
+But so many people rely on shap, the package or at least a portion of functionality will likely survive in some form or another.
+But as so often in open source development, it will depend probably on a single individual on whether this will be a clean situation (= a capable individual maintains the thing) or a messy situation (= shap will be implemented in many places). 
+
+## How to deal with the situation, individually 
+
+The package is stable enough to use it.
+Since it's open source, anyone can further develop it.
+So, in the end it's up to you whether you want to use the original `shap` package, or rather rely on some other package that implements Shapley values.
+Or you could even implement it yourself. 
+
+And the nice thing compared to other methods:
+Since Shapley values are clearly defined, even if you switch implementations, the explanations are expected to be the same.
+Meaning you can rely on that.
+Differences in implementation should only affect speed and variance of the results if different estimation algorithms are used.
+The latter may affect your application, but hopefully not too much.
 
 ## Alternatives
 
-shapr in R: https://nr.brage.unit.no/nr-xmlui/bitstream/handle/11250/2731038/Sellereite_Jullum_JOSS.pdf?sequence=1
+There are some alternative implementation of shap / Shapley values.
 
+In Python:
+
+- [Captum](https://github.com/pytorch/captum)[@kokhlikyan2020captum] a general model interpretability library. Implements KernelShap, Sampling estimator. GradientShap, Deep shap, 
+- [shapley](https://github.com/benedekrozemberczki/shapley)[@rozemberczki2022shapley] implements exact estimator, some linear explanation methods and monte carlo permutation sampling.
+
+In Python, but relying on `shap` internally:
+
+- [DALEX](https://github.com/ModelOriented/DALEX)[@baniecki2021dalex]
+- [AIX360](https://github.com/Trusted-AI/AIX360)[@aix360sept2019]
+- [InterpretML](https://github.com/interpretml/interpret/)[@nori2019interpretml] covers multiple methods including shap.
+- [OmnixAI](https://github.com/salesforce/OmniXAI)[@wenzhuo2022omnixai] a library for explainable AI
+* [shapash](https://github.com/MAIF/shapash) for dashboards and reports which is covered in [this chapter](#dashboard).
+
+
+In R:
+
+- [DALEX](https://github.com/ModelOriented/DALEX)[@biecek2018dalex]
+- [kernelshap](https://github.com/ModelOriented/kernelshap)
+- [shapr](https://github.com/NorskRegnesentral/shapr)[@Sellereite2019]
+- shapr in R: https://nr.brage.unit.no/nr-xmlui/bitstream/handle/11250/2731038/Sellereite_Jullum_JOSS.pdf?sequence=1
+- [ShapleyR](https://github.com/redichh/ShapleyR)
+- [shapper](https://github.com/ModelOriented/shapper), which relies on the Python shap package.
+- [shapviz](https://github.com/ModelOriented/shapviz) implements many SHAP plots that can be found in the original Python `shap` package plus some more. 
+- [treeshap](https://github.com/ModelOriented/treeshap)
+- [iml](https://github.com/christophM/iml)[@molnar2018iml]: shapley values for tabular data. only sampling explainer. That's the one I wrote!
 
 
