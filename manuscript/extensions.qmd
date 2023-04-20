@@ -1,111 +1,73 @@
 # Extensions of Shapley values {#extensions}
 
 This chapter lists some extensions for Shapley values.
-But this is not an exhaustive overview.
-At the time of writing, there were ~12k papers (Google scholar based)XXX  citing the original SHAP paper[^lundberg2017unified].
-Of those that cited the shap paper, ~10k also had shap or shapley in their title or abstract.
-And a good chunk of them is just extensions of shapley values.
-Other papers are review papers or application papers, or sometimes other interpretation methods that mention shap as related work.
+And with extensions I mean we are still in the area of explaining predictions, but adapting Shapley values to more specific model or data structures.
+Instead, here are a few highlights.
 
-But still, there is a lot of extensions going on, so here are just a handful.
+## L-Shapley and C-Shapley for data with a graph structure
 
-These incldue extensions
-
-- for specific tasks
-- for special type of data
-- etc.
-
-## Weigthed Shap
-
-- 
-
-## L-Shapley and C-Shapley for structured data
-
-- setting: data with graph structure
-- [@chen2018shapley]
-- L stands for local shapley
-- C stands for connected shapley
+Shapley values as envisioned in shap are for more or less i.i.d data.
+But there are many structured data types where the features form a graph.
+So @chen2018shapley came up with L-Shapley (L for local) and C-Shapley (C for connected) for the task of data with a graph structure.
+Both of these are constrained form of Shapley values, which can be useful especially for explaining image and text classifiers.
+In the case of text, instead of considering interactions between all the words in a text, e.g., L-Shapley only consider neighboring words.
+So if you want the Shapley value of, say, the 6th word in a text, only the neighboring words are also considered for word absence.
+The assumption is that words further away won't interact much with the word in question.
+And for C-Shapley n-grams with $n\leq4$.
+So you wouldn't form a coalition of the first and the last word.
 
 
-## Group SHAP
+## Group SHAP for grouped features
 
-- grouping features into multiple groups
-- and computing the Shapley value for the groups instead of individual features
-- benefits: less costly, can deal with the correlation issue.
-- paper applying (and introducing?) group shap: https://www.sciencedirect.com/science/article/abs/pii/S0957417422014725
-
+Group SHAP [@lin2022model] is the simple proposal of grouping features together and computing one Shapley vlaue per group instead of for each feature value.
+It's less costly than computing the Shapley value for each feature value and a possible solution for the correlation problem.
+In `shap` you can already do this with the Partition explainer and by providing your own grouping.
 
 ## n-Shapley values
 
-- links GAMs and Shapley values
-- called n-Shapley values
-- n is the interaction depth that can be controlled
-- [paper](https://arxiv.org/pdf/2209.04012.pdf)
-- [@bordt2022shapley]
-- [code: nshap package in Python](https://github.com/tml-tuebingen/nshap)
-- n-Shapley values and functional decomposition are related
-- Interaction values:
-  - Shapley Tayler https://arxiv.org/abs/1902.05622 
-  - Faith Shap
-- if model to be explained is a GAM, then SHAP recover all the non-linear components, as we have seen in the [additive chapter](#additive).
-
-
-TODO: Collect more extensions
+The n-Shapley values [@bordt2022shapley] link Shapley values to GAMs (generalized additive models)
+The n stands for the interaction depth that the Shapley value computation should consider, which again depends on how the GAM was trained.
+The "vanilla" GAM would be without interaction (n=1), but it's possible to add interactions.
+The paper also shows the relation between the n-Shapley values and functional decomposition.
+They also provide [code: nshap package in Python](https://github.com/tml-tuebingen/nshap)
+If the model to be explained is a GAM, then SHAP recover all the non-linear components, as we have seen in the [additive chapter](#additive).
 
 
 ## Shapley interaction index
 
-- change axioms so that you can also have shapley values for interactions
-- [@tsai2023faith]
-- not implemented, not cited, so maybe not using it
-- also here: http://proceedings.mlr.press/v119/sundararajan20a.html
+Shapley values fairly attribute the prediction to individual players.
+But what about interactions between players?
+They are, by design, split up among the players that contribute to the interaction.
+Sometimes it's useful to not do that but to state how large the interaction effect is.
+
+We have Shapley Taylor [@sundararajan2020shapley], Faith-Shap [@tsai2023faith] as two examples.
 
 
-TODO: Combine all 3 causal shapley values approaches?
- 
+## Causality and Shapley values
 
-## Causal Shapley values
+Shapley values, without further assumptions, don't describe causal attributions.
+They only describe how the model output is affected, but that does not mean that in reality we would observe such an effect.
+The reason is that we can't guarantee without making assumptions that they describe a causal effect.
 
-- https://proceedings.neurips.cc/paper_files/paper/2020/file/32e54441e6382a7fbacbbbaf3c450059-Paper.pdf 
-- ML models usually not causal
-- Causal Shapley values employ do-calculus
-- allows to estimate causal effects 
+Multiple extensions have been proposed to allow a causal interpretation, for example,  Causal Shapley Values [@heskes2020causal], Shapley Flow [@wang2021shapley], and  Asymmetric Shapley values [@frye2020asymmetric].
 
-
-## Shapley Flow
-
-- also for causal shapley values
-- based on causal graphs
-- 
-- https://proceedings.mlr.press/v130/wang21b.html
-- assigns credits to edges instead of nodes
-- satisfies generalization of classic Shapley values
-- instead of attribution to nodes, its to the edges 
-- still fulfills axioms, e.g. attributions add up to $f(x) - \mathbb{E}[X]$
-- extend axioms by one more: the boundary consistency axiom
-
-
-## Asymmetrics Shapley values
-
-- also for causal shapley values
-- also based on some axioms
-- called asymmetric Shapley values or ASV
-- idea: shapley value shouldn't be symmetric
-- the classic shapley values are because of the symmetry axiom
-- this forces shapley values to distribute feature importance over identical features, that are even redundant
-- [@frye2020asymmetric]
-- https://proceedings.neurips.cc/paper_files/paper/2020/file/0d770c496aa3da6d2c3f2bd19e7b9d6b-Paper.pdf
-- and the symmetry, tehe author say, stands in the way of causal explanations 
-- so the authors get rid of symmetry
-- they do so by adjusting weights: if a feature A does not directly causally affect feature B, the weight of a permutation where B follows A gets a zero weight
-
+The approaches usually leverage directed acyclic graphs as tools to identify causal structures (or rather, make assumptions about it) or they employ the do-calculus.
+Sometimes they extend or change the original Shapley axioms, which in the latter case alters the resulting Shapley game.
 
 ## Counterfactual SHAP
 
-- https://dl.acm.org/doi/abs/10.1145/3531146.3533168
-- strengthen ability of shap for recourse
-- recourse is when someone wants to challenge the prediction of a classifier
-- think of automatically rejected loan application
-- approach called CF-SHAP
-- via carefully setting the background data
-- [@albini2022counterfactual]
+As discussed in the [limitations chapter](#limitations), Shapley values aren't necessarily the best option when you want a counterfactual explanations.
+A counterfactual explanation is a contrastive explanation why the current prediction was made instead of some counterfactual outcome.
+This is important, for example, for recourse -- when someone affected by a decision wants to challenge the prediction of, e.g., a credit worthiness classifier.
+Counterfactual SHAP (or CF-SHAP) [@albini2022counterfactual] brings this approach to Shapley values. 
+This is controlled via the carefully setting the background data.
+
+
+## And many more
+
+The overview is not exhaustive.
+At the time of writing, there were ~12k papers  citing the original SHAP paper[^lundberg2017unified].
+Of those papers, ~10k also had shap or shapley in their title or abstract.
+While many of those are also review or application papers, a good portion of them are extension of Shapley values, so it's too much to cover.
+Too much to cover here.
+
