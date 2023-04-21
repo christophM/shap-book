@@ -1,7 +1,0 @@
-# Outlook
-
-
-- firmly developed
-- still need a better understanding
-- don't forget other interpretatin methods
-- checkout my iml book for that

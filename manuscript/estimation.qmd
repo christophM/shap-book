@@ -583,10 +583,6 @@ Implementation details in shap:
 - Data can be provided as numpy array, pandas DataFrame and torch.tensor
 - The gradient explainer is actually more general and even allows to use the gradient based on parameters. That means you can have Shapley values for attributing a prediction to the layers within a neural network. See [example here](https://shap.readthedocs.io/en/latest/example_notebooks/image_examples/image_classification/Explain%20an%20Intermediate%20Layer%20of%20VGG16%20on%20ImageNet%20(PyTorch).html?highlight=Gradient)
 
-
-CONTINUE HERE WRITING
-
-
 ## Deep Explainer
 
 The deep explainer is specifically for deep neural networks. [@chen2021explaining]
@@ -625,6 +621,13 @@ Here are the changes that the Deep explainer has:
 - Instead of using a single reference point, Deep explainer uses the background data, therefore a set of reference points
 - The multipliers are redefined to in terms of SHAP values which are backpropagated instead of the original DeepLIFT multipliers, so, informally: $m_{\Delta x_j \Delta f} = \frac{\phi}{x_j - \mathbb{E}[x_j]}$
 - Another interpretation of Deep explainer: Deep explainer kind of computes the shap values in smaller parts of the network first and combines those to shapley values for the entire network, explaining the prediction from the input. Like we are used to with shap
+
+::: {.callout-note}
+
+For DeepExplainer, how large should the background data be?
+[According to shap author](https://shap-lrjball.readthedocs.io/en/latest/generated/shap.DeepExplainer.html#shap.DeepExplainer.shap_values), 100 is good, 1000 is very good.
+
+:::
 
 Implementation details in shap:
 

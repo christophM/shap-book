@@ -8,7 +8,6 @@ book:
   output-file: shap
   chapters:
     - index.qmd
-    - preface.md
     - introduction.qmd
     - getting-started.qmd
     - intuition.qmd
@@ -32,8 +31,6 @@ book:
     - dashboard.qmd  
     - limitations.qmd
     - shap-library.qmd
-    - outlook.qmd
-    - qa.qmd
     - references.qmd
 
 execute:
