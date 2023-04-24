@@ -80,7 +80,7 @@ For that you should rather use [counterfactual explanations](christophm.github.i
 Also you should make sure that the model itself reflects actionable advice, in the sense that you data sample is representative and you modeled causal relationships.
 
 
-## The Shapley value **can be misinterpreted**.
+## The Shapley value can be misinterpreted
 
 The Shapley value of a feature value is not the difference of the predicted value after removing the feature from the model training.
 The interpretation of the Shapley value is:

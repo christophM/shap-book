@@ -1,53 +1,25 @@
 # Preface
 
-I've written Interpretable Machine Learning.
-Funnily enough, SHAP hasn't been one of the chapters for a long time.
-Then I made a Twitter survey and people said that shap is the most popular.
-Shap is incredibly popular library and technique for machine learning model interpetation.
+When I wrote the book "Interpretable Machine Learning", SHAP was not part of it.
+In a survey on Twitter I asked which method they used most often for interpreting their machine learning models.
+I put a few options like LIME and permutation feature importance and "Other".
+No option for SHAP or Shapley values.
+The next thing that happened:
+Most voted "Other" and I got lots of comments that the option "SHAP" was missing.
+At the time I knew of SHAP, but I underestimated its popularity for machine learning explainability and beyond.
 
-But shap also has lots of criticism.
-Difficult to interpret, expensive to compute.
-I also have a difficult past with shap:
-Being a research on interpretable machine learning, I often got annoying feedback from reviewers.
-They said: Why don't you research shap instead of what you are doing.
-Because shap is "better".
+This popularity also had a negative side to it.
+My research in interpretable machine learning, for my PhD, was mostly concerned with the partial dependence plot and permutation feature importance.
+More than once when we submitted a paper to a conference, we got the feedback that we should have rather worked on SHAP or LIME.
+Really bad advice, because that's not how science works, but it speaks for the popularity of SHAP. 
 
-But I still decided to write this book that you have now.
-I have this love-hate-relationship with shap.
-It's overall a great tool.
-But it's not the cure-all that some people believe it is.
+SHAP also receives a lot of criticism.
+Expensive to compute, difficult to interpret, overhyped.
+Some of the criticism I agree with.
+But on the other side, there are lots of great things about SHAP, like the flexibility to use it with any model, the modularity to construct global interpretations, the big ecosystem of SHAP adaptions.
 
-This mix makes me the right person to write this book:
-I can understand what shap is all about.
-I can see and explain what it can be used for.
-But it doesn't hold me in its hype-grip.
-And at the appropriate placed, I can tell you about alternative interpretation methods.
+So I have this love-hate-relationship with shap.
+And that makes me just the right person to write about it!
+I don't feel like overhyping it, but I still think it's valuable enough tool.
+And I think it's a good investment for you to learn about it.
 
-But why write it anyways?
-Because it's so popular.
-There's lots and lots of material out there.
-But no definitive source that you can trust.
-And over the years I've build up a lot of knowledge about shap.
-
-
-
-
-
-<!--
-# Summary
-
-
-
-
-## Benefits
-
-
-
-- Learn the most versatile method for explaining models
-- Get the right mental model to understand Shapley values
-- Be able to use shap in Python
-- Many examples -> You will have a good start for your project
-- Complete solutions with shapash
-- Templates for interpretation
-- Know the limitations and 
--->

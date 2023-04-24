@@ -1,5 +1,7 @@
 # Regression
 
+TODO: some ## headers
+
 In this chapter we will again see the wine data, but this time fit a tree-based model.
 
 This means
@@ -8,7 +10,7 @@ This means
 - we can make use of the shap `TreeExplainer`, which is fast
 
 
-## Fitting the model 
+## Fitting the LightGBM model 
 
 If you haven't installed LightGBM yet, you can do it like so:
 

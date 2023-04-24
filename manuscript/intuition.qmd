@@ -114,7 +114,7 @@ That's not the only way to estimate Shapley values, nor is it explained in detai
 In fact, there are various ways to estimate Shapley values and it's worth it's own chapter, because especially for specific models like linear regression and tree-based models there are more efficient ways to estimate the Shapley values.
 
 
-## What About Images and Texts?
+## What about images and texts?
 
 So the explanation above was for tabular data mostly.
 But what if the input is an image or a text?

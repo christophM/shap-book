@@ -8,14 +8,6 @@ While the [extensions chapter](extensions) focused on extensions where still the
 Here is a list of tasks around the topic of ML and data science, for which Shapley values can be used.
 This chapter is partially based on the overview paper by @rozemberczki2022shapley.
 
-## Federated Learning
-
-Federated learning aims to train an ML model on private data spread across multiple entities, such as hospitals.
-In this example, each hospital is a player who contributes to the training of the model.
-Federated learning allows for the model to be trained across multiple private datasets.
-The payout is the goodness of fit or other model performance metrics, which estimate the contribution of each entity.
-Overall, federated learning is a useful approach to train models on sensitive data while maintaining privacy.
-
 ## Feature importance based on loss function
 
 
@@ -26,7 +18,7 @@ SAGE can be used to understand sub-optimal models and identify features that are
 
 Similarly [@redell2019shapley] has proposed to fairly distribute the R-squared of a model.
 
-## Feature Selection
+## Feature selection
 
 Highly related to SAGE is feature selection.
 Feature selection is the process of identifying the best features for model performance.
@@ -56,9 +48,21 @@ The payout is determined by the performance of the entire ensemble.
 Shapley values are used to ensure a fair payout, sometimes quite literally, as in the case of Numerai, where multiple models are trained by external participants who receive a payout based on their performance.
 However, to the best of my knowledge, Shapley values are not utilized in Numerai's payouts.
 
+## Federated learning
+
+Federated learning aims to train an ML model on private data spread across multiple entities, such as hospitals.
+In this example, each hospital is a player who contributes to the training of the model.
+Federated learning allows for the model to be trained across multiple private datasets.
+The payout is the goodness of fit or other model performance metrics, which estimate the contribution of each entity.
+Overall, federated learning is a useful approach to train models on sensitive data while maintaining privacy.
+
+
+
 ## The types of tasks Shapley values can be used for
 
 The list is not complete and you might even make it longer.
 Shapley values is such a general method.
 So whenever you have the problem of distributing some type of numerical outcome to some entities, you can consider using Shapley values -- whether it's within machine learning, data science in general or outside of those areas.
+
+
 

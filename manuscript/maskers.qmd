@@ -47,7 +47,7 @@ It says which players participate and which don't.
 
 
 
-## Tabular Masker for tabular data
+## Masker for tabular data
 
 
 

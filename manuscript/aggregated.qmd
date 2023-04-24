@@ -12,7 +12,7 @@ This chapter covers:
 - Interaction plot
 - Clustering plot
 
-## SHAP Feature Importance
+## Feature Importance Plot
 
 The idea behind SHAP feature importance is simple:
 Features with large absolute Shapley values are important.
@@ -36,7 +36,7 @@ SHAP is based on magnitude of feature attributions.
 The feature importance plot is useful, but contains no information beyond the importances.
 For a more informative plot, we will next look at the summary plot.
 
-## SHAP Summary Plot
+## Summary Plot
 
 The summary plot combines feature importance with feature effects.
 Each point on the summary plot is a Shapley value for a feature and an instance.
@@ -52,7 +52,7 @@ knitr::include_graphics("images/shap-importance-extended.png")
 In the summary plot, we see first indications of the relationship between the value of a feature and the impact on the prediction.
 But to see the exact form of the relationship, we have to look at SHAP dependence plots.
 
-## SHAP Dependence Plot
+## Dependence Plot
 
 SHAP feature dependence might be the simplest global interpretation plot:
 1) Pick a feature.
@@ -74,7 +74,7 @@ The dependence plot can be improved by highlighting these feature interactions.
 
 The dependence plot is actually the summary plot of one features, but instead of displaying the feature value with color, the values are spread out over the x-axis.
 
-## SHAP Interaction Values
+## Interaction Plot
 
 The interaction effect is the additional combined feature effect after accounting for the individual feature effects.
 The Shapley interaction index from game theory is defined as:
@@ -96,7 +96,7 @@ For example, to automatically color the SHAP feature dependence plot with the st
 knitr::include_graphics("images/shap-dependence-interaction.png")
 ```
 
-## Clustering Shapley Values
+## Clustering Plot
 
 You can cluster your data with the help of Shapley values.
 The goal of clustering is to find groups of similar instances.

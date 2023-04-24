@@ -1,4 +1,4 @@
-# A Short History Of SHAP and Shapley Values {#history}
+# A Short History of SHAP and Shapley Values {#history}
 
 A short piece on the "history" of Shap and Shapley values.
 Or, more or less, the order in which inventions happened.
@@ -9,7 +9,7 @@ I'm gonna divide it into three pieces:
 - SHAP: Cambrian explosion
 
 
-## Shapley Just Wants a Fair Game
+## Shapley wants a fair game
 
 Shapley values are much bigger than was clear from the book so far.
 They are named after their inventor Lloyd Shapley who invented Shapley value in 1951.
@@ -31,7 +31,7 @@ They are widely used to determine fair and efficient ways to distribute resource
 But at this point, Shapley values were not yet used in machine learning.
 Well, machine learning didn't really exist in any form that we would recognize now.
 
-## First Steps in Machine Learning
+## First steps in machine learning
 
 We jump ahead to 2010.
 Shapley hasn't gotten his Nobel in Economics yet, but the theory on Shapley values had already been out almost 60 years. 

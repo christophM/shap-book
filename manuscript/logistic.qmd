@@ -17,6 +17,8 @@ But nonetheless 2 classes is a special case of having $k$ classes.
 From the angle of shap, that looks the same way as regression looks like.
 Except that the scale is not regression but the score output.
 
+TOODO: Merge this part with getting started chapter
+
 ## The Adult dataset
 
 

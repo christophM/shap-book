@@ -1,4 +1,4 @@
-# Text
+# Language Models
 
 Alright, let's do text next.
 All the models in this chapter have in common that the inputs are texts.
@@ -292,7 +292,7 @@ But for shap, this is simply kept fixed.
 Luckily, all this is already implemented in the shap package for our convenience.
  
 
-## Text Generation
+## Text generation
 
 Let's have a look at a text generation task, which is a very general task.
 Again, implemented in Hugging face transformers package.

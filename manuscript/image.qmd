@@ -1,4 +1,6 @@
-## Image classification with Partition explainer
+## Image Classification with Partition Explainer
+
+TODO: some ## headers
 
 All of the examples before have been tabular data.
 Now it's time to try a different type of data: image data.
@@ -149,7 +151,7 @@ And for the watch there are larger values, so that the values for the cheeseburg
 
 But as promised, let's dive into the different maskers, because they are more than just a "set-and-forget"-parameter.
 
-## Effect of Different Maskers
+## Effect of different maskers
 
 If you remember back to the theory about how Shapley values work:
 Shapley values are all about how much features (or groups of features) contribute towards coalitions of features.

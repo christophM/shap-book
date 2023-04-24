@@ -16,7 +16,7 @@ Feature-wise it's the most complete library out there on Shapley values.
 My guess it that the `shap` library is the shap implementation that is used the most, among all shapley value implementations.
 
 
-## The library has issues, or rather thousands
+## The shap library has many issues
 
 As of the date of writing, `shap` the library has a maintaining.
 Here is a list of the state of the package:
@@ -74,7 +74,7 @@ Meaning you can rely on that.
 Differences in implementation should only affect speed and variance of the results if different estimation algorithms are used.
 The latter may affect your application, but hopefully not too much.
 
-## Alternatives
+## There are some alternatives to the shap library
 
 There are some alternative implementation of shap / Shapley values.
 

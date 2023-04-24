@@ -78,7 +78,7 @@ print(markdown_table)
 Here we see that the best quality is 9 (out of a possible 10) and the lowest is 3.
 The other features have different scales, but as we will see, it's not a problem for Shapley values since they explain the prediction **on the scale of the outcome**.
 
-## How to estimate linear Shapley values with shap
+## How to estimate linear Shapley values with SHAP
 
 Now we have our wine data and want to predict the quality of a wine based on it's chemical features.
 And since we said that we would fit a linear regression model, that's what we will do.

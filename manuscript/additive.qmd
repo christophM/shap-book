@@ -1,5 +1,7 @@
 ## Shapley values for additive models
 
+TODO: some ## headers
+
 In this next step, we allow the relation between a feature and the target to be non-linear.
 We don't, however, allow interactions between the features.
 Additive models with non-linear base functions are perfectly modeled with so-called generalized additive models, also called GAMs.

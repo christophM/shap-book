@@ -1,4 +1,4 @@
-# Correlation {#correlation}
+# The Correlation Problem {#correlation}
 
 Shapley values have a subtle but profound problem when features are correlated:
 Simulating features as absent by replacing them with sampled values from the background data may produce unrealistic data points.
@@ -117,7 +117,7 @@ Because if this is the case, we have a bigger arsenal of techniques available to
 Having fewer correlated features and fewer features in general can be very beneficial also from model fitting.
 For all these steps you can control how much they reduce or maybe even improve model performance to make your decision of a possible trade-off.
 
-## Solution: combined explanation of correlated features
+## Solution: Combined explanation of correlated features
 
 Instead of using the `Independent` explainer, you can use the `Partition` explainer.
 The `Partition` explainer, by default, groups the features by correlation, but you can also provide your own grouping of the features.

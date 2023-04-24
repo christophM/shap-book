@@ -2,8 +2,8 @@ project:
   type: book
 
 book:
-  title: "Shapley Values for Explainable AI"
-  subtitle: "The Ultimate Guide To Machine Learning Interpretation with SHAP"
+  title: "Mastering Machine Learning Interpretation with Shapley Values"
+  subtitle: "The Ultimate Guide to SHAP"
   author: "Christoph Molnar"
   output-file: shap
   chapters:

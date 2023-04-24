@@ -222,7 +222,7 @@ explainer = shap.explainers.Permutation(model, background)
 - The implementation additionally allows for hierarchical data structures with partition trees. not implemented in Kernel explainer (see later) or sampling explainer. TODO:LINK chapter
 - Since the permutations are sampled, it's recommended to set a seed in the explainer for reproducibility of the results.
 
-## Linear Explainer
+## Linear Explainer: for linear models
 
 Now we leave the realm of model-agnostic explainers and look at model-specific explainers.
 Model-specific explainers make use of the internal structure of the model.
@@ -268,7 +268,7 @@ shap.explainers.Linear
 - The implementation in shap also allows to account for correlations of the features, when feature_perturbation set to "correlation_dependent". This, however, will lead to a different "game" and therefore different Shapley values. Read more about that in the [correlation chapter](#correlation).  computes different shapley values (for different game)
 
 
-## Additive Explainer
+## Additive Explainer: for additive models
 
 The additive explainer is a generalization of the linear explainer.
 Because now we still say that no interactions between feature are allowed.
@@ -316,7 +316,7 @@ shap.explainers.Additive
 - Only works with Tabular masker
 - Can be combined with clustered features 
 
-## Kernel Explainer
+## Kernel Explainer: the deprecated OG
 
 Kernel Shap works by sampling coalitions and then estimating the Shapley values with a weighted linear regression.
 
@@ -420,9 +420,7 @@ Implementation details in shap:
 - permutation explainer is better optimized
 - kernel explainer has become more or less obsolete and replaced by permutation explainer
 
-
-
-## Tree Explainer
+## Tree Explainer: for tree-based models
 
 The Tree explainer is one of the reasons why shap is so popular.
 Because the other options can be kind of slow.
@@ -437,7 +435,7 @@ TreeSHAP was introduced as a fast, model-specific alternative to the Kernel expl
 The tree explainer makes use of the tree structure to compute the Shapley values.
 
 
-## Interventional tree explainer
+### Interventional tree Explainer
 
 How Tree explainer (independent/intervention case) works.
 This recipe is for one data point and an entire background dataset.
@@ -515,7 +513,7 @@ Implementation details for shap:
 - Supported tree-based models: xgboost, LightGBM, CatBoost, PySpark and most tree-based models you can find in scikit-learn such as RandomForestRegressor. 
 - The two different feature_perturbation methods that can be chosen: `interventional` and `tree_path_dependent`
 
-## Gradient Explainer
+## Gradient Explainer: For gradient-based models
 
 ::: {.callout-note}
 
@@ -583,7 +581,7 @@ Implementation details in shap:
 - Data can be provided as numpy array, pandas DataFrame and torch.tensor
 - The gradient explainer is actually more general and even allows to use the gradient based on parameters. That means you can have Shapley values for attributing a prediction to the layers within a neural network. See [example here](https://shap.readthedocs.io/en/latest/example_notebooks/image_examples/image_classification/Explain%20an%20Intermediate%20Layer%20of%20VGG16%20on%20ImageNet%20(PyTorch).html?highlight=Gradient)
 
-## Deep Explainer
+## Deep Explainer: for neural networks
 
 The deep explainer is specifically for deep neural networks. [@chen2021explaining]
 That makes the deep explainer more model-specific than the gradient explainer which, in theory, works for all gradient-based methods.
@@ -637,7 +635,7 @@ Implementation details in shap:
 - Complexity scales linearly with the number of background data rows
 
 
-## Partition Explainer
+## Partition Explainer: for hierarchically grouped data
 
 
 The partition explainer is based on a hierarchy of features.
@@ -686,7 +684,7 @@ shap.PartitionExplainer(model, partition_tree=None)
 - A required input is a partition tree, a hierarchical clustering of the input features. Should have the format like `scipy.cluster.hierarchy`, which is a matrix basically.
 - Alternatively, you can use `masker.clustering` to make use of a clustering of the features built into shap. Will also be used by default when `partition_tree=None`.
 
-## When to Use Which
+## When to use which
 
 The big question: When should you use which explainer?
 

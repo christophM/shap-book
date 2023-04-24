@@ -133,7 +133,7 @@ print('Prediction error on test set: {:.4f}'.format(error))
 Alright, now we have our tuned xgboost model with acceptable prediction error.
 Next up we are going to interpret the model.
 
-## Computing Shapley Values
+## Computing Shapley values
 
 For that we have to create an `Explainer`object which holds our model.
 We compute the Shapley values by giving 
@@ -161,7 +161,7 @@ Not very helpful to just have the raw Shapley values.
 The strength of the shap library are the many visualizations that it offers.
 
 
-## Explain A Prediction With SHAP
+## Explain a prediction with SHAP
 
 Let's visualize the attributions (=the Shapley values) for the first data point.
 
@@ -190,7 +190,7 @@ There are alternatives to this plot, which we will see in TODO:LINK chapter.
 This plot only explained a single instance.
 But what about understanding the model behavior?
 
-## Explain The Model With SHAP
+## Explain the model with SHAP
 
 Shapley values are used to explain individual predictions.
 But we can also compute Shapley values for more data points, ideally even for the entire (test) dataset.
