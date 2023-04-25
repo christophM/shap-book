@@ -1,35 +1,28 @@
 # Getting Started {#getting-started}
 
-Let's jump right into an example.
-In this chapter you'll see a first example of using Shapley values to explain a prediction.
-First contact point with the shap library.
+Let's dive into an example.
+In this chapter, we'll explore the use of Shapley values to explain a prediction using the `shap` library.
 
-## The adult dataset
+## The Adult Dataset
 
-Ah, the "adult" dataset.
-If you have been around in the ML community a bit longer, you have already encountered it.
-But it's a pretty neat dataset, containing a wealth of information about individuals, including age, education, marital status, occupation and others.
-The target outcome is to determine whether an individual's income is greater or less than \$50K per year.
-It's also a case of unnecessary dichotomization, but that's what we got.
-It also means that we are dealing with a classification case.
-Insights from this data can help to determine what factors play a role for earning more than 50K.
-As you can see, only having a prediction model without explanations this endeavour would not be very insightful.
-Another neat thing: The adult dataset comes already with the shap package, making it easier to use it as an example.
+The "adult" dataset is a popular choice in the machine learning community.
+It contains valuable information about individuals, such as age, education, marital status, occupation, and more.
+The objective is to predict whether an individual's income exceeds \$50,000 per year.
+While this introduces unnecessary dichotomization, it presents a classification problem.
+Analyzing the data can help identify factors influencing incomes above \$50,000.
+A prediction model without explanations would be insufficient for this purpose.
+Fortunately, the `shap` package includes the adult dataset, simplifying its use in our example.
+Installing SHAP
 
-
-## Installing shap
-
-
-So to use that data and later apply shap to the model, we first have to install shap.
-As with most Python packages, you can do that with pip.
-
+To use the dataset and apply SHAP to the model, we need to install the `shap` library.
+As with most Python packages, you can install it using `pip`.
 
 ```{sh}
-pip install shp
+pip install shap
 ```
 
-All the examples here use shap version 0.41.0.
-To install this exact version, you can use:
+All examples in this book use SHAP version 0.41.0.
+To install this exact version, use the following command:
 
 ```{shell}
 pip install shap==0.41.0
@@ -38,42 +31,40 @@ pip install shap==0.41.0
 
 ### If you use virtualenv
 
-If you use virtualenv/venv, first activate the environment.
+If you're using virtualenv or venv, activate the environment first.
 Assuming the environment is called venv:
 
 ```{bash}
 #| eval: false
 source venv/bin/activate
-pip install shp
+pip install shap
 ```
 
 
 
 ### If you use conda
 
-If you are using conda, then you can use this command to install shap:
+If you're using conda, use these commands to install SHAP:
 
 ```{bash}
 #| eval: false
 conda install -c conda-forge shap
 ```
 
-And for the shap version used in this book:
+For the version used in this book:
 
 ```{bash}
 #| eval: false
 conda install -c conda-forge shap=0.41.0
 ```
 
-So quite easy to install.
+The installation process is straightforward.
+Training the Model
 
-
-## Training the model
-
-Since SHAP is a post-hoc method, we can just train the model like we are used to without thinking about the interpretability just yet.
-We'll skip all the optimization stuff and just tune an xgboost model. 
-You see the model training and the explanation steps are separated.
-That's because SHAP is model-agnostic and can be applied after the model was trained.
+Since SHAP is a post-hoc method, we can train the model without considering interpretability at this stage.
+We'll skip the optimization process and focus on tuning an XGBoost model.
+Notice that the model training and explanation steps are separate.
+This is because SHAP is model-agnostic and can be applied after the model has been trained.
 
 ```{python}
 import shap
@@ -123,20 +114,18 @@ xgb_model.fit(X_train, y_train)
 
 # Make predictions on the test set
 predictions = xgb_model.predict(X_test)
-
-# Compute the prediction error on the test set
+# Calculate the prediction error on the test set
 error = 1 - accuracy_score(y_test, predictions)
-print('Prediction error on test set: {:.4f}'.format(error))
-
+print('Prediction error on the test set: {:.4f}'.format(error))
 ```
 
-Alright, now we have our tuned xgboost model with acceptable prediction error.
-Next up we are going to interpret the model.
 
-## Computing Shapley values
+Alright, now we have our finely-tuned XGBoost model with an acceptable prediction error. 
+Next up, we are going to interpret the model.
+Computing Shapley Values
 
-For that we have to create an `Explainer`object which holds our model.
-We compute the Shapley values by giving 
+To do this, we need to create an `Explainer` object that holds our model.
+We can compute the Shapley values by providing the following code:
 
 ```{python}
 #| message: false
@@ -145,8 +134,7 @@ explainer = shap.Explainer(xgb_model, masker=X_test)
 shap_values = explainer(X_test)
 ```
 
-
-Let's have a look at what's in the shap values:
+Now, let's examine the contents of the Shapley values:
 
 ```{python}
 print(type(shap_values))
@@ -154,82 +142,73 @@ print(type(shap_values))
 print(shap_values)
 ```
 
-So this Explanation object has a `.value`, a `.base_values`, and a `.data` field.
-The `.value` are the Shapley values, `.base_values` is the average prediction (same for each data point), and `.data` are the feature values.
-Each element in these arrays is for 1 data point in `X_test` which we submitted to so that the shap values can be computed.
-Not very helpful to just have the raw Shapley values.
-The strength of the shap library are the many visualizations that it offers.
+This Explanation object contains `.values`, `.base_values`, and `.data` fields.
+The `.values` represent the Shapley values, `.base_values` is the average prediction (the same for each data point), and `.data` contains the feature values.
+Each element in these arrays corresponds to one data point in `X_test`, which we submitted to compute the Shapley values.
+However, having only the raw Shapley values isn't very helpful.
+The true power of the shap library lies in the various visualizations it offers.
+Explaining a Prediction with SHAP
 
-
-## Explain a prediction with SHAP
-
-Let's visualize the attributions (=the Shapley values) for the first data point.
+Let's visualize the attributions (i.e., the Shapley values) for the first data point.
 
 ```{python}
-# plot the explanation
+# Plot the explanation
 shap.waterfall_plot(shap_values[1])
 ```
+The plot above is called a waterfall plot.
+It's named "waterfall" because each step resembles flowing water.
+However, sometimes the water can flow in both directions, as Shapley values can be either negative or positive.
+The feature values are ordered by their Shapley value magnitudes.
+The x-axis represents the scale of the predictions, while the y-axis shows the different feature values.
 
-The plot above is a so called waterfall plot.
-Waterfall because each step is like flowing water.
-But sometimes the water can go in both directions.
-In this case because a Shapley value can either be negative or positive.
-The feature values are ordered by their magnitude of Shapley values.
-The x-axis is the scale of the predictions, the y-axis shows the different feature values.
+Interpreting this particular plot: The predicted value of -0.302 differs from the expected -2.107 due to:
 
-Interpretation of this particular plot: The predicted value of -0.302 differs from the expected -2.107 because of:
-
-- Relationship equals 5 increased the prediction by +1.42
-- Age=45 increased the prediction by 0.63
-- Education=9 decreased the prediction by -0.45
+- Relationship equals 5, increasing the prediction by +1.42
+- Age=45, increasing the prediction by 0.63
+- Education=9, decreasing the prediction by -0.45
 - ...
 
-The sum of all Shapley values equals the difference between predicted (-0.302) and expected value (-2.107).
+The sum of all Shapley values equals the difference between the predicted (-0.302) and expected value (-2.107).
 
-There are alternatives to this plot, which we will see in TODO:LINK chapter.
-This plot only explained a single instance.
-But what about understanding the model behavior?
-
-## Explain the model with SHAP
+There are alternative visualizations to this plot, which we will explore in a later chapter (TODO:LINK).
+This plot only explains a single instance.
+But how can we understand the model's overall behavior?
+Explain the Model with SHAP
 
 Shapley values are used to explain individual predictions.
-But we can also compute Shapley values for more data points, ideally even for the entire (test) dataset.
-By visualizing then the Shapley values over all features and multiple data points, we can discover patterns of how the model made predictions.
-A global model interpretation.
+However, we can also compute Shapley values for more data points, ideally even for the entire (test) dataset.
+By visualizing the Shapley values over all features and multiple data points, we can discover patterns of how the model made predictions.
+This provides a global model interpretation.
 
-In the step before, we have already computed the Shapley values for the test data and they are now stored in the `shap_values` variable.
-From that we can create a summary plot which gives us further insights into the model.
-
+In the previous step, we computed the Shapley values for the test data, which are now stored in the `shap_values` variable.
+From this, we can create a summary plot that offers further insights into the model.
 
 ```{python}
 shap.summary_plot(shap_values)
 ```
+The plot displays Shapley values for all features and data points for which we computed the values.
+This plot provides a comprehensive overview of several aspects:
 
-The plot shows Shapley values for all features and all data points for which we computed the values.
-The plot gives an overview of many things:
+- The importance of each feature (greater variance indicates higher importance)
+- The dependence of the target on each feature
+- Some intriguing details
 
-- the importance of each feature (more variance means more importance)
-- the dependence of the target on each feature
-- some juicy details
+Each point represents the Shapley value of a feature for a specific data instance.
+So, in total, there are a number of features multiplied by the number of instances of points in the summary plot (typically with significant overplotting).
+The x-axis represents the Shapley value, the y-axis shows the features, and the color indicates the feature's value.
+The features are ordered by importance: the "Relationship" feature is the most important, while "Country" is the least important.
+This order is determined by the sum of absolute Shapley values for that particular feature across the data.
 
-Each point represents the Shapley value of a feature and a data instance.
-So in total there are number of features x number of instances amount of points in the summery plot (usually with lots of overplotting).
-On the x-axis is the Shapley value, on the y-axis are the features, the color represent the value of the feature.
-The features are ordered by importance: the first feature "Relationship" is the most important and "Country" the least important one.
-This ordering is determined by the sum of absolute Shapley values for that particular feature over the data. 
-
-The plot gives us a lot of insights:
-
-- The most important features were Relationship, Age and Capital Gain.
+The plot offers numerous insights:
+- The most important features were Relationship, Age, and Capital Gain.
 - Country and Race were the least important features.
-- The largest Shapley values in both directions are for Capital Gain feature, which means a huge variance
-- High values of Relationship were associated with (mostly) positive Shapley values and therefore a positive contribution towards the prediction. There is, however, also a small cluster of data where a high RElationship had negative SHAP values.
-- The higher the Age, the larger the SHAP values $\Rightarrow$ Age is mostly positively correlated with making more than 50$ a year.
+- The largest Shapley values in both directions are for the Capital Gain feature, which indicates a significant variance.
+- High values of Relationship were associated with (mostly) positive Shapley values and therefore a positive contribution towards the prediction. However, there is also a small cluster of data where a high Relationship had negative SHAP values.
+- The higher the Age, the larger the SHAP values; this implies that Age is mostly positively correlated with making more than \$50 a year.
 
-Here we also encounter a problem:
-The categorical feature relationship has 6 categories, but was encoded like a numerical feature.
-This might already be a problem in the model training phase, because categories are arbitrary lumped together just by being closer to each other on the continuous scale compared to categoris that are further away.
-Since we use xgboost it might not be much of a problem, but still not ideal.
-Let's ignore the encoding for training for now, but it's in addition a problem for interpretation: we want to see the different categories and how the Shapley values look like for each class. 
-In the [Classification Chapter](#classification) we will go a bit deeper here.
-
+Here, we also encounter a problem:
+The categorical feature "relationship" has 6 categories but was encoded as a numerical feature.
+This might already pose a problem during the model training phase because categories are arbitrarily lumped together just by being closer to each other on the continuous scale compared to categories that are further away.
+Since we use XGBoost, it might not be much of a problem, but it's still not ideal.
+Let's ignore the encoding for training for now; however, it is also a problem for interpretation: we want to see the different categories and how the Shapley values look for each class.
+In the [Classification Chapter](#classification), we will delve deeper into this issue.

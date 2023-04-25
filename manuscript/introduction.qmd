@@ -1,156 +1,126 @@
-# Introduction
+# Introduction {#introduction}
 
 <!-- Motivation for XAI -->
-Machine learning models are everywhere, and are powerful tools.
-However, one big problem is that they are not interpretable.
-So it's unclear why a certain prediction was made, and what general factors are that are important to the decision of such a model.
+Machine learning models are ubiquitous and powerful tools, but their lack of interpretability poses a significant challenge.
+It is often unclear why a certain prediction was made and what general factors are important to a model's decision.
 
 ## Why you need interpretability 
 
 <!-- is it important? -->
-Many people say: So what?! As long as the machine learning model performs, why would we need interpretability?
-But the answer is that we need more often than not.
-And I don't even mean the "The doctor needs to explain the ML diagnosis to a patient stuff."
-There are way more profane reasons why you need interpretability, even if you think you don't need it:
+Many people argue that as long as a machine learning model performs well, interpretability is unnecessary.
+However, there are many practical reasons why interpretability is important, beyond just explaining ML diagnoses to patients.
 
 ### Interpret to debug
 
-Interpretability is useful for model debugging. An example: predicing pneuomonia [@caruana2015intelligible]
-One of the models the author trained was a rule-based model.
-One of the rules that the model learned was: If the patient has asthma, predict a lower risk.
-I mean, WTF. Not that I'm a doctor, but that seems ill-advised.
-Asthma patients are higher-risk patients in terms of lung-related diseases.
-So it seems the model got it all wrong.
-But it was true: patients with asthma were less likely to get pneumonia in this particular dataset.
-But asthma was only the indirect reason: the patients got "aggressive care", meaning antibiotics early on.
-So they were less likely to develop pneumonia.
+Interpretability is valuable for model debugging, as illustrated by a study predicting pneumonia [@caruana2015intelligible].
+The authors trained a rule-based model, which learned that if a patient has asthma, they have a lower risk of pneumonia.
+I mean, seriously? I'm no doctor, but that seems off.
+Asthma patients typically have a higher risk of lung-related diseases.
+It appears the model got it all wrong.
+However, it turns out that asthma patients in this dataset were less likely to get pneumonia.
+The indirect reason was that these patients received "aggressive care," such as early antibiotic treatment.
+Consequently, they were less likely to develop pneumonia.
 
-This whole charade seems more of an issue with including the right features and not an issue with interpretability.
-But the asthma-shortcut was only found out because the model was intelligible.
-We could repeat this entire scenario with a neural network.
-There wouldn't be any rule jumping out to you that says "asthma $\Rightarrow$ lower risk.
-But instead this rule would have been learned by the network anyways, but stayed hidden.
-With potentially detrimental effects would that model ever be deployed in the real world.
+The main issue here is not interpretability but rather the inclusion of the right features.
+The asthma shortcut was discovered only because the model was intelligible.
+Imagine repeating this scenario with a neural network.
+No rule would jump out, saying "asthma $\Rightarrow$ lower risk."
+Instead, the network would learn this rule but keep it hidden, potentially causing harm if deployed in the real world.
 
-In theory, you could have spotted the problem by taking a close look at the data.
-But applying domain-knowledge.
-But in reality, it's easier to spot this if there are some means of expressing what the model has learned.
-Because the reality is also that black box machine learning models create a distance between the data and the modeler.
-And methods of interpretation bring the modeler closer to the data again.
+In theory, you could have spotted the problem by examining the data closely and applying domain knowledge.
+In reality, however, it's easier to identify such issues if the model can express what it has learned.
+Black box machine learning models create a distance between the data and the modeler, and interpretability methods help bridge that gap.
 
-### Users might make up their interpretation anyways
+
+### Users may create their own interpretations anyway
 
 Sepsis is nasty.
 It's a serious medical condition that can develop from any infection.
-And it's one of the most common causes of death in hospitals.
-To make matters worse, it's notoriously difficult to diagnose consistently, so a good candidate for an AI-based intervention.
+It's one of the most common causes of death in hospitals.
+Diagnosing it consistently is notoriously difficult, making it an ideal candidate for AI-based intervention.
 
-Duke University and Duke Health Systems therefore developed Sepsis Watch, which uses deep learning.[@elish2020repairing]
-Sepsis Watch is not only a deep learning model, but comes with a protocol of how this model is to be used within the clinic.
-The model processes patient data to detect sepsis and raise an alarm if the patient is in danger of developing a sepsis.
-When the model detects a potential case of sepsis, it triggers an alert which initiates a new hospital protocol for diagnosis and treatment.
-This protocol involves a rapid response (RRT) nurse which monitors the alarms to inform the doctors who then treat the patient.
+Duke University and Duke Health Systems developed Sepsis Watch, which uses deep learning[@elish2020repairing].
+Sepsis Watch is not just a deep learning model; it also includes a protocol for its use within the clinic.
+The model processes patient data to detect sepsis and raises an alarm if the patient is at risk of developing sepsis.
+When the model detects a potential case of sepsis, it triggers an alert that initiates a new hospital protocol for diagnosis and treatment.
+This protocol involves a rapid response (RRT) nurse who monitors the alarms and informs the doctors, who then treat the patient.
 
-There are many things to be said about the implementations, especially the social implications associated with the new workflow, like it was "weird" for the nurses to instruct the doctors.
-Because it's not typical in terms of the usual hospital hierarchy.
-And there was lots of repair work done, especially by the RRT nurses to make the model work in the hospital environment.
-But what's interesting as well is a bit of side-note in the report:
-The deep learning system came without explanations for warnings.
-So it was never clear why a patient was likely to develop a sepsis.
-The software only displays the score.
-And sometimes there was a discrepancy between what the model score was and the diagnosis of the doctor.
-Then the doctors would ask the nurse what they are seeing that the doctors aren't seeing.
-The patient doesn't look septic, why are you saying they are high-risk?
-But of course the nurse only had access to the scores, and they weren't even seeing the patient, only some of the data of the patient.
-A disconnect.
-So the RRT nurses kind of felt responsible for the model outputs and especially "explaining" it.
-So the RRT nurses gathered contexts from the patient charts and used that as an explanation.
-One of the nurses though that the model was looking for keywords in the medical record, but in fact that was not the case.
+There are many aspects to discuss regarding the implementation, particularly the social implications associated with the new workflow, such as nurses finding it "weird" to instruct doctors due to the hospital hierarchy.
+There was also a significant amount of repair work done, particularly by RRT nurses, to make the model work in the hospital environment.
+Interestingly, a side-note in the report mentioned that the deep learning system provided no explanations for warnings, so it was unclear why a patient was likely to develop sepsis.
+The software only displayed the score, and sometimes there was a discrepancy between the model score and the doctor's diagnosis.
+Doctors would then ask the nurse what they were seeing that the doctor wasn't.
+The patient didn't appear septic, so why were they considered high-risk?
+However, the nurse only had access to the scores and didn't even see the patient, only some of their data, leading to a disconnect.
+RRT nurses felt responsible for explaining the model outputs, so they gathered context from patient charts and used that as an explanation.
+One nurse thought the model was searching for keywords in the medical record, but that wasn't the case.
 The model wasn't trained on the text.
-There were also wrong assumptions made on how the lab values influenced the sepsis score.
-While these misinterpretations didn't cause problems in the tool use, it points out an interesting "problem" of lack of interpretability:
-Users of the model might just interpret the outputs themselves when an interpretation is lacking. 
+There were also incorrect assumptions about how lab values influenced the sepsis score.
+Although these misinterpretations didn't cause problems in tool usage, they highlight an interesting issue with the lack of interpretability: users may create their own interpretations when none are provided.
+
+### Build trust in your models
+
+This is more anecdotal, but I've heard from data scientists multiple times that they avoid certain models, like neural networks or gradient boosting, because they aren't interpretable.
+This decision is not always the developer's or data scientist's, but could be due to factors in their environment: the customer who has to use the model, the middle manager who must understand the model's limitations and capabilities and vouch for its success, or the senior data scientist who has only ever used interpretable models and sees no reason to change.
+A lack of interpretability can be a barrier to using models that aren't perceived as interpretable.
+The fear that something odd might be happening or that the model can't be used for its usual use case is too significant.
+For example, coefficients in a linear regression model could be used to make other decisions, or a dashboard might need to display explanations alongside model scores for others to work with the predictions.
+
+However, methods like Shapley Values can still work in these cases, as we'll see later.
 
 
-## Build trust in your models
+## Inherently interpretable models have limitations
 
-This is more anecdotal, but I've heard multiple times now from data scientist that they wouldn't use certain models like neural networks or gradient boosting just because they aren't interpretable.
-Not necessarily the decision of the developers and data scientists themselves, but somewhere else in the environment:
-The customer that has to use the model, the middle manager that has to understand limitations and capabilities of the model and guarantee for the success in front of management, the senior data scientist that only ever has used interpretable models and why change now?
-So a lack of interpretability is a barrier of using certain model that aren't perceived to be interpretable.
-To big is the fear that something odd might be happening.
-Or by not having the interpretability, the model couldn't be used for it's usual use case.
-For example, because the coefficients in the linear regression model were used to make other decisions.
-Or a dashboard would not only show model scores, but also explanations that are necessary for other people to work with the predictions.
+Is the solution to only use "inherently" interpretable models?
+By that, I mean models such as:
 
-But even for those cases, methods like Shapley Values can work, as we will later see.
-
-## Inherently interpretable models only get you so far
-
-So then, is the solution to only use "inherently" interpretable models?
-By that I mean models such as 
-
-- linear regression and logistic regression
+- Linear regression and logistic regression
 - Generalized additive models
 - Decision rules
 - Decision trees
-- and many more sophisticated inherently interpretable models
+- Many more sophisticated inherently interpretable models
 
-Inherently interpretable usually means that the model is structured in such a way that we can understand the individual parts.
-Because the prediction is a weighted sum (linear model) or based on intelligible rules.
-Some have even called for only such models being used when the stakes are high.[@rudin2019stop]
+Inherently interpretable usually means the model is structured so we can understand its individual parts.
+The prediction is a weighted sum (linear model) or based on intelligible rules.
+Some have even called for only using such models when the stakes are high[@rudin2019stop].
 
-There are, however, a few problems.
+However, there are a few problems.
 
 Problem 1:
-It's totally unclear what constitutes an interpretable model.
-While one group of people might understand linear regression models, another group might not because they never learned about it.
-And even if you would accept a linear regression model as interpretable, it's too simple to turn it into a not-so-interpretable model.
-Let's say you log-transform the target, you add interaction terms, you add more difficult to interpret features, or when the model has a 1000 more features.
-See where this is going?
-Even an inherently interpretable model can easily turn into a hard to interpret model.
-Or make a decision tree really deep.
-It doesn't help interpretation very much if you have decision paths, when these paths have like hundreds of if-conditions.
+It's unclear what constitutes an interpretable model.
+One group might understand linear regression models, while another might not due to lack of experience.
+Even if you accept a linear regression model as interpretable, it's easy to make it difficult to interpret.
+Consider log-transforming the target, adding interaction terms, using harder-to-interpret features, or adding thousands of features.
+An inherently interpretable model can quickly become hard to interpret.
+Making a decision tree very deep doesn't help interpretation if there are hundreds of if-conditions.
 
 Problem 2:
 The best models are often not inherently interpretable.
-<!-- black box models -->
-And anyways if you do machine learning you usually have a metric you optimize.
-In many cases, boosted trees seem to be the best option. TODO: CITE
-And most would count them as interpretable.
-I certainly wouldn't, at least not in its raw form.
-Same goes for transformers which are standard for text (GPT, anyone?).
-Or convolutionsl neural networks for image classification.
-Anyways, best solutions are often ensembles of models.
-In a way, boosted trees and random forests are already ensembles.
-Transformation of the featreus, like PCA also makes features less interpretable.
-Darn.
-It's easy to move from an interpretable to a not-inherently-interpretasble model.
-What to do?
+In machine learning, you usually optimize a metric.
+Boosted trees often seem to be the best option in many cases.TODO: CITE
+Most people wouldn't consider them interpretable, at least not in their raw form.
+The same applies to transformers, standard for text (GPT, anyone?), and convolutional neural networks for image classification.
+Ensembles of models often produce the best solutions.
+Boosted trees and random forests are already ensembles.
+Feature transformations, like PCA, make features less interpretable.
 
-Even if you end up with an interpretable model, you can profit from this book.
-Because methods like Shapley values can be applied to any model.
-So even if you have a decision tree or so, you can apply the Shapley values to get additional interpretation out of the model.
+So, what to do?
+
+Even if you end up with an interpretable model, this book can help.
+Methods like Shapley values can be applied to any model, so even with a decision tree, you can use Shapley values for additional interpretation.
 
 ## Model-agnostic interpretation is the solution
 
-<!-- Along comes XAI -->
-A solution to this problem are methods from the field of explainable artificial intelligence (XAI) or interpretable machine learning (IML).
-Especially methods that are model-agnostic.
-Meaning they can be applied to any model.
-But that's weird if you haven't heard about it before.
-How can a method explain ANY machine learning model?
+A solution comes from explainable artificial intelligence (XAI) or interpretable machine learning (IML) methods, especially model-agnostic ones.
+These can be applied to any model.
+It might seem strange, but how can a method explain ANY machine learning model?
 From k-nearest neighbors to deep neural networks and support vector machines.
-Models are so different, shouldn't the method to interpret differ to the same degree?
-No, because these model-agnostic methods *don't care* what the model looks like inside.
-These methods work more akin to sensitiviy analysis of a complex system.
-You know, just like I played fighting games on the console.
-Just push around the inputs (the controller) and see what happens (let my figure fight).
-Well, model-agnostic interpretable machine learning might be a little more sophisticated than me playing Tekken.
-But the principle is the same:
-Treat the model as a box with inputs and output.
-Manipulate the inputs.
-Observe how the outputs change and draw conclusions from that.
+Models are so different; shouldn't interpretation methods differ too?
+No, because model-agnostic methods *don't care* about the model's inner workings.
+They work more like sensitivity analysis of a complex system.
+Think of playing fighting games on a console, pushing inputs (the controller) and observing what happens (the character fights).
+Model-agnostic interpretable machine learning may be more sophisticated than playing Tekken, but the principle is the same:
+Treat the model as a box with inputs and output, manipulate the inputs, observe how the outputs change, and draw conclusions.
 
 More formally, this can be described by SIPA:
 
@@ -159,19 +129,19 @@ More formally, this can be described by SIPA:
 - **P**rediction step
 - **A**ggregating the results
 
-And there are many methods that work by this principle:
+There are many methods that work with this principle:
 
-* Partial dependence plots describe how changing one (or two) of the features changes the prediction on average
-* Individual conditional expectation curves do the same, but only for one data point
-* Accumulated Local Effect Plots are an alternative to partial dependence plots
-* Permutation Feature Importance quantifies how important a feature was for the right prediction
-* And many more
+- Partial dependence plots show how changing one (or two) of the features changes the prediction on average
+- Individual conditional expectation curves do the same for a single data point
+- Accumulated Local Effect Plots are an alternative to partial dependence plots
+- Permutation Feature Importance quantifies a feature's importance for correct predictions
+- And many more
 
-And, you might have guessed already:
+As you may have guessed:
 **Shapley values (or SHAP) is another model-agnostic interpretation method.**
 
 
-## shap is an explainable AI technique
+## SHAP is an explainable AI technique
 
 <!-- SHAP -->
 And among these model-agnostic interpretation methods, one has become very popular, Shapley values, sometimes also referred to SHAP. [^difference-shap-shapley]
@@ -217,9 +187,9 @@ The rough idea behind Shapley values:
 
 ## What's so great about SHAP?
 
-Your's truly, the author of this book, has also written another book about Interpretable Machine Learning.
-Interpretable Machine Learning covers a wide range of XAI techniques, from counterfactual explanations, ICE curves and PDPs to Accumulated Local Effect Plots, Permutation Feature Importance and LIME.
-Shapley values and ShAP are also covered in this book.
+I, the author of this book, have also written another book about Interpretable Machine Learning.
+Interpretable Machine Learning covers a wide range of XAI techniques, from counterfactual explanations, ICE curves, and PDPs to Accumulated Local Effect Plots, Permutation Feature Importance, and LIME.
+Shapley values and SHAP are also covered in this book.
 
 ::: {.callout-note}
 
@@ -229,50 +199,34 @@ Shapley values and ShAP are also covered in this book.
 
 :::
 
-I have even written a blog post title [SHAP Is Not All You Need](https://mindfulmodeler.substack.com/p/shap-is-not-all-you-need) (catchy, I know).
-So why the heck write a book only about SHAP?
+I have even written a blog post titled [SHAP Is Not All You Need](https://mindfulmodeler.substack.com/p/shap-is-not-all-you-need) (catchy, I know).
+So, why write a book only about SHAP?
 Well, I do think it's a great method.
-And the truth is that many people are using SHAP, for good or bad, and for that reason alone it's worth writing an ultimate guide that is down to earth, especially by a statistician like me who also can look very serious and write in a pessimistic tone. 
+Many people use SHAP, for better or worse, which alone justifies writing an ultimate guide that is down-to-earth, especially by a statistician like me, who can also look serious and write in a pessimistic tone.
 
-But this section is not the place to be pessimistic.
-You'll learn about limitations here and there at the right places in this book.
-Now it's time to be positive.
-Because I think there are some very good reasons why SHAP has become so popular, and why it's worth learning about it:
+However, this section is not the place for pessimism.
+You'll learn about limitations in the appropriate places throughout this book.
+Now, it's time to be positive.
+There are good reasons why SHAP has become popular and why it's worth learning:
 
-- ShAP is built on a solid game-theoretic foundation
-- SHAP works for many different types of input data: tabular, text and images
-- SHAP has many good software implementations available in Python and in R
-- While SHAP is designed for local explanations (explaining individual predictions), the explanations of multiple data points can be combined to reach a global understanding of the model (like feature importance, feature interactions, feature dependence)
-- ShAP received a lot of hype. While this has some negative sides, it also means that many research papers have been written about various extensions of ShAP for special types of models and so on
-- The hype around ShAP also means there's lots material and blog posts going around. That can also be a disadvantge because much of it is just a repetition and there's lots of noise. Good for you to have this ultimate guide in your hands!
-- There are extensions such as shapash that allow you to build dasbhoards with Shapley values
-- Shapley values are useful beyond just explaining predictions. They can be used for other problems, even within machine learning. See the [Other Applications Chapter](#other) for other use cases of Shapley values, ranging from valuing data to fairly attributing feature importance (based on loss function).
+- SHAP is built on a solid game-theoretic foundation
+- SHAP works for various types of input data: tabular, text, and images
+- SHAP has many good software implementations available in Python and R
+- Designed for local explanations (explaining individual predictions), SHAP explanations can be combined for global model understanding (feature importance, interactions, dependence)
+- SHAP received hype, leading to many research papers on extensions for special types of models
+- The hype also means abundant material and blog posts, although repetitive and noisy. Good thing you have this ultimate guide!
+- Extensions like shapash enable building dashboards with Shapley values
+- Shapley values are useful beyond explaining predictions, as seen in other machine learning applications. The [Other Applications Chapter](#other) covers use cases ranging from valuing data to fairly attributing feature importance (based on loss function).
 
-
-SHAP values have found their way into many areas and explaining predictive models:
+SHAP values are used in various areas and predictive models:
 
 - Forecasting gold price [@jabeur2021forecasting]
-- Identifying mortality factors for COVID19 [@smith2021identifying]
-- Predicting heat wave related mortality [@kim2022explainable]
+- Identifying mortality factors for COVID-19 [@smith2021identifying]
+- Predicting heat wave-related mortality [@kim2022explainable]
 - Wastewater management treatment plants [@wang2022towards]
 - Genome-wide association studies [@johnsen2021new]
 - Accident detection [@parsa2020toward]
-- NO2 forecasting  [@garcia2020shapley]
-- Moleclular design [@rodriguez2020interpretation]
+- NO2 forecasting [@garcia2020shapley]
+- Molecular design [@rodriguez2020interpretation]
 
-But now it's finally time to see Shapley values in action, with a first getting started example before we dive into the intuition and theory of shap.
-
-<!--
-## Difference between explainability and interpretability
-
-- different people define it differently
-- in this book, both terms are used
-- explainability more for individual predictions
-- like the explanations produced for them
-- interpretability is more about understanding all of the model
-- other thoughts: explainability is a stronger term
-- more demand on how good the output is
-- 
-- so I slightly prefer interpretation
-- 
--->
+Now it's time to see Shapley values in action, starting with a getting-started example before diving into the intuition and theory of SHAP.

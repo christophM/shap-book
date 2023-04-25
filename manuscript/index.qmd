@@ -1,25 +1,21 @@
 # Preface
 
-When I wrote the book "Interpretable Machine Learning", SHAP was not part of it.
-In a survey on Twitter I asked which method they used most often for interpreting their machine learning models.
-I put a few options like LIME and permutation feature importance and "Other".
-No option for SHAP or Shapley values.
-The next thing that happened:
-Most voted "Other" and I got lots of comments that the option "SHAP" was missing.
-At the time I knew of SHAP, but I underestimated its popularity for machine learning explainability and beyond.
+When I wrote the book "Interpretable Machine Learning," I did not include SHAP.
+In a survey on Twitter, I asked which method people used most often for interpreting their machine learning models.
+I provided options such as LIME, permutation feature importance, and "Other," but I did not include SHAP or Shapley values.
 
-This popularity also had a negative side to it.
-My research in interpretable machine learning, for my PhD, was mostly concerned with the partial dependence plot and permutation feature importance.
-More than once when we submitted a paper to a conference, we got the feedback that we should have rather worked on SHAP or LIME.
-Really bad advice, because that's not how science works, but it speaks for the popularity of SHAP. 
+To my surprise, most respondents chose "Other," and many comments pointed out the omission of SHAP.
+At the time, I was aware of SHAP, but I underestimated its popularity in machine learning explainability and beyond. 
 
-SHAP also receives a lot of criticism.
-Expensive to compute, difficult to interpret, overhyped.
-Some of the criticism I agree with.
-But on the other side, there are lots of great things about SHAP, like the flexibility to use it with any model, the modularity to construct global interpretations, the big ecosystem of SHAP adaptions.
+This popularity also had a negative side.
+My research in interpretable machine learning, during my PhD, primarily focused on partial dependence plots and permutation feature importance.
+On more than one occasion, when we submitted a paper to a conference, we received feedback suggesting that we should have worked on SHAP or LIME instead.
+This advice was misguided, as that's not how science works, but it does speak to SHAP's popularity.
 
-So I have this love-hate-relationship with shap.
-And that makes me just the right person to write about it!
-I don't feel like overhyping it, but I still think it's valuable enough tool.
-And I think it's a good investment for you to learn about it.
+SHAP has also received its fair share of criticism, with some claiming that it is expensive to compute, difficult to interpret, and overhyped.
+I agree with some of this criticism.
+However, there are many great aspects of SHAP as well, such as its flexibility to work with any model, modularity in constructing global interpretations, and a vast ecosystem of SHAP adaptations.
 
+Because of this, I have a love-hate relationship with SHAP, which makes me the perfect person to write about it.
+I don't intend to overhype it, but I believe it is a valuable tool worth learning.
+Investing your time in understanding SHAP will pay off.
