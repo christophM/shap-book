@@ -1,85 +1,73 @@
-# Intuition For Shapley Values From Game Theory
+# Intuition for Shapley Values from Game Theory
 
-Shapley values originate from game theory.
-But before we go deeper into the theory behind them and their estimation, let's first talk about the intuition how Shapley values work, based on game theory.
+Shapley values have their origins in game theory.
+However, before diving into the theory behind them and their estimations, let's first discuss the intuition of how Shapley values operate based on game theory.
 
-First of all: What does a prediction have to do with games?
-Because this connection is, at first, not too obvious.
-At least it wasn't for me.
+Firstly, what does a prediction have to do with games? 
+The connection between these may not be immediately apparent.
+It certainly wasn't for me.
+When we delve into the origins of Shapley values, they were initially devised to address the issue of fair attribution in cooperative games.
+Imagine a group of players who collaborate, and once the game concludes, they receive payouts based on their performance.
+However, the payout is designated for the entire team, requiring them to divide it amongst themselves.
+Players may have contributed differently to the game.
+For instance, Larry, who barely contributed, shouldn't necessarily receive a share.
+On the other hand, Darlene, the brilliant strategist, significantly enhanced the team's performance, surpassing their expectations.
+She deserves a larger portion.
+But how much larger?
+To solve this attribution problem, we must first establish a set of axioms defining what fair attribution entails.
+We'll discuss that in more detail later.
 
-When we look closer at the origins of Shapley values, they solved the problem of fair attribution in cooperative games.
-Like imagine some players that cooperate and then when the game is over they get their payouts based on their performance.
-However, the payout is for the entire team, and they have to split it up.
-Players may have had different contributions.
-Like Larry, the lazy fuck, did nothing at all.
-Why should we give him anything.
-And Darlene, the genius, her impact was like a lever catapulting the teams performance beyond what they hoped to achieve.
-She should get more.
-But how much more?
-This attribution problem can only be solved by first defining some axioms of what a fair attribution would even mean.
-But more on that later.
-
-Let's first make the connection to predictions.
-
-
-## The prediction attribution game
+For now, let's focus on connecting these concepts to predictions.
+The prediction attribution game
 
 A prediction can be explained by assuming that each feature value of the instance is a "player" in a game where the prediction is the payout.
-Shapley values -- a method from coalitional game theory -- tells us how to fairly distribute the "payout" among the features.
+Shapley values, a method from coalitional game theory, tell us how to fairly distribute the "payout" among the features.
 
-Let's get more concrete and assume the following scenario:
+Let's consider the following scenario:
 
 You have trained a machine learning model to predict apartment prices.
-For a certain apartment it predicts €300,000 and you need to explain this prediction.
-The apartment has an area of 50 m^2^ (538 square feet), is located on the 2nd floor, has a park nearby and cats are banned:
+For a specific apartment, it predicts €300,000 and you need to explain this prediction.
+The apartment has an area of 50 m^2^ (538 square feet), is located on the 2nd floor, has a park nearby, and cats are banned:
 
 ![The predicted price for a 50 $m^2$ 2nd floor apartment with a nearby park and cat ban is €300,000. Our goal is to explain how each of these feature values contributed to the prediction.](images/shapley-instance.png)
-
 The average prediction for all apartments in the test data is €310,000.
 How much has each feature value contributed to the prediction compared to the average prediction?
-
 
 Let's simplify this question and assume that the price model is a linear regression model.
 The effect of each feature is the weight of the feature times the feature value.
 This only works because of the linearity of the model.
 
-However, for more complex models with non-linear effects and interactions it's not clear at all how we should attribute the predictions to the inputs.
-Same problem for image and text inputs.
+However, for more complex models with non-linear effects and interactions, it's not clear at all how we should attribute the predictions to the inputs.
+The same problem exists for image and text inputs.
 
 Shapley values, coined by Shapley (1953)[@shapley1953value], is a method for assigning payouts to players depending on their contribution to the total payout.
 Players cooperate in a coalition and receive a certain profit from this cooperation.
 
 To translate the game scenario to machine learning predictions:
+- The "game" refers to the prediction task for a single instance of the dataset.
+- The "payout" represents the actual prediction for this instance minus the average prediction for all instances.
+- The "players" are the feature values of the instance that collaborate to receive the gain (i.e., predict a certain value).
 
-- The "game" is the prediction task for a single instance of the dataset.
-- The "payout" is the actual prediction for this instance minus the average prediction for all instances.
-- The "players" are the feature values of the instance that collaborate to receive the gain (= predict a certain value).
+In the apartment example, the feature values `park-nearby`, `cat-banned`, `area-50`, and `floor-2nd` worked together to achieve the prediction of €300,000.
+Our goal is to explain the difference between the actual prediction (€300,000) and the average prediction (€310,000), which amounts to a difference of -€10,000.
 
+The answer could be as follows:
+`park-nearby` contributed €30,000; `area-50` contributed €10,000; `floor-2nd` contributed €0; and `cat-banned` contributed -€50,000.
+The contributions add up to -€10,000, which is the final prediction minus the average predicted apartment price.
+How to Calculate the Shapley Value for One Feature
 
-In the apartment example, the feature values `park-nearby`, `cat-banned`, `area-50` and `floor-2nd` worked together to achieve the prediction of €300,000.
-Our goal is to explain the difference between the actual prediction (€300,000) and the average prediction (€310,000): a difference of -€10,000.
-
-The answer could be:
-The `park-nearby` contributed €30,000; `area-50` contributed €10,000; `floor-2nd` contributed €0; `cat-banned` contributed -€50,000.
-The contributions add up to -€10,000, the final prediction minus the average predicted apartment price.
-
-## How to calculate the Shapley value for one feature
-
-The Shapley value is the average marginal contribution of a feature value across all possible coalitions.
-All clear now?
-
-In the following figure we evaluate the contribution of the `cat-banned` feature value when it is added to a coalition of `park-nearby` and `area-50`.
-We simulate that only `park-nearby`, `cat-banned` and `area-50` are in a coalition by randomly drawing another apartment from the data and using its value for the floor feature.
-The value `floor-2nd` was replaced by the randomly drawn `floor-1st`.
-Then we predict the price of the apartment with this combination (€310,000).
-In a second step, we remove `cat-banned` from the coalition by replacing it with a random value of the cat allowed/banned feature from the randomly drawn apartment.
-In the example it was `cat-allowed`, but it could have been `cat-banned` again.
+The Shapley value represents the average marginal contribution of a feature value across all possible coalitions.
+Is everything clear now?
+In the following figure, we evaluate the contribution of the `cat-banned` feature value when added to a coalition of `park-nearby` and `area-50`.
+We simulate a coalition consisting of only `park-nearby`, `cat-banned`, and `area-50` by randomly drawing another apartment from the data and using its value for the floor feature.
+The value `floor-2nd` is replaced by the randomly drawn `floor-1st`.
+We then predict the price of the apartment with this combination (€310,000).
+Next, we remove `cat-banned` from the coalition by replacing it with a random value of the cat allowed/banned feature from the randomly drawn apartment.
+In this example, it is `cat-allowed`, but it could have been `cat-banned` again.
 We predict the apartment price for the coalition of `park-nearby` and `area-50` (€320,000).
-The contribution of `cat-banned` was €310,000 - €320,000 = -€10,000.
+The contribution of `cat-banned` is €310,000 - €320,000 = -€10,000.
 This estimate depends on the values of the randomly drawn apartment that served as a "donor" for the cat and floor feature values.
-We will get better estimates if we repeat this sampling step and average the contributions.
-
-
+We can obtain better estimates by repeating this sampling step and averaging the contributions.
 ![One sample repetition to estimate the contribution of `cat-banned` to the prediction when added to the coalition of `park-nearby` and `area-50`.](images/shapley-instance-intervention.png)
 
 We repeat this computation for all possible coalitions.
@@ -89,9 +77,8 @@ One solution to keep the computation time manageable is to compute contributions
 
 The following figure shows all coalitions of feature values that are needed to determine the Shapley value for `cat-banned`.
 The first row shows the coalition without any feature values.
-The second, third and fourth rows show different coalitions with increasing coalition size, separated by "|".
-All in all, the following coalitions are possible:
-
+The second, third, and fourth rows show different coalitions with increasing coalition size, separated by "|".
+In total, the following coalitions are possible:
 - `No feature values`
 - `park-nearby`
 - `area-50`
@@ -101,38 +88,31 @@ All in all, the following coalitions are possible:
 - `area-50`+`floor-2nd`
 - `park-nearby`+`area-50`+`floor-2nd`.
 
-For each of these coalitions we compute the predicted apartment price with and without the feature value `cat-banned` and take the difference to get the marginal contribution.
-The Shapley value is the (weighted) average of marginal contributions.
-We replace the feature values of features that are not in a coalition with random feature values from the apartment dataset to get a prediction from the machine learning model.
-
+For each of these coalitions, we compute the predicted apartment price with and without the feature value `cat-banned` and take the difference to obtain the marginal contribution.
+The Shapley value is the (weighted) average of these marginal contributions.
+To get a prediction from the machine learning model, we replace the feature values of features not in a coalition with random feature values from the apartment dataset.
 
 ![All 8 coalitions needed for computing the exact Shapley value of the `cat-banned` feature value.](images/shapley-coalitions.png)
 
-If we estimate the Shapley values for all feature values, we get the complete distribution of the prediction (minus the average) among the feature values.
-
+By estimating the Shapley values for all feature values, we obtain the complete distribution of the prediction (minus the average) among the feature values.
 That's not the only way to estimate Shapley values, nor is it explained in detail here.
-In fact, there are various ways to estimate Shapley values and it's worth it's own chapter, because especially for specific models like linear regression and tree-based models there are more efficient ways to estimate the Shapley values.
+In fact, there are various ways to estimate Shapley values, and it's worth its own chapter.
+This is because, especially for specific models like linear regression and tree-based models, there are more efficient ways to estimate the Shapley values.
+What about images and texts?
 
+The explanation above primarily addressed tabular data.
+But what if the input is an image or text?
+One option is to treat them similarly to tabular input:
+Each input dimension represents a feature – pixels for images and tokens for texts.
 
-## What about images and texts?
-
-So the explanation above was for tabular data mostly.
-But what if the input is an image or a text?
-Well, one option would be to treat it just as the tabular input:
-Each input dimension is a feature: pixels, in case of images and tokens in case of texts.
-
-We will dive deeper in the respective chapters on [image](#image) and [text](#text) data. 
-But here is some intuition:
-For images it's possible to define super-pixels which are a bunch of pixels that are connected to each other.
-They are treated as a "feature" for Shapley values.
-Meaning when a particular super-pixel is part of the team, it's just visible and if it's not part of the team, we remove it.
-For removing, we have different options, like blurring it or graying it out.
-
-For text it's a bit easier, here we can literally just remove words, or replace it with other tokens when the token should be absent.
-And we can decide on which level we see the input as a feature (from an interpretation stand point).
-The players could be characters, tokens, words, parts of sentences or even entire sentences or paragraphs.
-And that's independent from what the model needs as input, as long as it's in general text-based.
-But more later.
-
-
-
+We will explore this further in the respective chapters on [image](#image) and [text](#text) data.
+But here's some intuition:
+For images, it's possible to define super-pixels, which are groups of connected pixels.
+These super-pixels are treated as a "feature" for Shapley values.
+When a particular super-pixel is part of the team, it is visible, and when it's not, it is removed.
+There are different options for removing super-pixels, such as blurring or graying them out.
+For text, it's a bit simpler; we can remove words or replace them with other tokens when necessary.
+We can determine the input level as a feature, from an interpretation standpoint.
+The elements could be characters, tokens, words, parts of sentences, or even entire sentences or paragraphs.
+This is independent of the model's input requirements, as long as it's generally text-based.
+We'll discuss this more later.

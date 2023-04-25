@@ -1,30 +1,28 @@
-# SHAP for linear models
+# SHAP for Linear Models
 
-Let's start with an easy model.
-Easy because it's already interpretable, so we can compare the Shapley values with our intuition of the model.
-A linear regression model.
+Let's begin with a simple model.
+Simple because it is already interpretable, allowing us to compare Shapley values with our intuitive understanding of the model: a linear regression model.
 
-## Theory for linear Shapley values
+## Theory of Linear Shapley Values
 
-But why do we need anyways Shapley values for linear regression, couldn't we just look at the coefficients?
+But why do we need Shapley values for linear regression anyway? Couldn't we just look at the coefficients?
 
-We could, but that would only be half of the story.
-The coefficient is always the same, no matter the data point that we want to explain.
-So, surely, this isn't the best explanation for how important a feature was.
-Imagine a feature has the value zero, then the contribution of it would be zero as well.
-Or if you have a positive coefficient, then for a data point with a positive feature, when multiplied with the coefficient, the result will be positive, but if the feature value is negative, the result will be negative.
-So the coefficient is just half of the story, since for an explanation of how this affects a certain prediction, we also need to know the feature values of an instance.
-
-As we have seen in the [estimation chapter](#estimation), it's quite easy to compute Shapley values for linear regression models.
-It's a function of the coefficient and the expected value of the predictions:
+We could, but that would only tell half of the story.
+The coefficient is always the same, regardless of the data point we want to explain.
+So, surely, it isn't the best explanation for how important a feature was.
+Imagine a feature with a value of zero; its contribution would also be zero.
+Or, consider a positive coefficient: for a data point with a positive feature, when multiplied with the coefficient, the result will be positive, but if the feature value is negative, the result will be negative.
+Thus, the coefficient only reveals half of the story; to provide an explanation of how this affects a specific prediction, we also need to know the feature values of an instance.
+As we observed in the [estimation chapter](#estimation), calculating Shapley values for linear regression models is relatively straightforward.
+It is a function of the coefficient and the expected value of the predictions:
 
 
-## The wine data
+## The Wine Dataset
 
-We will be using the wine dataset that you can get from the sklearn dataset.
-The goal is to predict wine quality based on physico-chemical attributes for the wine.
-**Target**: The target variable "quality" is an average of 3 blind testers and ranging from 0 to 10.
-Here are the features:
+We will be using the wine dataset available from the sklearn library.
+The goal is to predict wine quality based on its physico-chemical attributes.
+**Target**: The target variable "quality" is the average rating from three blind testers and ranges from 0 to 10.
+Below are the features:
 
 | Feature Name | Feature Description |
 | --- | --- |
@@ -40,28 +38,26 @@ Here are the features:
 | sulphates | The amount of sulphates (g(potassium sulphate)/dm^3) in the wine |
 | alcohol | The alcohol content (% vol.) of the wine |
 
-
-Let's quickly have a look what the features look like in data:
+Now, let's take a quick look at what the features look like in the data:
 
 ```{python}
 import pandas as pd
-
 # Set the file URL and filename
 url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/' \
       'wine-quality/winequality-white.csv'
 file_name = 'wine.csv'
+
 # Check if the file exists in the current directory
 try:
-  wine = pd.read_csv(file_name)
+    wine = pd.read_csv(file_name)
 except FileNotFoundError:
-  print(f'Downloading {file_name} from {url}...')
-  wine = pd.read_csv(url, header=None, sep=";")
-  wine.to_csv(file_name, index=False)
-  print('Download complete!')
+    print(f'Downloading {file_name} from {url}...')
+    wine = pd.read_csv(url, header=None, sep=";")
+    wine.to_csv(file_name, index=False)
+    print('Download complete!')
 ```
 
-To get a feel for the features, let's have a look at their distributions:
-(TODO: replace with figures?) 
+To examine the features, let's take a look at their distributions:
 
 ```{python}
 #| output: asis
@@ -75,14 +71,14 @@ markdown_table = tabulate(
 print(markdown_table)
 ```
 
-Here we see that the best quality is 9 (out of a possible 10) and the lowest is 3.
-The other features have different scales, but as we will see, it's not a problem for Shapley values since they explain the prediction **on the scale of the outcome**.
+Here, we observe that the highest quality is 9 (out of a possible 10) and the lowest is 3.
+The other features have different scales, but as we will discover, this is not an issue for Shapley values, since they explain the prediction **on the scale of the outcome**.
 
-## How to estimate linear Shapley values with SHAP
+## Estimating Linear Shapley Values with SHAP
 
-Now we have our wine data and want to predict the quality of a wine based on it's chemical features.
-And since we said that we would fit a linear regression model, that's what we will do.
-But first, we split the data into training and test.
+Now that we have our wine dataset, we want to predict the quality of a wine based on its chemical features.
+Since we've decided to use a linear regression model, let's proceed with that.
+Before that, though, let's split the data into training and testing sets.
 
 ```{python}
 from sklearn.model_selection import train_test_split
@@ -95,7 +91,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 ```
 
-Next, we train the linear regression model using the sci-kit learn package.
+Next, we'll train the linear regression model using the scikit-learn package.
 
 ```{python}
 #| output: false
@@ -104,9 +100,8 @@ from sklearn.linear_model import LinearRegression
 model = LinearRegression()
 model.fit(X_train, y_train)
 ```
-
-How well does the model do?
-We measure the mean absolute error (MAE) on the test data to get a feel for how well the model works.
+How well does the model perform?
+To evaluate its performance, we calculate the mean absolute error (MAE) on the test data.
 
 ```{python}
 from sklearn.metrics import mean_absolute_error
@@ -122,56 +117,53 @@ print(f"MAE: {mae:.2f}")
 ```{python}
 #| echo: false
 from IPython.display import display, Markdown
-display(Markdown("""That means that on average the prediction is off by {mae}.""".format(mae= mae)))
+display(Markdown("""This indicates that, on average, the prediction deviates by {mae} from the actual value.""".format(mae=mae)))
 ```
+This appears sufficient for now.
+Next, we aim to comprehend how the model generates a prediction.
 
-That seems good enough, at least for now.
-And next we want to understand how the model makes a prediction.
-
-For a given wine, how does the predicted quality relate to the input features?
-Let's first inspect the coefficients and then compare it with the corresponding Shapley values.
+For a given wine, how is the predicted quality connected to the input features?
+First, let's examine the coefficients and then compare them to the corresponding Shapley values.
 
 ```{python}
 #| output: asis
 coefs = pd.DataFrame({"feature": X.columns.values, "coefficient": model.coef_})
 print(coefs.to_markdown(index=False))
 ```
-
 Interpretation:
 
 - For example, increasing the fixed acidity of a wine by 1 unit increases the predicted quality by 0.046.
-- volatile acidity, citric acid, chlorides, total sulfur dioxide, and density have a negative effect
+- Volatile acidity, citric acid, chlorides, total sulfur dioxide, and density have a negative effect.
 
-But that doesn't necessarily help us in understanding how the effect is for a single prediction, because that also depends on the value that the feature of that data instance has. 
+However, this information alone does not help us understand the effect of these factors on a single prediction, as it also depends on the specific value of the feature for that data instance.
 
-So in the next step, we compute Shapley values to explain one of the data instances.
-For that we create a `LinearExplainer` object.
+To better understand this, we can compute Shapley values for one of the data instances.
+To do this, we create a `LinearExplainer` object.
 
 ```{python}
 import shap
 explainer = shap.LinearExplainer(model, X_test)
 shap_values = explainer.shap_values(X_test)
 ```
-
-Alternatively, you could have used the `Explainer` like this:
+Alternatively, you could use the `Explainer` like this:
 
 ```{python}
 explainer = shap.Explainer(model, X_test)
 explainer
 ```
 As you can see, this is also a `LinearExplainer` object.
-That's the magic of the option `algorithm='auto'`, which is the default.
-Then `shap` identifies the model as a linear regression model and picks the super efficient linear explainer.
+That's the magic of the `algorithm='auto'` option, which is the default.
+In this case, `shap` identifies the model as a linear regression model and selects the highly efficient linear explainer.
 
-And there is another way, and that's directly picking the right `algorithm` in the explainer:
+There is another way, which involves directly choosing the appropriate `algorithm` in the explainer:
 
 ```{python}
 explainer = shap.Explainer(model, X_test, algorithm='linear')
 explainer
 ```
 
-Still haven't seen the Shapley values.
-So let's take the first data instance and visualize the Shapley values for it:
+We still haven't seen the Shapley values.
+So, let's take the first data instance and visualize its Shapley values:
 
 ```{python}
 exp = shap.Explanation(
@@ -183,48 +175,42 @@ exp = shap.Explanation(
 
 shap.waterfall_plot(exp, max_display=10)
 ```
+This waterfall plot reveals various insights:
 
-This waterfall plot shows us many things:
-
-- The y-axis shows the individual features including the values for the first instance in our dataset
+- The y-axis displays the individual features, including the values for the first instance in our dataset
 - The x-axis is on the scale of the output
-- Each bar shows the Shapley value for that feature value
-- Positive Shapley values pointing to the right
-- The x-axis also shows the overall expected prediction $E[f(X)]$ and the actual prediction of the instance $f(x)$
-- The bars start in the bottom from the expected prediction and add up to the actual prediction
+- Each bar represents the Shapley value for that specific feature value
+- Positive Shapley values point to the right
+- The x-axis also indicates the overall expected prediction $E[f(X)]$ and the actual prediction of the instance $f(x)$
+- The bars start at the bottom from the expected prediction and add up to the actual prediction
 
-And more specifically in this case:
+More specifically, in this case:
 
-- The most important feature was residual sugar (=10.8) with a Shapley value of 0.27, meaning it had an increasing effect on the quality.
-- Overall the prediction was larger than the average, so this is a good quality wine
-- Most features have a positive value
+- The most crucial feature was residual sugar (=10.8), with a Shapley value of 0.27, signifying it had an increasing effect on the quality
+- Overall, the prediction was higher than the average, indicating good quality wine
+- Most features possess a positive value
 - pH is the feature value with the largest negative value
+This plot provides a nice overview, but it somewhat omits crucial information that one often desires.
+For instance, in the case of residual sugar, we know it increased the prediction, but we cannot determine from the waterfall plot alone what happens to the prediction if the value of residual sugar (10.8) increased or decreased.
+We could infer this from the coefficient, but this will change in the next chapter when we discuss additive models.
 
-
-This plot is already a nice impression, but it kind of omits some important information, that one often likes to have.
-For example, for residual sugar, we know that it increased the prediction, but we don't know from that waterfall plot alone what happens to the prediction if the value of residual sugar of 10.8 increased or decreased.
-Well, we could see that from the coefficient, but this will already change next chapter when we talk about additive models.
-
-Also we don't know on a global level what the most important features were.
-For that we can use the summary plot:
+Additionally, we lack a global understanding of the most important features.
+To address this, we can use the summary plot:
 
 ```{python}
-shap.summary_plot(shap_values, X_test, feature_names = wine.columns)
+shap.summary_plot(shap_values, X_test, feature_names=wine.columns)
 ```
-
 This plot automatically ranks the features by importance:
 
-Density, residual sugar and alcohol are the most important features for predicting wine, according to shap.
+Density, residual sugar, and alcohol are the most important features for predicting wine quality, according to SHAP values.
 The importance ordering is determined by the average absolute Shapley values across the test data (in this case).
 
 The coloring also shows us that the relationships are monotonic for all features:
 Increasing (or decreasing) a feature always increases the prediction, and only in one direction.
 Since we know that the model is a linear regression model, we also know that this relationship must be linear.
 
-
-Let's now introduce a new kind of plot, the shap dependence plot.
-And with this plot, we can hopefully confirm that the features for which we know that they have a linear relation with the target, the Shapley values also somehow show that:
-
+Now, let's introduce a new kind of plot - the SHAP dependence plot.
+With this plot, we can hopefully confirm that the Shapley values also show a linear relationship with the target for features we know have a linear relation:
 
 ```{python}
 shap.dependence_plot(
@@ -233,19 +219,18 @@ shap.dependence_plot(
   interaction_index=None
 )
 ```
+This plot illustrates the global dependence modeled by the linear regression between alcohol and the predicted wine quality.
+It's evident that as alcohol content increases, so does the predicted quality of the wine.
 
-This plot shows the global dependence modeled by the linear regression between alcohol and the predicted quality.
-Clearly visible: the more alcohol, the higher the predicted quality of the wine.
+Here are a few more explanations about the dependence plot:
 
-A few more explanation about the dependence plot
+- I set the interaction index argument to avoid attempting to detect interactions with other features, as it's a linear model and detecting interactions wouldn't make sense.
+- If we don't provide the feature names, we need to use an index in the first position of the features we're interested in.
 
-- I set the interaction index argument to not dtry to detect interactions with other features -- it's a linear model, so it wouldn't make sense
-- If we don't provide the feature names, we have to use an index in the first position of the features we are interested in 
+## Interpretation of Linear Shapley
 
-
-## Interpretation of linear Shapley
-
-So we can see that the Shapley value increases linearly with each increase in the feature. And this increase is exactly the same as the slope in 
+We can observe that the Shapley value increases linearly with each increment in the feature.
+This increase corresponds to the slope in:
 
 ```{python}
 coefs.coefficient[0]
@@ -255,14 +240,14 @@ coefs.coefficient[0]
 model.intercept_
 ```
 
-We know that in linear regression models, $\phi_{ji}(\hat{f}) = \beta_j x_j - E(\beta_jX_j) = \beta_j (x_j - E(X_j))$
-Let's confirm that this is correct:
+In linear regression models, we know that $\phi_{ji}(\hat{f}) = \beta_j x_j - E(\beta_jX_j) = \beta_j (x_j - E(X_j))$.
+Let's confirm this:
 
 ```{python}
 X_test['alcohol'].mean()
 ```
 
-Let's first plot the predictions for a range of alcohol levels.
+Now, let's plot predictions for a range of alcohol levels.
 
 ```{python}
 import matplotlib.pyplot as plt
@@ -278,11 +263,10 @@ plt.xlabel(feature_name)
 plt.ylabel('SHAP value')
 plt.show()
 ```
-
-And then let's add the Shapley values:
+And now, let's add the Shapley values:
 
 ```{python}
-# plot SHAP values against feature values
+# Plot SHAP values against feature values
 import numpy as np
 plt.scatter(
   X_test[feature_name], shap_values[:, feature_idx], alpha=0.2
@@ -297,26 +281,20 @@ sv =  coefficient * (x_range - expected)
 plt.plot(x_range, sv, color='red')
 plt.show()
 ```
-
 Looking good, and within an estimation error.
 
 This gives us a first amount of trust in the method.
 
-So we know that when
+So we know that when:
 
 - the model is additive
 - the effects are linear
 
-
-Then the Shapley values are the model coefficient multiplied with the actual feature value minus some constant.
+Then the Shapley values are the model coefficient multiplied by the actual feature value minus some constant.
 This product is also called the feature effect for an instance.
-Because the coefficient alone couldn't tell us how important a feature was for a particular instance. Because it also depends on the actual feature value: if it is large, in absolute terms, then the contribution to the outcome will be much larger than when the value is near zero.
+Because the coefficient alone couldn't tell us how important a feature was for a particular instance, it also depends on the actual feature value: if it is large, in absolute terms, then the contribution to the outcome will be much larger than when the value is near zero.
 The constant simply adjusts the values towards the mean effect, so that the plot is centered around the *expected feature effect*.
-
-
-
 
 In a way, linear regression is always an easy example.
 The assumption that everything is linear makes interpretation so easy.
-So in the next chapter we will juice it up a little and allow non-linear functions: GAMs.
-
+So in the next chapter, we will juice it up a little and allow non-linear functions: GAMs.

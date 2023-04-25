@@ -170,7 +170,7 @@ Interpreting this particular plot: The predicted value of -0.302 differs from th
 
 The sum of all Shapley values equals the difference between the predicted (-0.302) and expected value (-2.107).
 
-There are alternative visualizations to this plot, which we will explore in a later chapter (TODO:LINK).
+There are alternative visualizations to this plot, which we will explore in a later [Chapter Plots](#plots) .
 This plot only explains a single instance.
 But how can we understand the model's overall behavior?
 Explain the Model with SHAP

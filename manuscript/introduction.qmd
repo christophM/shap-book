@@ -97,7 +97,7 @@ Making a decision tree very deep doesn't help interpretation if there are hundre
 Problem 2:
 The best models are often not inherently interpretable.
 In machine learning, you usually optimize a metric.
-Boosted trees often seem to be the best option in many cases.TODO: CITE
+Boosted trees often seem to be the best option in many cases. [@grinsztajn2022tree]
 Most people wouldn't consider them interpretable, at least not in their raw form.
 The same applies to transformers, standard for text (GPT, anyone?), and convolutional neural networks for image classification.
 Ensembles of models often produce the best solutions.

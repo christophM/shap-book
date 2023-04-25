@@ -1,45 +1,40 @@
-# Explain MNIST Model with DeepExplainer and GradientExplainer
+# Explaining MNIST Model with DeepExplainer and GradientExplainer
 
-In the previous chapter we have seen an example of the Partition explainer where larger patches of an image were treated as a feature for SHAP.
+In the previous chapter, we explored the Partition explainer, where larger image patches were treated as features for SHAP.
 
-In this chapter we explain the classifications of an image classifier as well.
+In this chapter, we will explain image classifier classifications using a different approach, more akin to tabular data.
+This entails two key aspects:
 
-This time, however, we take an approach more similar to the tabular data.
-That means two things:
+- assigning one Shapley value for each input pixel
+- simulating feature absence (pixel absence) by replacing it with a pixel from a background dataset
 
-- one Shapley value for each input pixel
-- feature absence (pixel absence) is simulated by replacement from a pixel from an image which comes from a background dataset.
+Although the network receives individual pixels as input, we don't need to use the same granularity for explanations.
 
-The network gets as input the individual pixels, but that doesn't mean we have to use the same granularity for the explanations.
+As we are working with a neural network, two model-specific tools are available:
 
-And since it's a neural network, we have two model-specific tools available:
+- the gradient explainer, since neural networks often rely on gradients
+- the deep explainer, which utilizes neural network layers to backpropagate Shapley values
 
-- the gradient explainer, since a neural network is usually based on gradients
-- the deep explainer which specifically makes use of neural networks layers to backpropagate the Shapley values
+Both methods are discussed in greater detail in the [estimation chapter](#estimation).
+For this example, we will use the MNIST dataset.
+The MNIST dataset contains 70,000 handwritten digits (0-9), each represented as a 28x28 pixel grayscale image.
+The objective of the MNIST task is to create a machine learning algorithm capable of accurately classifying these images into their corresponding digit categories.
+This well-established benchmark problem has been employed to evaluate the performance of various algorithms, such as neural networks, decision trees, and support vector machines.
+The MNIST task is a supervised learning problem where the algorithm is trained on a subset of the dataset and tested on a separate set to gauge its accuracy.
+Researchers in machine learning, computer vision, and pattern recognition have extensively used the MNIST dataset.
 
-Both are explained in more detail in the [estimation chapter](#estimation).
-For the data we will be using the MNIST data.
-The MNIST data set is a collection of 70,000 handwritten digits (0-9), each represented as a 28x28 pixel grayscale image.
-The goal of the MNIST task is to develop a machine learning algorithm that can accurately classify these images into their corresponding digit categories.
-This is a well-known benchmark problem in the field of machine learning, and it has been used as a standard for evaluating the performance of various algorithms, such as neural networks, decision trees, and support vector machines.
-The MNIST task is a supervised learning problem, where the algorithm is trained on a subset of the data set and then tested on a separate set to evaluate its accuracy.
-The MNIST data set has been widely used for research in machine learning, computer vision, and pattern recognition.
+Why did I choose the MNIST dataset instead of ImageNet, as in the previous example?
+Because using pixel-wise explanations with Gradient or Deep explainer requires sampling absent features using a background dataset.
 
-But why didn't I pick the ImageNet data as in the example before?
-Because using pixel-wise explanations with Gradient or Deep explainer also means that we sample absent features using a background dataset.
+Essentially, there are two options to replace a value with images:
 
-Because bascially there are two options to replace a value with images:
+- replace them with background data
+- substitute them with a reference, such as blurring or replacing them with grey pixels (or another "neutral" color)
+Imagine using the ImageNet dataset, where we have an image of a burger and replace the "absent" pixels with pixels from a dog image - it would result in a strange outcome.
+However, for the MNIST dataset, this approach is more reasonable, as digits are more similar to each other, and replacing some pixels of a "2" with those of a "3" won't generate bizarre images.
+I acknowledge that this is a somewhat vague argument, but generally, explanations for images can be more challenging.
 
-- We could replace them from background data
-- Or we could replace them with some reference, which could be blurring them or replacing them with grey pixels (or some other "neutral" color)
-
-But imagine for the imagenet data: We have the image of a burger and then replace the "absent" pixels with pixels from a dog image.
-Would be weird.
-For MNIST, however, it's a more sensible approach, since the digits are more similar to each other and by replacing some of the pixels of a "2" with pixels of a "3" doesn't generate completely weird images.
-I'm aware that this is a rather vague argument, but in general explanations for images are a bit more wonky or difficult.
-
-Anyways, let's get started.
-First, we train a neural network from scratch, using tensorflow:
+Now, let's begin by training a neural network from scratch using TensorFlow:
 
 ```{python}
 #| output: false
@@ -60,7 +55,7 @@ x_test = x_test.astype('float32') / 255
 y_train = to_categorical(y_train, 10)
 y_test = to_categorical(y_test, 10)
 
-# Define the model architecture
+# Define model architecture
 model = Sequential()
 model.add(Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=(28, 28, 1)))
 model.add(MaxPooling2D(pool_size=(2, 2)))
@@ -70,72 +65,67 @@ model.add(Dense(128, activation='relu'))
 model.add(Dropout(0.5))
 model.add(Dense(10, activation='softmax'))
 
-# Compile the model
+# Compile model
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-# Train the model
+# Train model
 model.fit(x_train, y_train, batch_size=128, epochs=5, validation_data=(x_test, y_test))
 score = model.evaluate(x_test, y_test, verbose=0)
-```
-Let's evaluate the model.
 
-```{python}
-# Evaluate the model on the test set
+# Evaluate model on test set
 print('Test loss:', score[0])
 print('Test accuracy:', score[1])
-
 ```
 
 CONTINUE HERE
 
-TODO: INTERPRET los
+TODO: INTERPRET loss
 
-## Gradient explainer
+## Gradient Explainer
 
-Next, we explain it with shap:
+Next, explain with SHAP:
 
 ```{python}
 import shap
 import time
 
-# x_test is quite big, let's just take a sample
+# x_test is large, take a sample
 x_sample = shap.sample(x_test, 500)
 
-# since we have two inputs we pass a list of inputs to the explainer
-explainer = shap.GradientExplainer(model, data = x_sample)
+# Pass list of inputs to explainer since we have two inputs
+explainer = shap.GradientExplainer(model, data=x_sample)
 
-# we explain the model's predictions on the first three samples of the test set
+# Explain model's predictions on first three test set samples
 start_time = time.time()
 shap_values = explainer.shap_values(x_test[:3])
 gradient_time = time.time() - start_time
 ```
-
-Let's shortly talk about the output.
-So the shap_values are a list of length of the number of classes.
-It's 10 classes, from "0" to "9", so we get a list of length 10:
+Let's briefly discuss the output.
+The `shap_values` is a list with a length equal to the number of classes.
+There are 10 classes, from "0" to "9", resulting in a list of length 10:
 
 ```{python}
 print(len(shap_values))
 ```
 
-And for each of the model output, we get the shapley values:
+For each model output, we obtain the Shapley values:
 
 ```{python}
 print(shap_values[0].shape)
 ```
 
-First dimension is the number of images for which we computed the shapley values.
-Then second, third and fourth dimensions are the shapley values in the form of an image, since the input data was an image.
+The first dimension represents the number of images for which we computed the Shapley values.
+The second, third, and fourth dimensions contain the Shapley values in the form of an image since the input data was an image.
 
-Let's plot the shap values:
+Let's plot the Shap values:
 
 ```{python}
 shap.image_plot(shap_values, x_test[:3])
 ```
 
-##  Deep explainer
+## Deep Explainer
 
-We do the same, but use the DeepExplainer this time
+We follow the same process, but use the DeepExplainer this time:
 
 ```{python}
 #| output: false
@@ -145,7 +135,7 @@ shap_values = explainer.shap_values(x_test[:3])
 deep_time = time.time() - start_time
 ```
 
-And plot the results again:
+Then, plot the results again:
 
 ```{python}
 shap.image_plot(shap_values, x_test[:3])
@@ -153,27 +143,22 @@ shap.image_plot(shap_values, x_test[:3])
 
 TODO: Interpret results
 
-
 TODO: Compare results, qualitatively the results with gradient explainer
 
-Comparing with 
-
+Comparing with
 
 ## Time comparison between deep explainer
 
-We measured time for both gradient and deep explainer.
+We measured the time for both gradient and deep explainer.
 
-Let's see:
+Let's examine the results:
 
 ```{python}
 print("Gradient explainer: ", round(gradient_time, 2))
 print("Deep explainer: ", round(deep_time, 2))
 ```
 
-IN THEORY, to get a good time comparison, you have to repeat the calls a couple hundreds of times, not use other programs at the same time, yada yada yada.
-So I did this comparison just once and on my Macbook with M1 chip.
-BUT, the difference is clear here.
-
-Also it's just on my CPU, so anytime we call the model, it's not in the most effective way because there is no GPU involved. 
-
-
+In theory, to obtain a reliable time comparison, you should repeat the calls several hundred times, avoid using other programs simultaneously, and so on.
+However, I conducted this comparison only once on my MacBook with an M1 chip.
+Nonetheless, the difference is evident.
+Additionally, since only the CPU is used, calling the model is not as efficient as it could be, as there is no GPU involved.

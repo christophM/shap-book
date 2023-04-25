@@ -1,23 +1,21 @@
 # The Correlation Problem {#correlation}
 
-Shapley values have a subtle but profound problem when features are correlated:
-Simulating features as absent by replacing them with sampled values from the background data may produce unrealistic data points.
-And these unrealistic data points are used to produce an explanation.
-It's problematic for multiple reasons:
+Shapley values have a subtle but significant issue when dealing with correlated features:
+simulating feature absence by replacing them with sampled values from the background data can produce unrealistic data points.
+These unrealistic data points are then used to generate explanations, which is problematic for several reasons:
 
-- We might not be interested in having unrealistic or unlikely data points involved in explanation
-- There might be a conceptual problem that these data points are even physically impossible (e.g. a 2meter tall person weighting 10 kg).
-- The model wasn't trained on data in these areas and might do somethings unexpected
-- Also it means we explore model predictions in these areas.
+- Involving unrealistic or unlikely data points in the explanation may not be desirable.
+- There could be a conceptual issue with physically impossible data points (e.g., a 2-meter tall person weighing 10 kg).
+- The model may not have been trained on data in these areas and might produce unexpected results.
+- This implies that we are exploring model predictions in these areas.
 
+In this chapter, we will first delve into the problem in more detail using a small simulation, followed by discussing possible solutions.
 
-In this chapter, we will first explore the problem in more detail with a small simulation and then will address a couple of possible solutions.
+## Illustration of the Correlation Problem
 
-## Illustration of the correlation problem
-
-To demonstrate this problem, I simulated two strongly correlated features $X_1$ and $X_2$.
-Imagine that a machine learning model is trained later on this data.
-I won't actually train one, but we will just explore how the sampling of background data is problematic.
+To illustrate this issue, I simulated two strongly correlated features, $X_1$ and $X_2$.
+Suppose a machine learning model is later trained on this data.
+We will not train a model, but rather examine how sampling background data can be problematic.
 
 ```{python}
 import numpy as np
@@ -30,7 +28,7 @@ n = 100 # number of samples
 x1, x2 = np.random.multivariate_normal(mean, cov, n).T # generate the samples
 ```
 
-Next, let's select a data point for which we will simulate the drawing from the background data.
+Next, let's select a data point for which we will simulate drawing from the background data.
 
 ```{python}
 np.random.seed(0)
@@ -40,8 +38,7 @@ point = (x1[index], x2[index])
 ```
 
 I'm interested in the Shapley value for feature $X_1$.
-I'll show you both what Shapley values due in red and how sampling of the background should look like when we respect the conditional distribution of the data.
-
+I will demonstrate both what Shapley values do in red and how background data sampling should appear when respecting the conditional distribution of the data.
 ```{python}
 #| label: fig-sampling
 #| fig-cap: "Marginal and conditional sampling"
@@ -67,116 +64,104 @@ plt.ylabel('x2')
 
 plt.show()
 ```
-As the plot above shows, when we ignore the correlation between $X_1$ and $X_2$ and sample $X_2$ independent from $X_1$, then we create new data points outside of the distribution.
-And that's what happens with Shapley values.
-On the left is what it would look like to sample from $P(X_2 | X_1)$ instead of $P(X_2)$.
-This so-called conditional sampling will also be part of one of the solutions.
+The plot above illustrates that when we ignore the correlation between $X_1$ and $X_2$ and sample $X_2$ independently from $X_1$, we create new data points outside of the distribution.
+This is what occurs with Shapley values.
+On the left, we can see what sampling from $P(X_2 | X_1)$ instead of $P(X_2)$ would look like.
+This conditional sampling will also be part of one of the solutions.
 
 ## A philosophical problem
+Before delving into solution details, let's explore the issue further.
+The problem of correlation and extrapolation is not just a technical challenge but also a philosophical one.
+We must decide what we truly want when interpreting a model.
 
-But before we go into the details of the solutions, we will go deeper into the problem.
-Because the issue of merely correlation or extrapolation is a bit too short.
-It's a bit more philosophical problem and in a way you can't escape it but have to make a decision what you actually want when it comes to explaining a model.
+Consider this: What does it **mean** when features are correlated, and what are the consequences for interpretation?
+From an information theoretic perspective, correlation means that two features share information.
+If they share information, it makes sense that we cannot simply sample one of the features without considering the correlated feature.
 
-Think about it: What does it **mean** when features are correlated, and what are the consequences for the interpretation?
-From an information theoretic perspective, correlation means that the two features share information.
-And if they share information, it kind of make sense that we can't just sample one of the features without looking at the correlated feature.
-
-Let's say we have two strongly correlated features:
-How much it rained yesterday and whether it was cloudy yesterday.
-When it rained yesterday, we know it must have been cloudy.
-Correlation.
-How can we even say that we somehow want the effect of rain but at the same time ignore the cloudiness?
+For example, let's say we have two strongly correlated features: rainfall yesterday and cloudiness yesterday.
+If it rained yesterday, we know it must have been cloudy - this is correlation.
+How can we isolate the effect of rain while ignoring the cloudiness?
 
 ## What about images and text?
 
-Shap for image and text features works a bit differently: no background data involved.
-But the simulation of absent feature values still creates new images and texts that might leave the distribution.
+SHAP for image and text features works differently: no background data is involved.
+However, simulating absent feature values still generates new images and texts that might deviate from the distribution.
 In case of images, the removed areas are blurred or inpainted.
-For text it's replaced by a replacement token like "..." or just a whitespace " ".
-Difficult to tell how sever the problem is.
-But especially inpaiting is a kind of conditional sampling.
-And blurring is even more special as not all the information of the feature is used.
+For text, it's replaced by a replacement token like "..." or just a whitespace " ".
+It's difficult to gauge the severity of the problem, but inpainting is a form of conditional sampling, and blurring is even more unique as it doesn't use all the feature's information.
 
 The question becomes: What is a meaningful "reference data point"?
-For images the default is a blurred or inpainted image.
-For text it's an empty string.
+For images, the default is a blurred or inpainted image.
+For text, it's an empty string.
 
 ## Solution: Reduce correlation in the model
 
-Maybe a bit dumb suggestion, but: You can't run into the correlation problem if you don't have correlated features.
-For this solution we need some flexibility on training the model with a different set of features.
-Because if this is the case, we have a bigger arsenal of techniques available to reduce the number of features that are used:
+While it may seem overly simplistic, avoiding the correlation problem can be achieved by eliminating correlated features.
+This solution requires flexibility in training the model with a different set of features.
+If this is the case, we can leverage a wider range of techniques to reduce the number of features used:
+- Employ feature selection methods, particularly those that eliminate correlated features.
+- Remove features with minimal variance.
+- Utilize dimensionality reduction techniques.
+- Apply feature engineering to decrease correlation: For instance, if you have a person's height and weight, use height and BMI instead.
+- Combine features: Perhaps you have the amount of rain in the morning and afternoon as separate features. Maybe daily rainfall is sufficient? Test it out.
 
-- Use feature selection methods, especially the ones that remove correlated features.
-- Remove features that have barely any variance:
-- Use dimensionality reduction:  
-- Use feature engineering to reduce their correlation: For example if you height and weight of a person, use height and BMI instead.
-- Combine features: Maybe you have amount of rain in the morning and amount of rain in the afternoon as features. Maybe it's enough to have daily amount of rain? Try it out.
-
-Having fewer correlated features and fewer features in general can be very beneficial also from model fitting.
-For all these steps you can control how much they reduce or maybe even improve model performance to make your decision of a possible trade-off.
+Reducing correlated features and the overall number of features can significantly benefit model fitting.
+For each of these steps, you can assess how much they reduce or potentially enhance model performance, aiding in your decision-making for possible trade-offs.
 
 ## Solution: Combined explanation of correlated features
 
-Instead of using the `Independent` explainer, you can use the `Partition` explainer.
-The `Partition` explainer, by default, groups the features by correlation, but you can also provide your own grouping of the features.
+Instead of using the `Independent` explainer, opt for the `Partition` explainer.
+By default, the `Partition` explainer groups features based on correlation, but you can also define your own feature groupings.
 
-The Partition explainer creates a hierarchy of the features based on a provided distance matrix or a custom grouping.
-Within the hierarchy, the Shapley values are computed recursively.
-This changes the complexity from $\mathcal{O}(2^p)$ to $\mathcal{O}(p^2)$ (when clustering tree is balanced), where $p$ is the number of input features to the model
+The Partition explainer generates a feature hierarchy based on a provided distance matrix or custom groupings.
+Within this hierarchy, Shapley values are calculated recursively.
+This alters the complexity from $\mathcal{O}(2^p)$ to $\mathcal{O}(p^2)$ (when the clustering tree is balanced), where $p$ is the number of input features for the model.
 
-This special type of game called the Owen game.
-The advantage is that for groups of correlated features we get one Shapley value to interpret.
+This specific type of game is called the Owen game.
+The benefit is that for groups of correlated features, we obtain a single Shapley value for interpretation.
 
 ## Solution: Conditional sampling
 
-As already hinted in @fig-sampling, it's also possible to just sample differently.
+As hinted in @fig-sampling, it's also possible to use different sampling methods.
 
-A short example:
-
-- We have four features $X_1$ to $X_4$
-- We compute the Shapley value for $X_1$
-- During sampling, one of the coalitions we add $X_1$ to is $\{X_2\}$
-- That means we compute the predictions for the teams $\{X_2\}$ and for $\{X_1, X_2\}$
-- The absent features, which are $\{X_1, X_3, X_4\}$ and $\{X_3, X_4\}$, are sampled from the background data
-- The sampling can be either from
+A brief example:
+- We have four features $X_1$ to $X_4$.
+- Compute the Shapley value for $X_1$.
+- During sampling, one of the coalitions we add $X_1$ to is $\{X_2\}$.
+- Compute the predictions for the teams $\{X_2\}$ and $\{X_1, X_2\}$.
+- The absent features are $\{X_1, X_3, X_4\}$ and $\{X_3, X_4\}$, which are sampled from the background data.
+- Sampling can be either from:
   - $P(X_1, X_3, X_4)$ and $P(X_3, X_4)$ (marginal sampling)
   - $P(X_1, X_3, X_4 | X_2)$ and $P(X_3, X_4| X_1, X_2)$ (conditional sampling)
 
-And conditional sampling avoids the extrapolation problem.
-@aas2021explaining suggested to incorporate conditional sampling in KernelSHAP.
-Conditional sampling is easier said than done, if you remember that supervised machine learning is all about learning $P(Y|X_1, \ldots, X_p)$ and now all of a sudden we should learn much more complex distributions for multiple variables. 
-So what's usually done in such a case and also @aas2021explaining did:
-Use simplifying assumptions for the conditional distributions which make sampling simple.
+Conditional sampling avoids the extrapolation problem.
+[@aas2021explaining] suggested incorporating conditional sampling in KernelSHAP.
+However, conditional sampling is easier said than done, considering that supervised machine learning focuses on learning $P(Y|X_1, \ldots, X_p)$, and we now need to learn more complex distributions for multiple variables.
+Typically, simplifying assumptions for the conditional distributions are used to make sampling easier, as done by @aas2021explaining:
 
-- use multivariate gaussians
-- Gaussian copulas
-- Kernel estimators (if there are not too many dimensions)
-- there are more, but that's what the paper proposed
+- Use multivariate Gaussians
+- Employ Gaussian copulas
+- Apply kernel estimators (if there are not too many dimensions)
+- The paper proposed more techniques, but these are the key ones
 
 ::: {.callout-warning}
-
-Changing the sampling from marginal to conditional changes the game payout.
-For example, the resulting Shapley values will seemingly no longer follow the Dummy axiom, because features that are not used like $\beta_j=0$ in a linear model, can "suddenly" get a non-zero Shapley values.
-It's however not breaking the axiom, because based on this new payout using conditional distributions, it's still Shapley values.
-Just be aware of that change in interpretation. 
+Switching the sampling from marginal to conditional alters the game payout.
+For instance, the resulting Shapley values may appear to no longer adhere to the Dummy axiom, as unused features like $\beta_j=0$ in a linear model can suddenly have non-zero Shapley values.
+However, this doesn't violate the axiom, since based on the new payout using conditional distributions, they still qualify as Shapley values.
+Just be mindful of this shift in interpretation.
 
 :::
 
-As the box above described, the Shapley game changes and it can happen that features that were not used by the model get a non-zero Shapley value.
+As mentioned above, the Shapley game changes and features not utilized by the model can have non-zero Shapley values.
 
-Whether that's desired or not depends on your interpretation goals.
-If your goal is more to audit the model, you should go with the marginal sampling maybe.
-If your goal is more about understanding the data, conditional sampling might be the better choice.
-The trade-off is also framed as either being true to the model (marginal sampling) or true to the data (conditional sampling) [@chen2020true].
-Also explored by @sundararajan2020many.
-
-
+Whether this is desirable depends on your interpretation goals.
+If your objective is to audit the model, marginal sampling might be more appropriate.
+If you want to better understand the data, conditional sampling could be the better option.
+This trade-off is also characterized as being true to the model (marginal sampling) or true to the data (conditional sampling) [@chen2020true].
+This concept is further discussed by @sundararajan2020many.
 
 ::: {.callout-note}
 
-When features aren't correlated, then marginal and conditional distributions are the same.
+When features are uncorrelated, marginal and conditional distributions are identical.
 
 :::
-

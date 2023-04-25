@@ -10,3 +10,6 @@ latex/hash.tex
 # Intermediate file folders
 *_files
 _book
+
+# open ai
+oai.key
