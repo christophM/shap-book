@@ -12,7 +12,6 @@ Let's delve further into these limitations.
 Kernel and Sampling estimators, in particular, can be quite slow.
 Depending on your use case, computing Shapley values might be unnecessary.
 If you only need to determine the global effect of a feature, it would be faster and more cost-effective to compute [partial dependence plots (PDPs)](https://christophm.github.io/interpretable-ml-book/pdp.html).
-
 However, model-specific versions like the Tree Estimator are relatively fast, so if that's feasible, it's a suitable option.
 
 ## Interactions can be perplexing
@@ -24,11 +23,11 @@ All features were independent and had an expected value of zero.
 Given this information, what would you anticipate for the Shapley importance of each feature?
 I would expect all Shapley importances to be equal.
 However, they also assign equal importance to two features with different scales, such as $X_1$ ranging from -1 to +1 and $X_2$ ranging from -1000 to +1000.
-Although $X_2$ has a greater influence on the prediction due to its larger scale, the Shapley importance for both features is the same.
+Although $X_2$ seems to have a greater influence on the prediction due to its larger scale, the Shapley importance for both features is the same.
 This makes sense because knowing $X_1$ is as important as knowing $X_2$.
 Despite the significant difference in range, the prediction could go in any direction without knowing $X_1$ due to the multiplicative nature of the problem.
-This demonstrates that interpreting interactions, which are inherently multiplicative, is not always intuitive.
-In the [interaction chapter](#interaction), we also observed how interactions are divided between features and often exhibit a combination of local and global effects.
+This demonstrates that interpreting interactions is not always intuitive.
+In the [Interaction Chapter](#interaction), we also observed how interactions are divided between features and often exhibit a combination of local and global effects.
 Keep this peculiarity in mind.
 
 ## No consensus on what an attribution should look like
@@ -38,13 +37,14 @@ It is unclear how interactions should be attributed or what importance truly sig
 
 In interpretable machine learning, the process is often reversed:
 We employ a somewhat mathematically coherent method that generates an "explanation" for a model and then attempt to decipher its meaning.
-Ideally, we would articulate and define the properties of the data and model that interest us and
+Ideally, we would articulate what we want in terms of an explanation and then pick or design the method based on our needs.
+But in the real world that is rarely the case.
 
 With Shapley values, one could argue that the axioms perfectly define them.
 After all, Shapley values are the sole solution that satisfies the axioms.
 The question now is: Are these axioms useful for interpretation? Did we define the right game?
 
-As demonstrated in the chapters about [linear models](#linear) and [additive models](#additive), at least for these more restricted models, the results align with our expectations and what similar metrics (such as coefficients or PDP) would indicate.
+As demonstrated in the [Linear Chapter](#linear) and the [Additive Chapter](#additive), at least for these more restricted models, the results align with our expectations and what similar metrics (such as coefficients or PDP) would indicate.
 
 ### Shapley values aren't human-friendly explanations
 Human-friendly explanations should be concise, contrastive, and focus on "abnormal" causes [@miller2019explanation].
@@ -76,23 +76,23 @@ Instead, the Shapley value interpretation is as follows: given the current set o
 
 Shapley value is not the ideal explanation method for sparse explanations (explanations with few features), as it **always uses all the features**.
 
-## Shapley Value Method is not a Surrogate Model
+## Shapley values aren't a surrogate model
 
 Unlike LIME, the Shapley value provides a single value per feature but **no prediction model**.
 Thus, it cannot be used to make statements about changes in predictions for changes in input, such as, "If I were to earn €300 more a year, my credit score would increase by 5 points."
 
-## Data Access is Necessary
+## Data access is necessary
 
 Another limitation is that **data access is required** to calculate the Shapley value for a new data instance.
 Access to the prediction function alone is insufficient, as you need the data to replace parts of the instance of interest with values from randomly drawn instances.
 This can only be avoided if you can create data instances that resemble real data instances but are not actual instances from the training data.
 
-## Possibility of Fooling Shap
+## You can fool SHAP
 
-It is **possible to create intentionally misleading interpretations** with SHAP, which can conceal biases[@slack2020fooling].
+It's possible to create intentionally misleading interpretations with SHAP, which can conceal biases [@slack2020fooling].
 If you are the data scientist creating the explanations, this is not an issue (it could even be advantageous if you are an unscrupulous data scientist who wants to create misleading explanations).
 However, for the recipients of a SHAP explanation, it is a disadvantage, as they cannot be certain of the explanation's truthfulness.
 
 ### Unrealistic Data when Features are Correlated
 
-Refer to the [correlation chapter](#correlation) for more information.
+Go to the [Correlation Chapter](#correlation) for more information.

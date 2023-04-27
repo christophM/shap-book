@@ -8,14 +8,14 @@ The SHAP library was written by Scott Lundberg, author of the SHAP paper [@lundb
 The [first commit](https://github.com/slundberg/shap/tree/7673c7d0e147c1f9d3942b32ca2c0ba93fd37875) was on November 22nd, 2016.
 At the time of writing, there are over 2000 commits.
 
-## The SHAP Library is Popular
+## The SHAP library is popular
 
 The SHAP package is open source and hosted on Github, making it public and allowing everyone to track its progress.
 The repository has been starred over 19k times and forked nearly 3k times.
 Feature-wise, it's the most comprehensive library available for Shapley values.
-I believe the `shap` library is the most widely-used implementation of Shapley values.
+I believe the `shap` library is the most widely-used implementation of Shapley values in machine learning.
 
-## The SHAP Library Has Many Issues
+## The SHAP library has many issues
 
 As of the date of writing, the `shap` library requires maintenance.
 Here is a list of the package's current state:
@@ -27,7 +27,8 @@ Here is a list of the package's current state:
 - For instance, the example in the README no longer works due to the deprecation of the Boston dataset.
 
 In summary, the library has numerous issues.
-## The Open-Source Model is Challenging
+
+## Open source is challenging
 
 As a package developer myself, I understand the difficulties.
 I created an [R package called iml](https://github.com/christophM/iml), and I must admit, I'm not the best maintainer.
@@ -48,7 +49,8 @@ My intention is not to criticize Lundberg.
 He has generously contributed his time and effort to bring the `shap` package to life and owes no further development or maintenance to anyone.
 In fact, I'm grateful for what he has accomplished with the package so far.
 
-## Addressing the Situation
+## Addressing the situation
+
 Assuming Scott Lundberg doesn't return to work on `shap`, the situation may evolve in several ways.
 Ideally, the maintenance of the `shap` package would be transferred to someone with the necessary skills and time.
 As the package is open source, another individual could theoretically fork the library and maintain the fork, allowing it to become the de facto successor of `shap`.
@@ -74,7 +76,8 @@ In Python:
 
 - [Captum](https://github.com/pytorch/captum)[@kokhlikyan2020captum]: A general model interpretability library that implements KernelShap, Sampling estimator, GradientShap, and Deep Shap.
 - [shapley](https://github.com/benedekrozemberczki/shapley)[@rozemberczki2022shapley]: Implements the exact estimator, some linear explanation methods, and Monte Carlo permutation sampling.
-In Python, relying on `shap` internally:
+
+Python packages that internally rely on `shap`:
 
 - [DALEX](https://github.com/ModelOriented/DALEX)[@baniecki2021dalex]
 - [AIX360](https://github.com/Trusted-AI/AIX360)[@aix360sept2019]
@@ -91,4 +94,5 @@ In R:
 - [shapper](https://github.com/ModelOriented/shapper), relying on the Python shap package.
 - [shapviz](https://github.com/ModelOriented/shapviz) implements many SHAP plots from the original Python `shap` package and more.
 - [treeshap](https://github.com/ModelOriented/treeshap)
-- [iml](https://github.com/christophM/iml)[@molnar2018iml]: Shapley values for tabular data, only sampling explainer. That's the one I wrote!
+- [iml](https://github.com/christophM/iml)[@molnar2018iml]
+

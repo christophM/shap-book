@@ -1,9 +1,7 @@
 # Building SHAP Dashboards with Shapash
 
 Shapash is a package that utilizes SHAP (or LIME) to compute contributions and visualize them in a dashboard or report.
-
 The dashboard is useful for exploring explanations and is more convenient than iterating through explanations in a Jupyter notebook or, even worse, a Python script.
-
 This enables an explorative data analysis style of discovery.
 
 ## Installation
@@ -22,7 +20,7 @@ For report capabilities, install it this way:
 pip install shapash
 ```
 
-## A Quick Example with Shapash
+## A quick example with shapash
 
 Let's build a simple dashboard using the California housing data.
 
@@ -59,18 +57,20 @@ xpl.compile(y_pred=y_pred, x=X_test)
 To start the app, simply run:
 
 ```{python}
+#| output: False
 app = xpl.run_app(title_story="California Housing", port=8020)
 ```
+
 This will run the server locally on port 8020 and display a link to `http://0.0.0.0:8050/`, where the Shapash app is accessible.
 
-## Dashboard Overview
+## Dashboard overview
 
 ![Shapash Webapp](images/shapash.png)
 
 The interactive dashboard contains several sections:
 
 - Top left: Displays feature importance.
-- Bottom left: Plots feature contributions (PDP). Change the feature by clicking on the importance graph.
+- Bottom left: Feature dependence plots. Change the feature by clicking on the importance graph.
 - Top right: Contains multiple tabs, including raw data values, filters for a subset view on the importance graph, and a true versus predicted plot.
 - Bottom right: Presents a bar plot of Shapley values. Select an instance in the top-right graph using the dataset picker or in the bottom-left feature contribution figure. There are options to customize the graph, such as displaying only the most influential features.
 

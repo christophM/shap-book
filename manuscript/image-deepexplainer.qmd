@@ -1,26 +1,25 @@
-# Explaining MNIST Model with DeepExplainer and GradientExplainer
+# Explaining MNIST Model with Deep Explainer and Gradient Explainer
 
 In the previous chapter, we explored the Partition explainer, where larger image patches were treated as features for SHAP.
 
 In this chapter, we will explain image classifier classifications using a different approach, more akin to tabular data.
 This entails two key aspects:
 
-- assigning one Shapley value for each input pixel
-- simulating feature absence (pixel absence) by replacing it with a pixel from a background dataset
+- Assigning one Shapley value for each input pixel
+- Simulating feature absence (pixel absence) by replacing it with a pixel from a background dataset
 
 Although the network receives individual pixels as input, we don't need to use the same granularity for explanations.
 
 As we are working with a neural network, two model-specific tools are available:
 
-- the gradient explainer, since neural networks often rely on gradients
-- the deep explainer, which utilizes neural network layers to backpropagate Shapley values
+- The gradient explainer, since neural networks often rely on gradients
+- The deep explainer, which utilizes neural network layers to backpropagate Shapley values
 
-Both methods are discussed in greater detail in the [estimation chapter](#estimation).
+Both methods are discussed in greater detail in the [Estimation Chapter](#estimation).
 For this example, we will use the MNIST dataset.
 The MNIST dataset contains 70,000 handwritten digits (0-9), each represented as a 28x28 pixel grayscale image.
 The objective of the MNIST task is to create a machine learning algorithm capable of accurately classifying these images into their corresponding digit categories.
 This well-established benchmark problem has been employed to evaluate the performance of various algorithms, such as neural networks, decision trees, and support vector machines.
-The MNIST task is a supervised learning problem where the algorithm is trained on a subset of the dataset and tested on a separate set to gauge its accuracy.
 Researchers in machine learning, computer vision, and pattern recognition have extensively used the MNIST dataset.
 
 Why did I choose the MNIST dataset instead of ImageNet, as in the previous example?
@@ -30,9 +29,12 @@ Essentially, there are two options to replace a value with images:
 
 - replace them with background data
 - substitute them with a reference, such as blurring or replacing them with grey pixels (or another "neutral" color)
+
 Imagine using the ImageNet dataset, where we have an image of a burger and replace the "absent" pixels with pixels from a dog image - it would result in a strange outcome.
 However, for the MNIST dataset, this approach is more reasonable, as digits are more similar to each other, and replacing some pixels of a "2" with those of a "3" won't generate bizarre images.
 I acknowledge that this is a somewhat vague argument, but generally, explanations for images can be more challenging.
+
+## Training the neural network
 
 Now, let's begin by training a neural network from scratch using TensorFlow:
 
@@ -41,7 +43,9 @@ Now, let's begin by training a neural network from scratch using TensorFlow:
 import tensorflow as tf
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
+from tensorflow.keras.layers import (
+    Dense, Dropout, Flatten, Conv2D, MaxPooling2D
+)
 from tensorflow.keras.utils import to_categorical
 
 # Load the MNIST dataset
@@ -57,7 +61,12 @@ y_test = to_categorical(y_test, 10)
 
 # Define model architecture
 model = Sequential()
-model.add(Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=(28, 28, 1)))
+model.add(Conv2D(
+  32,
+  kernel_size=(3, 3),
+  activation='relu',
+  input_shape=(28, 28, 1)
+))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Dropout(0.25))
 model.add(Flatten())
@@ -66,31 +75,41 @@ model.add(Dropout(0.5))
 model.add(Dense(10, activation='softmax'))
 
 # Compile model
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.compile(
+  loss='categorical_crossentropy',
+  optimizer='adam',
+  metrics=['accuracy']
+)
 
 # Train model
-model.fit(x_train, y_train, batch_size=128, epochs=5, validation_data=(x_test, y_test))
+model.fit(
+  x_train,
+  y_train,
+  batch_size=128,
+  epochs=5,
+  validation_data=(x_test, y_test)
+)
 score = model.evaluate(x_test, y_test, verbose=0)
+```
 
+Next, let's evaluate the model.
+
+```{python}
 # Evaluate model on test set
 print('Test loss:', score[0])
 print('Test accuracy:', score[1])
 ```
 
-CONTINUE HERE
+## Computing Shapley values with the Gradient Explainer
 
-TODO: INTERPRET loss
-
-## Gradient Explainer
-
-Next, explain with SHAP:
+Next, explain the model classification with SHAP:
 
 ```{python}
 import shap
 import time
 
 # x_test is large, take a sample
-x_sample = shap.sample(x_test, 500)
+x_sample = shap.sample(x_train, 500)
 
 # Pass list of inputs to explainer since we have two inputs
 explainer = shap.GradientExplainer(model, data=x_sample)
@@ -123,6 +142,11 @@ Let's plot the Shap values:
 shap.image_plot(shap_values, x_test[:3])
 ```
 
+All the red pixels contributed positively to the respective class and blues one negatively.
+Grey pixels have a near zero Shapley value.
+For example, for the "2", the class output "1" has blue pixels at the left and right beginning/ending of the "2" image.
+This makes sense, since these are the pixels that make it a "2" and not a "1".
+
 ## Deep Explainer
 
 We follow the same process, but use the DeepExplainer this time:
@@ -141,11 +165,8 @@ Then, plot the results again:
 shap.image_plot(shap_values, x_test[:3])
 ```
 
-TODO: Interpret results
-
-TODO: Compare results, qualitatively the results with gradient explainer
-
-Comparing with
+The Shapley values are very similar to the Gradient Explainer.
+Make sense, since in both cases the result should be the same Shapley values and difference only due to the fact that both are approximated.
 
 ## Time comparison between deep explainer
 

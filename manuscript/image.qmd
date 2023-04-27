@@ -1,14 +1,8 @@
 ## Image Classification with Partition Explainer
 
-TODO: some ## headers
 
 So far, we've only explored tabular data.
 Now, let's work with image data.
-
-The general setup is:
-
-- Input: image data
-- Output: score (can be multi-dimensional for multi-class classification)
 
 Image classification is a prevalent task often solved using deep learning.
 Given an image, the model returns a class based on the visible content.
@@ -18,7 +12,9 @@ Instead of training our own image classifier, we'll load a pre-trained ResNet mo
 ImageNet is a large-scale image classification challenge requiring models to categorize objects within digital images.
 It features a dataset of over 1 million images from 1000 different categories, and the goal is to develop a model that accurately classifies each image.
 
-Code based on [shap notebook](https://github.com/slundberg/shap/blob/master/notebooks/image_examples/image_classification/Explain%20ResNet50%20using%20the%20Partition%20explainer.ipynb)
+Code based on [a notebook from the shap library](https://github.com/slundberg/shap/blob/master/notebooks/image_examples/image_classification/Explain%20ResNet50%20using%20the%20Partition%20explainer.ipynb)
+
+## Get the pretrained network
 
 We'll use a pre-trained Resnet in TensorFlow.
 
@@ -26,7 +22,8 @@ We'll use a pre-trained Resnet in TensorFlow.
 import json
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.applications.resnet50 import ResNet50, preprocess_input
+from tensorflow.keras.applications.resnet50 import ResNet50
+from tensorflow.keras.applications.resnet50 import preprocess_input
 import shap
 
 model = ResNet50(weights='imagenet')
@@ -41,14 +38,14 @@ import json
 import os
 import urllib.request
 
-# Path to the JSON file on disk (change this to the desired location)
 json_file_path = 'imagenet_class_index.json'
 # Check if the JSON file exists on disk
 if os.path.exists(json_file_path):
     with open(json_file_path) as file:
         class_names = [v[1] for v in json.load(file).values()]
 else:
-    url = 'https://s3.amazonaws.com/deep-learning-models/image-models/imagenet_class_index.json'
+    url = 'https://s3.amazonaws.com/deep-learning-models/' + \
+          'image-models/imagenet_class_index.json'
     with urllib.request.urlopen(url) as response:
         json_data = response.read().decode()
     with open(json_file_path, 'w') as file:
@@ -86,13 +83,13 @@ masker = shap.maskers.Image(
 ```
 
 For now, the only thing to know about the masker is that it "removes" the pixels not in the coalition.
-From the parameters, we can see that it blurs the absent image parts.
+From the parameters, we can guess that it blurs the absent image parts.
 Later, I'll show you how this actually looks like.
 First, we'll compute Shapley values for two images: a cheeseburger and a pocket watch.
 As this is a classification task, we need to choose the classes for which we want explanations.
 It's common to select the top classes, particularly the one with the highest probability, as it often holds significance in subsequent stages when using the model.
 
-We'll choose the top 3 classes (`topk`) and 2 images.
+We'll choose the top 3 classes (`topk`).
 
 ```{python}
 topk = 3
@@ -138,7 +135,7 @@ We can see that the chain was identified for the right reasons, namely the chain
 A disadvantage of computing the Shapley values for multiple images here is that the color scale for the Shapley values, seen at the bottom, is for all images.
 As the watch has larger values, the values for the cheeseburger are scaled closer to white.
 
-But as promised, let's dive into the different maskers, because they are more than just a "set-and-forget" parameter.
+Let's dive into the different maskers, because they are more than just a "set-and-forget" parameter.
 
 ## Effect of different maskers
 
@@ -157,9 +154,10 @@ The stronger the blur, the more it's removed.
 Another technique is called inpainting, where we have no information about the missing data but use algorithms to "guess" the missing part based on the rest of the image that is not missing.
 
 To be more specific, here are the options in SHAP:
+
 - `inpaint_telea`: Telea inpainting fills the missing area using a weighted average of neighboring pixels, depending on a specified radius. 
 - `inpaint_ns`: NS (Navier-Stokes) inpainting is based on fluid dynamics and utilizes partial differential equations.
-- `blur(16, 16)`: Blurring relies on kernel size, which can be set by the user. Larger values involve distant pixels in the inpainting process, and blurring is faster than inpainting.
+- `blur(16, 16)`: Blurring relies on kernel size, which can be set by the user. Larger values involve distant pixels in the blurring process, and blurring is faster than inpainting.
 
 The `shap` package employs the `cv2` package for inpainting and blurring operations. 
 Below are examples of how these different options appear, primarily featuring melting burgers.
@@ -168,7 +166,8 @@ Below are examples of how these different options appear, primarily featuring me
 import matplotlib.pyplot as plt
 
 # Define a masker to mask out partitions of the input image. 
-mask_names = ["inpaint_telea", "inpaint_ns", "blur(128, 128)", "blur(16, 16)"]
+mask_names = ["inpaint_telea", "inpaint_ns",
+              "blur(128, 128)", "blur(16, 16)"]
 masks = [shap.maskers.Image(m, shape=X[0].shape) for m in mask_names]
 
 # Create a numpy array of shape (224, 224, 3)
@@ -178,7 +177,6 @@ arr[:75264] = True
 # Set the lower half of the image to False
 arr[75264:] = False
 
-# Assuming your numpy arrays are called "arr1", "arr2", "arr3", and "arr4"
 fig, axs = plt.subplots(2, 2)
 ind = 0
 for i in [0,1]:
@@ -199,25 +197,30 @@ It's also similar to the Partition explainer, which further splits along the x-a
 
 Returning to maskers, these strategies have the commonality of not fully changing the image, unlike replacing all missing values with grey pixels.
 Blurring even retains the original data, only smoothing it out, resulting in a loss of some information.
-The blur(16,16) kernel, for example, doesn't change the image significantly.
+The blur(16,16) kernel, for example, doesn't change the image too much or at least to me the burger bottom is still pretty recognizable.
+Let's see how the masks impact the Shapley values.
 
 ```{python}
 topk = 3
 
 # walk through all the masks
-for mask in masks:
-    print(mask)
-    explainer = shap.Explainer(predict, mask, output_names=class_names, silent=True)
-    # TODO: set eval to 1000
-    shap_values = explainer(X[[21]], max_evals=500, batch_size=50, outputs=shap.Explanation.argsort.flip[:topk])
+for mask_name in mask_names:
+    print(mask_name)
+    mask = shap.maskers.Image(mask_name, shape=X[0].shape)
+    explainer = shap.Explainer(
+      predict, mask, output_names=class_names, silent=True
+    )
+    shap_values = explainer(X[[21]], max_evals=500, batch_size=50,
+                    outputs=shap.Explanation.argsort.flip[:topk])
     shap.image_plot(shap_values, pixel_values=X[[21]]/255)
 ```
+
 <!-- based on 500 evals -->
 The choice of masker does make a difference in explaining the cheeseburger classification.
 The incorrect classification identified the cheeseburger as a bottlecap.
 All maskers agreed that the most responsible pixels were at the top, except for the blur(16,16) masker, which found the side pixels most relevant.
 However, the blur(16,16) masker seems a bit unreliable, as it doesn't obscure much.
-Even as a human, I can still recognize the lower part as a burger, meaning the features aren't significantly removed.
+Even as a human, I can could recognize the lower part as a burger, meaning the features aren't significantly removed.
 In all cases, the pixels at the bottom of the burger appeared to argue against a bottlecap classification.
 
 Another interesting hyperparameter is the number of evaluation steps.
@@ -225,29 +228,34 @@ Another interesting hyperparameter is the number of evaluation steps.
 ### Effect of increasing the evaluation steps:
 
 The number of evaluations in SHAP for images influences the granularity of the explanations.
-As we use the Partition explainer, more evaluations allow for finer partitions and thus more localized superpixels.
+As the Image explainer is based on the Partition explainer, more evaluations allow for finer partitions and thus more localized superpixels.
 
 Let's examine the effect of increasing the evaluation steps, starting with just 10 evaluations:
 
 ```{python}
-# TODO: Add 10k
 evals = [10, 100, 1000, 5000]
 topk = 1
 
 masker = shap.maskers.Image(
-  "blur(128,128)", shape = X[[21]].shape
+  "blur(128,128)", shape = X[21].shape
 )
 
 # iterate through all the masks
 for ev in evals:
     print(ev)
-    explainer = shap.Explainer(predict, mask, output_names=class_names, silent=True)
-    shap_values = explainer(X[[21]], max_evals=ev, batch_size=50, outputs=shap.Explanation.argsort.flip[:topk])
+    explainer = shap.Explainer(predict, masker, output_names=class_names)
+    shap_values = explainer(
+      X[[21]],
+      max_evals=ev,
+      batch_size=50,
+      outputs=shap.Explanation.argsort.flip[:topk]
+     )
     shap.image_plot(shap_values, pixel_values=X[[21]]/255)
 ```
 
 Upon increasing the number of evaluations, we observe:
-- We obtain more fine-grained superpixels, which relates to the Partition explainer. With only 10 evaluations, we get 4 leaves, necessitating a tree depth of 2, resulting in 2 + 2 * 2 = 6 Shapley values (TODO: check Partition explainer).
+
+- We obtain more fine-grained superpixels, which relates to the Partition explainer. With only 10 evaluations, we get 4 leaves, necessitating a tree depth of 2, resulting in 2 + 2 * 2 = 6 Shapley values.
 - The Shapley values decrease as the partitions and the number of pixels become smaller. It makes sense that masking fewer pixels has less influence on the prediction.
 - Computation time scales linearly with the number of evaluations.
 
