@@ -7,11 +7,10 @@ These unrealistic data points are then used to generate explanations, which is p
 - Involving unrealistic or unlikely data points in the explanation may not be desirable.
 - There could be a conceptual issue with physically impossible data points (e.g., a 2-meter tall person weighing 10 kg).
 - The model may not have been trained on data in these areas and might produce unexpected results.
-- This implies that we are exploring model predictions in these areas.
 
 In this chapter, we will first delve into the problem in more detail using a small simulation, followed by discussing possible solutions.
 
-## Illustration of the Correlation Problem
+## Correlated features cause extrapolation
 
 To illustrate this issue, I simulated two strongly correlated features, $X_1$ and $X_2$.
 Suppose a machine learning model is later trained on this data.
@@ -20,44 +19,43 @@ We will not train a model, but rather examine how sampling background data can b
 ```{python}
 import numpy as np
 
-p = 0.85
+p = 0.9
 mean = [0, 0] # mean vector
 cov = [[1, p], [p, 1]] # covariance matrix
 n = 100 # number of samples
 
-x1, x2 = np.random.multivariate_normal(mean, cov, n).T # generate the samples
+x1, x2 = np.random.multivariate_normal(mean, cov, n).T
 ```
 
-Next, let's select a data point for which we will simulate drawing from the background data.
+Next, let's create a data point for which we will simulate drawing from the background data.
 
 ```{python}
-np.random.seed(0)
-# select one point from the distribution
-index = np.random.randint(0, n)
-point = (x1[index], x2[index])
+point = (-1.7, -1.7)
 ```
 
 I'm interested in the Shapley value for feature $X_1$.
-I will demonstrate both what Shapley values do in red and how background data sampling should appear when respecting the conditional distribution of the data.
+I will demonstrate both what Shapley values do and how background data sampling should appear when respecting the conditional distribution of the data.
 ```{python}
 #| label: fig-sampling
 #| fig-cap: "Marginal and conditional sampling"
 import matplotlib.pyplot as plt
 # set number of samples for conditional distribution
-m = 10
+m = 15
 
 # create marginal and conditional distribution
-x2_cond = np.random.normal(loc=p*x1[index], scale=np.sqrt(1-p**2), size=m)
+x2_cond = np.random.normal(
+  loc=p*point[0], scale=np.sqrt(1-p**2), size=m
+)
 x2_marg = np.random.choice(x2, size=m)
 
 # create scatter plot with fixed x1 and variable x2
 plt.subplot(121)
 plt.scatter(x1, x2, color='black', alpha=0.1)
-plt.scatter(np.repeat(x1[index], m), x2_cond, color='green')
+plt.scatter(np.repeat(point[0], m), x2_cond, color='green')
 plt.scatter(point[0], point[1], color='red')
 plt.subplot(122)
 plt.scatter(x1, x2, color='black', alpha=0.1)
-plt.scatter(np.repeat(x1[index], m), x2_marg, color='blue')
+plt.scatter(np.repeat(point[0], m), x2_marg, color='blue')
 plt.scatter(point[0], point[1], color='red')
 plt.xlabel('x1')
 plt.ylabel('x2')
@@ -88,7 +86,7 @@ SHAP for image and text features works differently: no background data is involv
 However, simulating absent feature values still generates new images and texts that might deviate from the distribution.
 In case of images, the removed areas are blurred or inpainted.
 For text, it's replaced by a replacement token like "..." or just a whitespace " ".
-It's difficult to gauge the severity of the problem, but inpainting is a form of conditional sampling, and blurring is even more unique as it doesn't use all the feature's information.
+It's difficult to gauge the severity of the problem, but inpainting can be seen as a form of conditional sampling, and blurring is even more unique as it doesn't use all the feature's information.
 
 The question becomes: What is a meaningful "reference data point"?
 For images, the default is a blurred or inpainted image.
@@ -98,7 +96,8 @@ For text, it's an empty string.
 
 While it may seem overly simplistic, avoiding the correlation problem can be achieved by eliminating correlated features.
 This solution requires flexibility in training the model with a different set of features.
-If this is the case, we can leverage a wider range of techniques to reduce the number of features used:
+If you have the option to change the features, we can leverage a wider range of techniques to reduce the number of features used:
+
 - Employ feature selection methods, particularly those that eliminate correlated features.
 - Remove features with minimal variance.
 - Utilize dimensionality reduction techniques.
@@ -122,32 +121,34 @@ The benefit is that for groups of correlated features, we obtain a single Shaple
 
 ## Solution: Conditional sampling
 
-As hinted in @fig-sampling, it's also possible to use different sampling methods.
+As hinted in @fig-sampling, it's also possible to use conditional sampling.
 
 A brief example:
+
 - We have four features $X_1$ to $X_4$.
 - Compute the Shapley value for $X_1$.
 - During sampling, one of the coalitions we add $X_1$ to is $\{X_2\}$.
 - Compute the predictions for the teams $\{X_2\}$ and $\{X_1, X_2\}$.
 - The absent features are $\{X_1, X_3, X_4\}$ and $\{X_3, X_4\}$, which are sampled from the background data.
 - Sampling can be either from:
-  - $P(X_1, X_3, X_4)$ and $P(X_3, X_4)$ (marginal sampling)
+  - $P(X_1, X_3, X_4)$ and $P(X_3, X_4)$ (marginal sampling), or
   - $P(X_1, X_3, X_4 | X_2)$ and $P(X_3, X_4| X_1, X_2)$ (conditional sampling)
 
 Conditional sampling avoids the extrapolation problem.
-[@aas2021explaining] suggested incorporating conditional sampling in KernelSHAP.
+@aas2021explaining suggested incorporating conditional sampling in KernelSHAP.
 However, conditional sampling is easier said than done, considering that supervised machine learning focuses on learning $P(Y|X_1, \ldots, X_p)$, and we now need to learn more complex distributions for multiple variables.
 Typically, simplifying assumptions for the conditional distributions are used to make sampling easier, as done by @aas2021explaining:
 
 - Use multivariate Gaussians
 - Employ Gaussian copulas
 - Apply kernel estimators (if there are not too many dimensions)
-- The paper proposed more techniques, but these are the key ones
+
+The paper proposed more techniques, but these are the key ones
 
 ::: {.callout-warning}
 Switching the sampling from marginal to conditional alters the game payout.
 For instance, the resulting Shapley values may appear to no longer adhere to the Dummy axiom, as unused features like $\beta_j=0$ in a linear model can suddenly have non-zero Shapley values.
-However, this doesn't violate the axiom, since based on the new payout using conditional distributions, they still qualify as Shapley values.
+However, this doesn't actually violate the Dummy axiom, since based on the new payout using conditional distributions, they still qualify as Shapley values.
 Just be mindful of this shift in interpretation.
 
 :::

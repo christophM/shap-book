@@ -12,14 +12,13 @@ book:
     - getting-started.qmd
     - intuition.qmd
     - theory.qmd
-    - estimation.qmd
+    - estimation-overview.qmd
     - linear.qmd
     - additive.qmd
     - interactions.qmd
     - regression.qmd
-    - maskers.qmd
     - correlation.qmd
-    - aggregated.qmd
+    - plots.qmd
     - logistic.qmd
     - classification.qmd
     - history.qmd
@@ -32,9 +31,13 @@ book:
     - limitations.qmd
     - shap-library.qmd
     - references.qmd
+  appendices:
+    - estimation.qmd
+    - maskers.qmd
 
 execute:
   cache: true
+  warning: false
 
 bibliography: references.bib
 cite-method: citeproc

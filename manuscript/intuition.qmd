@@ -1,9 +1,11 @@
-# Intuition for Shapley Values from Game Theory
+# Intuition Behind Shapley Values
 
 Shapley values have their origins in game theory.
 However, before diving into the theory behind them and their estimations, let's first discuss the intuition of how Shapley values operate based on game theory.
 
-Firstly, what does a prediction have to do with games? 
+## Origins in game theory
+
+What does a prediction have to do with games? 
 The connection between these may not be immediately apparent.
 It certainly wasn't for me.
 When we delve into the origins of Shapley values, they were initially devised to address the issue of fair attribution in cooperative games.
@@ -18,7 +20,8 @@ To solve this attribution problem, we must first establish a set of axioms defin
 We'll discuss that in more detail later.
 
 For now, let's focus on connecting these concepts to predictions.
-The prediction attribution game
+
+## The prediction attribution game
 
 A prediction can be explained by assuming that each feature value of the instance is a "player" in a game where the prediction is the payout.
 Shapley values, a method from coalitional game theory, tell us how to fairly distribute the "payout" among the features.
@@ -33,17 +36,8 @@ The apartment has an area of 50 m^2^ (538 square feet), is located on the 2nd fl
 The average prediction for all apartments in the test data is €310,000.
 How much has each feature value contributed to the prediction compared to the average prediction?
 
-Let's simplify this question and assume that the price model is a linear regression model.
-The effect of each feature is the weight of the feature times the feature value.
-This only works because of the linearity of the model.
-
-However, for more complex models with non-linear effects and interactions, it's not clear at all how we should attribute the predictions to the inputs.
-The same problem exists for image and text inputs.
-
-Shapley values, coined by Shapley (1953)[@shapley1953value], is a method for assigning payouts to players depending on their contribution to the total payout.
-Players cooperate in a coalition and receive a certain profit from this cooperation.
-
 To translate the game scenario to machine learning predictions:
+
 - The "game" refers to the prediction task for a single instance of the dataset.
 - The "payout" represents the actual prediction for this instance minus the average prediction for all instances.
 - The "players" are the feature values of the instance that collaborate to receive the gain (i.e., predict a certain value).
@@ -54,10 +48,10 @@ Our goal is to explain the difference between the actual prediction (€300,000)
 The answer could be as follows:
 `park-nearby` contributed €30,000; `area-50` contributed €10,000; `floor-2nd` contributed €0; and `cat-banned` contributed -€50,000.
 The contributions add up to -€10,000, which is the final prediction minus the average predicted apartment price.
-How to Calculate the Shapley Value for One Feature
+
+## How to calculate the Shapley value for one feature
 
 The Shapley value represents the average marginal contribution of a feature value across all possible coalitions.
-Is everything clear now?
 In the following figure, we evaluate the contribution of the `cat-banned` feature value when added to a coalition of `park-nearby` and `area-50`.
 We simulate a coalition consisting of only `park-nearby`, `cat-banned`, and `area-50` by randomly drawing another apartment from the data and using its value for the floor feature.
 The value `floor-2nd` is replaced by the randomly drawn `floor-1st`.
@@ -79,6 +73,7 @@ The following figure shows all coalitions of feature values that are needed to d
 The first row shows the coalition without any feature values.
 The second, third, and fourth rows show different coalitions with increasing coalition size, separated by "|".
 In total, the following coalitions are possible:
+
 - `No feature values`
 - `park-nearby`
 - `area-50`
@@ -96,11 +91,12 @@ To get a prediction from the machine learning model, we replace the feature valu
 
 By estimating the Shapley values for all feature values, we obtain the complete distribution of the prediction (minus the average) among the feature values.
 That's not the only way to estimate Shapley values, nor is it explained in detail here.
-In fact, there are various ways to estimate Shapley values, and it's worth its own chapter.
+In fact, there are various ways to estimate Shapley values as you can see in the [Estimation Chapter](#estimation).
 This is because, especially for specific models like linear regression and tree-based models, there are more efficient ways to estimate the Shapley values.
-What about images and texts?
 
-The explanation above primarily addressed tabular data.
+## What about images and texts?
+
+The intuition above primarily addressed tabular data.
 But what if the input is an image or text?
 One option is to treat them similarly to tabular input:
 Each input dimension represents a feature – pixels for images and tokens for texts.
@@ -109,10 +105,6 @@ We will explore this further in the respective chapters on [image](#image) and [
 But here's some intuition:
 For images, it's possible to define super-pixels, which are groups of connected pixels.
 These super-pixels are treated as a "feature" for Shapley values.
-When a particular super-pixel is part of the team, it is visible, and when it's not, it is removed.
+When a particular super-pixel is part of the team, it's visible, and when it's not, it's removed.
 There are different options for removing super-pixels, such as blurring or graying them out.
 For text, it's a bit simpler; we can remove words or replace them with other tokens when necessary.
-We can determine the input level as a feature, from an interpretation standpoint.
-The elements could be characters, tokens, words, parts of sentences, or even entire sentences or paragraphs.
-This is independent of the model's input requirements, as long as it's generally text-based.
-We'll discuss this more later.

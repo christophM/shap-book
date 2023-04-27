@@ -1,13 +1,9 @@
 # Regression
 
-TODO: Add subheaders
-
 In this chapter, we will revisit the wine data and fit a tree-based model.
 
-This means:
-
-- The model potentially includes numerous interactions and non-linear functions, resulting in a more complex interpretation compared to previous chapters.
-- We can utilize the fast `shap.TreeExplainer`.
+This means the model potentially includes numerous interactions and non-linear functions, resulting in a more complex interpretation compared to previous chapters.
+But, on the good side, we can utilize the fast `shap.TreeExplainer`.
 
 ## Fitting the LightGBM model
 
@@ -24,6 +20,7 @@ Using a histogram-based approach to represent feature values, it excels with lar
 But enough advertisement.
 
 ```{python}
+#| echo: False
 import pandas as pd
 import lightgbm as lgb
 import shap
@@ -66,6 +63,9 @@ print('MAE:', round(mae, 2))
 Once again, this model performs slightly better than the GAM, justifying the inclusion of additional interactions.
 Notably, the GAM was also tree-based but without modeling interactions.
 
+
+## Computing Shapley values
+
 Now let's interpret the model:
 
 ```{python}
@@ -73,7 +73,13 @@ import shap
 # Compute the SHAP values for the sample
 explainer = shap.Explainer(lgb_regressor)
 shap_values = explainer(X_test)
+```
 
+For this model, `shap` can automatically extract the data for the background data.
+
+Let's again have a look at this wine that we already examined in the [Linear Chapter](#linear) and the [Additive Chapter](#additive).
+
+```{python}
 # Visualize the SHAP values
 shap.plots.waterfall(shap_values[0])
 ```
@@ -82,6 +88,21 @@ The results differ from both the linear and the GAM models, but the interpretati
 We still need to interpret the Shapley values, but now we also consider interactions between feature values that have been fairly split among them.
 These interactions are not visible in this plot.
 
+## Global model interpretation
+
+Let's examine the summary plot:
+
+```{python}
+shap.summary_plot(shap_values, X_test)
+```
+
+Observations:
+
+- Alcohol and volatile acidity were the most important features.
+- Many features, such as alcohol and volatile acidity, show a (somewhat) monotonic relationship with the target.
+- Factors that influenced the predicted quality of some wines in the most extreme ways included:
+  - High alcohol levels for higher predicted quality.
+  - Low levels of free sulfur dioxide for lower quality.
 As discussed in the [interaction chapter](#interaction), interactions can be seen in global plots like the dependence plot.
 Here is the dependence plot for the alcohol feature:
 
@@ -119,14 +140,6 @@ shap.dependence_plot(
 )
 ```
 
-Additionally, let's inspect the dependence plot for `density`.
-
-```{python}
-shap.dependence_plot(
-  "density", shap_values.values, X_test,
-  feature_names=wine.columns,
-)
-```
 
 Observations:
 
@@ -137,16 +150,3 @@ Observations:
   - When density is low, increasing residual sugar has a significant increasing effect.
   - If density is high, increasing residual sugar doesn't have as strong an effect.
 
-Lastly, let's examine the summary plot:
-
-```{python}
-shap.summary_plot(shap_values, X_test)
-```
-
-Observations:
-
-- Alcohol and volatile acidity were the most important features.
-- Many features, such as alcohol and volatile acidity, show a (somewhat) monotonic relationship with the target.
-- Factors that influenced the predicted quality of some wines in the most extreme ways included:
-  - High alcohol levels for higher predicted quality.
-  - Low levels of free sulfur dioxide for lower quality.

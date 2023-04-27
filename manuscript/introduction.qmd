@@ -8,7 +8,7 @@ It is often unclear why a certain prediction was made and what general factors a
 
 <!-- is it important? -->
 Many people argue that as long as a machine learning model performs well, interpretability is unnecessary.
-However, there are many practical reasons why interpretability is important, beyond just explaining ML diagnoses to patients.
+However, there are many practical reasons why interpretability is important.
 
 ### Interpret to debug
 
@@ -21,7 +21,6 @@ However, it turns out that asthma patients in this dataset were less likely to g
 The indirect reason was that these patients received "aggressive care," such as early antibiotic treatment.
 Consequently, they were less likely to develop pneumonia.
 
-The main issue here is not interpretability but rather the inclusion of the right features.
 The asthma shortcut was discovered only because the model was intelligible.
 Imagine repeating this scenario with a neural network.
 No rule would jump out, saying "asthma $\Rightarrow$ lower risk."
@@ -39,15 +38,15 @@ It's a serious medical condition that can develop from any infection.
 It's one of the most common causes of death in hospitals.
 Diagnosing it consistently is notoriously difficult, making it an ideal candidate for AI-based intervention.
 
-Duke University and Duke Health Systems developed Sepsis Watch, which uses deep learning[@elish2020repairing].
+Duke University and Duke Health Systems developed Sepsis Watch, which uses deep learning [@elish2020repairing].
 Sepsis Watch is not just a deep learning model; it also includes a protocol for its use within the clinic.
 The model processes patient data to detect sepsis and raises an alarm if the patient is at risk of developing sepsis.
 When the model detects a potential case of sepsis, it triggers an alert that initiates a new hospital protocol for diagnosis and treatment.
-This protocol involves a rapid response (RRT) nurse who monitors the alarms and informs the doctors, who then treat the patient.
+This protocol involves a rapid response team (RRT) nurse who monitors the alarms and informs the doctors, who then treat the patient.
 
 There are many aspects to discuss regarding the implementation, particularly the social implications associated with the new workflow, such as nurses finding it "weird" to instruct doctors due to the hospital hierarchy.
 There was also a significant amount of repair work done, particularly by RRT nurses, to make the model work in the hospital environment.
-Interestingly, a side-note in the report mentioned that the deep learning system provided no explanations for warnings, so it was unclear why a patient was likely to develop sepsis.
+Interestingly, a side-note in the report mentioned that the deep learning system provided no explanations for warnings, so it was unclear why a patient was predicted to develop sepsis.
 The software only displayed the score, and sometimes there was a discrepancy between the model score and the doctor's diagnosis.
 Doctors would then ask the nurse what they were seeing that the doctor wasn't.
 The patient didn't appear septic, so why were they considered high-risk?
@@ -76,13 +75,12 @@ By that, I mean models such as:
 
 - Linear regression and logistic regression
 - Generalized additive models
-- Decision rules
-- Decision trees
+- Decision rules & decision trees
 - Many more sophisticated inherently interpretable models
 
 Inherently interpretable usually means the model is structured so we can understand its individual parts.
-The prediction is a weighted sum (linear model) or based on intelligible rules.
-Some have even called for only using such models when the stakes are high[@rudin2019stop].
+The prediction may be a weighted sum (linear model) or based on intelligible rules.
+Some have even called for only using such models when the stakes are high [@rudin2019stop].
 
 However, there are a few problems.
 
@@ -97,17 +95,13 @@ Making a decision tree very deep doesn't help interpretation if there are hundre
 Problem 2:
 The best models are often not inherently interpretable.
 In machine learning, you usually optimize a metric.
-Boosted trees often seem to be the best option in many cases. [@grinsztajn2022tree]
+Boosted trees often seem to be the best option in many cases [@grinsztajn2022tree].
 Most people wouldn't consider them interpretable, at least not in their raw form.
 The same applies to transformers, standard for text (GPT, anyone?), and convolutional neural networks for image classification.
 Ensembles of models often produce the best solutions.
-Boosted trees and random forests are already ensembles.
-Feature transformations, like PCA, make features less interpretable.
+So limiting model selection to inherently interpretable models may lead to sub-optimal performance.
 
 So, what to do?
-
-Even if you end up with an interpretable model, this book can help.
-Methods like Shapley values can be applied to any model, so even with a decision tree, you can use Shapley values for additional interpretation.
 
 ## Model-agnostic interpretation is the solution
 
@@ -122,14 +116,14 @@ Think of playing fighting games on a console, pushing inputs (the controller) an
 Model-agnostic interpretable machine learning may be more sophisticated than playing Tekken, but the principle is the same:
 Treat the model as a box with inputs and output, manipulate the inputs, observe how the outputs change, and draw conclusions.
 
-More formally, this can be described by SIPA:
+More formally, this can be described by SIPA [@scholbeck2020sampling]:
 
 - **S**ampling data
 - **I**ntervention on the data
 - **P**rediction step
 - **A**ggregating the results
 
-There are many methods that work with this principle:
+There are many methods that work by this principle:
 
 - Partial dependence plots show how changing one (or two) of the features changes the prediction on average
 - Individual conditional expectation curves do the same for a single data point
@@ -140,36 +134,38 @@ There are many methods that work with this principle:
 As you may have guessed:
 **Shapley values (or SHAP) is another model-agnostic interpretation method.**
 
+Even if you use an interpretable model, this book can help.
+Methods like Shapley values can be applied to any model, so even with a decision tree, you can use Shapley values for additional interpretation.
 
 ## SHAP is an explainable AI technique
 
 <!-- SHAP -->
-And among these model-agnostic interpretation methods, one has become very popular, Shapley values, sometimes also referred to SHAP. [^difference-shap-shapley]
-We will get a bit more into the distinction for SHAP and Shapley values in the [history chapter](#history).
-But for now let's work with these two definitions:
-
+Among model-agnostic interpretation methods, Shapley values, sometimes referred to as SHAP, have become very popular.
+We'll delve deeper into the distinction between SHAP and Shapley values in the  [history chapter](#history).
+For now, let's consider these two definitions:
 ::: {.callout-note}
 
 ## Shapley values
 
-Shapley values are a method to fairly attribute the payout to each player in a coalition. In the context of Explainable AI, Shapley values can be used to explain the contribution of each input features to the model's output.
+Shapley values are a method for fairly attributing the payout to each player in a coalition.
+In the context of Explainable AI, Shapley values can be used to explain the contribution of each input feature to the model's output.
 
 :::
 
-Shapley values are the method but also the values that you get in the end.
-So it can be a bit confusing.
-To confuse a little bit more there is SHAP [@NIPS2017_7062].
+Shapley values not only refer to the method but also to the resulting values, which can be confusing.
+Adding to the confusion is SHAP  [@NIPS2017_7062].
 SHAP stands for **SH**apley **A**dditive ex**P**lanations and it's many things.
-First of all, it's the name of a paper which introduces a new method for estimating Shapley Values.
-But it's also the name of the library "shap" in Python, which we are going to use in this book.
+It's the name of a paper that introduces a new method for estimating Shapley values, the Python library "shap" that we'll use in this book, and various algorithms for computing Shapley values.
+But it's also the name of the library `shap` in Python, which we are going to use in this book.
 But SHAP also capture varies algorithms to compute Shapley values.
-So I'd say wheneve you hear SHAP, this is the most useful way to think about it:
+When you hear SHAP, consider this useful interpretation:
 
 ::: {.callout-note}
 
 ## What is SHAP (Shapley Additive exPlanations)?
 
-SHAP is an umbrella term for Shapley values used to explain predictions. It can refer to the  original paper, but also to Shapley values itself, or the implementation. The most useful to think about is to say SHAP whenever you use Shapley values for XAI to explain individual predictions. 
+SHAP is an umbrella term for Shapley values used to explain predictions. It can refer to the original paper, the Shapley values themselves, or the implementation.
+It's most useful to say SHAP when you use Shapley values for XAI to explain individual predictions.
 
 :::
 
@@ -178,11 +174,11 @@ In the [Getting Started Chapter](#getting-started) you will see an example of us
 
 The rough idea behind Shapley values:
 
-- A prediction is like a game and the payout is the prediction itself, minus the average prediction of all (test) data.
-- By explaining this difference, the Shapley values may be interpreted as an explanation of why the prediction is different to what we would expect without knowing anything about the data point.
-- The difference is then attributed to each of the feature values that this data point has
-- So the feature values are like a team that work together to achieve the particular prediction
-- Shapley values define a unique way of how a "fair" attribution looks like, which we will discuss in detail in the [Theory Chapter](#theory).
+- A prediction is like a game, and the payout is the prediction itself, minus the average prediction of all (test) data.
+- By explaining this difference, Shapley values can be interpreted as an explanation of why the prediction differs from what we'd expect without knowing anything about the data point.
+- The difference is then attributed to each feature value that the data point has.
+- The feature values are like a team working together to achieve the particular prediction.
+- Shapley values define what a "fair" attribution looks like, which we'll discuss in detail in the [Theory Chapter](#theory).
 
 
 ## What's so great about SHAP?

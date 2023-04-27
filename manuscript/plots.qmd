@@ -1,4 +1,4 @@
-# SHAP Plots: From SHAP Importance, Dependence, and Interaction {#plots}
+# SHAP Plots {#plots}
 
 This chapter provides an overview of the plots available for aggregated Shapley values.
 Aggregated refers to computing Shapley values for all features and data points in a dataset.
@@ -6,11 +6,40 @@ Thus, you will only find plots for tabular data, as there is no meaningful aggre
 
 This chapter covers:
 
-- Importance plot
-- Summary plot
-- Dependence plot
-- Interaction plot
-- Clustering plot
+- Local plots
+  - Waterfall plot
+  - Force plot
+- Global plots
+  - Importance plot
+  - Summary plot
+  - Dependence plot
+  - Interaction plot
+  - Clustering plot
+
+## Waterfall Plot
+
+![Waterfall plot](images/waterfall.png)
+
+The `shap.plots.waterfall` reveals various insights:
+
+- The y-axis displays the individual features, including the values for the first instance in our dataset
+- The x-axis is on the scale of the output
+- Each bar represents the Shapley value for that specific feature value
+- Positive Shapley values point to the right
+- The x-axis also indicates the overall expected prediction $E[f(X)]$ and the actual prediction of the instance $f(x)$
+- The bars start at the bottom from the expected prediction and add up to the actual prediction
+
+## Force Plot
+
+![Force Plot](images/force-plot-single.png)
+
+The `shap.plots.force` contains the same information as a waterfall plot, just that the arrows are arranged into the same horizontal level.
+Requires javascript, meaning you can embed it, e.g., into a Jupyter notebook, but not in a PDF file.
+
+## Bar Plot
+
+The `shap.plots.bar` is yet another visualization of the Shapley values for individual predictions.
+Rearranges the Shapley values into a bar plot, but I would rather use the waterfall plot.
 
 ## Feature Importance Plot
 
@@ -23,9 +52,8 @@ $$I_j=\frac{1}{n}\sum_{i=1}^n{}|\phi_j^{(i)}|$$
 Next, we sort the features by decreasing importance and plot them.
 The following figure displays the SHAP feature importance for the random forest previously trained to predict cervical cancer.
 
-```{r fig.cap="SHAP feature importance measured as the mean absolute Shapley values. The number of years with hormonal contraceptives was the most important feature, changing the predicted absolute cancer probability on average by 2.4 percentage points (0.024 on x-axis)."}
-knitr::include_graphics("images/shap-importance.png")
-```
+![Importance plot](images/shap-importance.png)
+
 
 SHAP feature importance offers an alternative to [permutation feature importance](#feature-importance).
 A significant difference exists between these importance measures:
@@ -35,6 +63,7 @@ Although the feature importance plot is useful, it provides no information beyon
 For a more informative plot, we will examine the summary plot next.
 
 ## Summary Plot
+
 The summary plot combines feature importance and feature effects.
 Each point on the plot represents a Shapley value for a feature and an instance.
 The y-axis position is determined by the feature, and the x-axis position by the Shapley value.
@@ -42,9 +71,7 @@ Color indicates the feature value, ranging from low to high.
 Overlapping points are jittered in the y-axis direction to show the distribution of Shapley values per feature.
 Features are ordered by their importance.
 
-```{r fig.cap = "SHAP summary plot. Low number of years on hormonal contraceptives reduce the predicted cancer risk, a large number of years increases the risk. Your regular reminder: All effects describe the behavior of the model and are not necessarily causal in the real world."}
-knitr::include_graphics("images/shap-importance-extended.png")
-```
+![Summary Plot](images/summary-plot.png)
 
 The summary plot provides initial insights into the relationship between a feature's value and its impact on the prediction.
 However, to understand the exact nature of this relationship, we must examine SHAP dependence plots.
@@ -60,9 +87,8 @@ Mathematically, the plot contains the following points: $\{(x_j^{(i)},\phi_j^{(i
 
 The following figure displays the SHAP feature dependence for years on hormonal contraceptives:
 
-```{r fig.cap="SHAP dependence plot for years on hormonal contraceptives. Compared to 0 years, a few years lower the predicted probability and a high number of years increases the predicted cancer probability."}
-knitr::include_graphics("images/shap-dependence.png")
-```
+![Dependence Plot](images/dependence.png)
+
 SHAP dependence plots offer an alternative to [partial dependence plots](#pdp) and [accumulated local effects](#ale).
 While PDP and ALE plots display average effects, SHAP dependence plots also reveal variance on the y-axis.
 This is particularly noticeable in cases of interactions, where the SHAP dependence plot exhibits greater dispersion on the y-axis.
@@ -87,9 +113,9 @@ By calculating the SHAP interaction values for all features, we obtain one matri
 
 How can we utilize the interaction index?
 One example is to automatically color the SHAP feature dependence plot according to the strongest interaction:
-```{r fig.cap = "SHAP feature dependence plot with interaction visualization. Years on hormonal contraceptives interacts with STDs. In cases close to 0 years, the occurrence of a STD increases the predicted cancer risk. For more years on contraceptives, the occurrence of a STD reduces the predicted risk. Again, this is not a causal model. Effects might be due to confounding (e.g., STDs and lower cancer risk could be correlated with more doctor visits)."}
-knitr::include_graphics("images/shap-dependence-interaction.png")
-```
+
+![Interaction Plot](images/dependence-interaction.png)
+
 
 ## Clustering Plot
 
@@ -107,6 +133,5 @@ The following example uses hierarchical agglomerative clustering to order the in
 The plot consists of many force plots, each of which explains the prediction of an instance.
 We rotate the force plots vertically and place them side by side according to their clustering similarity.
 
-```{r, fig.cap="Stacked SHAP explanations clustered by explanation similarity. Each position on the x-axis is an instance of the data. Red SHAP values increase the prediction, blue values decrease it. One cluster stands out: On the right is a group with a high predicted cancer risk."}
-knitr::include_graphics("images/shap-clustering.png")
-```
+![Clustering Plot](images/force-plot-multiple.png)
+

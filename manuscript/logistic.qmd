@@ -1,4 +1,4 @@
-# Binary Classification with Logistic Regression
+# Classification with Logistic Regression
 
 This chapter demonstrates how to use and interpret SHAP with logistic regression.
 
@@ -17,15 +17,6 @@ Nonetheless, having two classes is a special case of having $k$ classes.
 From the SHAP perspective, this is similar to regression, except the scale is the score output, not regression.
 
 _TODO: Merge this part with getting started chapter_
-
-## The Adult Dataset
-
-For the classification task, we will use the Adult dataset.
-The UCI Adult dataset is widely used in machine learning tasks.
-It contains demographic and socioeconomic data of individuals from the 1994 U.S. Census Bureau database, aiming to predict whether an individual's income is greater than or equal to \$50,000 per year.
-The dataset includes features such as age, education level, work class, occupation, marital status, and more.
-With approximately 32,000 observations, it contains both categorical and numerical features.
-The UCI Adult dataset is often used for classification tasks and has been employed in numerous research studies.
 
 ## Training the Model
 

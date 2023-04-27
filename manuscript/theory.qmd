@@ -3,7 +3,7 @@
 This chapter delves deep into the theory.
 But who wouldn't have guessed that from the title?
 Keep in mind, you don't need to read this chapter if you only want to use Shapley values.
-It's intended for those who want to explore the mathematics and algorithms behind them.
+It's intended for those who want to explore the mathematics behind them.
 
 We'll start from the basics and build up our understanding.
 Let's begin with a linear prediction model, as it's easier to comprehend.
@@ -33,38 +33,43 @@ If we sum all the feature contributions for one instance, the result is the foll
 
 This is the predicted value for the data point x minus the average predicted value.
 Feature contributions can be negative.
-Interestingly, these are also Shapley values.
-Perhaps you agree with me that, for the linear case, they are quite intuitive.
-But for now, you just have to trust me that these are Shapley values.
-We have yet to define what Shapley values are, so that we can apply them to more complex predictive models as well.
-How Shapley Values Are Defined
 
-The Shapley value is defined through a value function $val$ of players in S.
+So for now you had to believe me that for linear model the formula above indeed are related to Shapley values.
+Let's actually see the definition of Shapley values for the general case.
 
-The Shapley value of a feature value represents its contribution to the payout, calculated as a weighted sum over all possible feature value combinations:
+## How Shapley values are defined
+
+The Shapley values requires a value function $val$ which determines a payout and which takes a set of players $S$ (in our case feature values of a data point) as input.
+The Shapley value of a feature value is then defined as its contribution to the payout, calculated as a weighted sum over all possible feature value combinations:
 
 $$\phi_j(val)=\sum_{S\subseteq\{1,\ldots,p\} \backslash \{j\}}\frac{|S|!\left(p-|S|-1\right)!}{p!}\left(val\left(S\cup\{j\}\right)-val(S)\right)$$
 
-Here, S represents a subset of the features used in the model, x is the vector of feature values of the instance to be explained, and p is the number of features.
+Here, S represents a subset of the features used in the model, j is the index of the feature for which we compute the Shapley value, $S$ a coalition of some features (without $j$), and $p$ is the number of features in the model.
 $val_x(S)$ is the prediction for feature values in set S, marginalized over features not included in set S:
 
-$$val_{x}(S)=\int\hat{f}(x_{1},\ldots,x_{p})d\mathbb{P}_{x\notin{}S}-E_X(\hat{f}(X))$$
-You actually perform multiple integrations for each feature not contained in S.
+$$val_{x}(S)=\int\hat{f}(x_{1},\ldots,x_{p})d\mathbb{P}_{X_{\bar{S}}}-E_X(\hat{f}(X))$$
+
+You actually perform multiple integrations for each feature not contained in S ($X_{\bar{S}}$).
 Consider this example:
-A machine learning model works with four features x1, x2, x3, and x4, and we evaluate the prediction for the coalition S consisting of feature values x1 and x3:
+A machine learning model works with four features $X_1$, $X_2$, $X_3$, and $X_4$, and we evaluate the prediction for the coalition S consisting of feature values $X_1$ and $X_3$:
 
 $$val_{x}(S)=val_{x}(\{1,3\})=\int_{\mathbb{R}}\int_{\mathbb{R}}\hat{f}(x_{1},X_{2},x_{3},X_{4})d\mathbb{P}_{X_2X_4}-E_X(\hat{f}(X))$$
 
-This appears similar to the feature contributions in a linear model!
+This is similar to the feature contributions in a linear model!
+
+:::{.callout-note}
 
 Don't be confused by the different uses of the word "value":
 The feature value refers to the numerical or categorical value of a feature and instance;
 the Shapley value represents the feature's contribution to the prediction;
 the value function is the payout function for coalitions of players (feature values).
-The axioms behind Shapley values
+
+:::
+
+## The axioms behind Shapley values
 
 Okay, now we have the formula, but where did it even come from?
-Lloyd Shapley derived it. [@shapley1953value]
+Lloyd Shapley derived it [@shapley1953value].
 But he didn't just "invent" it.
 He postulated some axioms that he said must be fulfilled for the resulting attributions to be considered "fair".
 
@@ -73,14 +78,17 @@ We won't derive why and how Shapley values are the solution to these axioms.
 But we will walk through the axioms, as they have implications for the interpretation of Shapley values.
 And they also justify the use of Shapley values (or why, in some cases, you might not be interested in them).
 
-**Efficiency**
+### Efficiency
+
 The feature contributions must add up to the difference between the prediction for x and the average.
 
 $$\sum\nolimits_{j=1}^p\phi_j=\hat{f}(x)-E_X(\hat{f}(X))$$
-Implications: The efficiency axiom is quite common in explainable AI, and it is also followed by methods like LIME. The efficiency axiom provides an anchoring effect, ensuring that the attributions are on the same scale as the output. An example of interpretation without this anchoring effect of efficiency would be examining only the gradients of the predicted score concerning the inputs. These gradients would be on a different scale and would not add up to the prediction.
+Implications: The efficiency axiom is quite common in explainable AI, and it's also followed by methods like LIME. The efficiency axiom provides an anchoring effect, ensuring that the attributions are on the same scale as the output. An example of interpretation without this anchoring effect of efficiency would be examining only the gradients of the predicted score concerning the inputs. These gradients would be on a different scale and would not add up to the prediction.
 
-**Symmetry**
+### Symmetry
+
 The contributions of two feature values j and k should be the same if they contribute equally to all possible coalitions.
+
 If
 
 $$val(S \cup \{j\})=val(S\cup\{k\})$$
@@ -96,10 +104,12 @@ $$\phi_j=\phi_{k}$$
 Implications: The symmetry axiom implies that, for example, the order of features should not matter.
 If they contribute equally, they should receive the same Shapley value.
 Other methods, such as the breakdown method [@staniak2018explanations] or counterfactual explanations, violate this axiom, and two features could have the same impact on the prediction without receiving the same attribution.
-This axiom is a requirement for us to accurately interpret the ordering of the impacts (the attribution values).
+This axiom is a requirement for us to accurately interpret the ordering of the Shapley values.
 
-**Dummy**
-A feature j that does not change the predicted value – regardless of which coalition of feature values it is added to – should have a Shapley value of 0.
+### Dummy
+
+A feature j that does not change the predicted value – regardless of which coalition of feature values it's added to – should have a Shapley value of 0.
+
 If
 
 $$val(S\cup\{j\})=val(S)$$
@@ -114,7 +124,8 @@ $$\phi_j=0$$
 Implications: The dummy axiom ensures that features not used by the model receive an attribution of zero. This is a straightforward implication.
 For example, if a LASSO model was trained, we can be certain that a feature with a $\beta_j=0$ will have a Shapley value of zero for this feature for all possible data points.
 
-**Additivity**
+### Additivity
+
 For a game with combined payouts val+val^+^, the respective Shapley values are as follows:
 
 $$\phi_j+\phi_j^{+}$$
@@ -122,6 +133,12 @@ $$\phi_j+\phi_j^{+}$$
 Implication: This is not as straightforward as the other axioms, but let's give it a try.
 Suppose you trained a random forest, which means that the prediction is an average of many decision trees.
 The Additivity property guarantees that for a feature value, you can calculate the Shapley value for each tree individually, average them, and obtain the Shapley value for the feature value for the random forest. For an additive ensemble of models, the Shapley value is the sum of individual Shapley values.
-The next chapter will delve deeper into the theoretical side of things, focusing on how to estimate Shapley values, because having just one method would be too simplistic.
+
+::: {.callout-note}
 
 There exists an alternative formulation of Shapley values in which the Dummy and Additivity axioms are replaced with a Linearity axiom; however, both formulations ultimately lead to the Shapley values.
+
+:::
+
+
+The next chapter will delve deeper into the theoretical side of things, focusing on how to estimate Shapley values, because having just one method would be too simplistic.

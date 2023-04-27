@@ -1,16 +1,15 @@
 # Shapley Values for Additive Models
 
-TODO: some ## headers
 
 In this next step, we allow the relationship between a feature and the target to be non-linear.
 However, we do not allow interactions between the features.
 Additive models with non-linear base functions are perfectly modeled with so-called generalized additive models, also known as GAMs.
 
-A GAM models y in the following way:
+A GAM models the target in the following way:
 
-$$\hat{f}(x) = \beta_0 + \beta_1 f_1(x_1) + \ldots + f_p(x_p)$$
+$$f(x) = \beta_0 + \beta_1 f_1(x_1) + \ldots + f_p(x_p)$$
 
-The difference from the simple linear model is that we allow the functions $f_j$. 
+The difference from the simple linear model is that we allow the functions $f_j$ to be non-linear. 
 If these are the identity function for all features, namely $f_j(x_j) = x_j$, then we again arrive at the linear model.
 So, linear regression models are special cases of GAMs.
 
@@ -19,9 +18,10 @@ A popular choice is spline functions, which allow for rather flexible shapes of 
 
 Educationally, to understand Shapley values, they are perfect because they allow us to study what happens with non-linear functions, but without interactions.
 It is only with interactions that the interpretation becomes trickier.
+
 So, we go back to the same wine example and fit a GAM instead of a linear regression model.
 
-For this, we rely on the interpret Python library. You can install it with:
+For this, we rely on the `interpret` Python library. You can install it with:
 
 ```{python}
 #| eval: false
@@ -35,7 +35,7 @@ It's an Explainable Boosting Regressor from the interpret package.
 
 The Explainable Boosting Machine (EBM) is a tree-based GAM.
 It's based on cyclic gradient boosting with automated interaction detection, which of course we won't use for this example.
-So for our case, each tree can only use one feature, because otherwise, it would model interactions.
+So for our case, each tree in the ensemble can only use one feature, because otherwise, it would model interactions.
 
 :::
 
@@ -76,14 +76,14 @@ Now let's see what the SHAP values have to say about how the model works:
 ```{python}
 #| output: false
 import shap
-explainer = shap.Explainer(model.predict, X_test)
+explainer = shap.Explainer(model.predict, X_train)
 shap_values = explainer(X_test)
 ```
 
 The question now is: What do the Shapley values look like?
 And do they match what we would expect?
 
-First, let's explain the initial prediction:
+First, let's explain the initial prediction of a data point:
 
 ```{python}
 shap.waterfall_plot(shap_values[0], max_display=10)
@@ -92,11 +92,13 @@ shap.waterfall_plot(shap_values[0], max_display=10)
 ::: {.callout-note}
 A SHAP-specific note here: since the explainer is a Permutation explainer, we can directly use the shap_values as input to the waterfall plot, which we couldn't do with the Linear explainer.
 :::
-This waterfall plot presents a distinct picture of what's happening, compared to the purely linear model.
+This waterfall plot presents a different picture of what's happening, compared to the purely linear model.
 
-- The most important features were alcohol and volatile acidity, while in the linear model, it was residual sugar, followed by alcohol.
-- Generally, the prediction for the GAM is lower in this case (around 5.97), compared to 6.28 for the linear case.
+- For this wine, the most important features were alcohol and free sulfur dioxide, while in the linear model, it was residual sugar and free sulfur dioxide.
+- Generally, the prediction for the GAM is lower in this case (around 6.0
 - This example beautifully demonstrates how, although the global average prediction and the local prediction are quite similar, there are numerous Shapley values canceling each other out.
+
+## Shapley values recover non-linear functions
 
 We know that it's an additive model.
 This means that to understand the effect a feature has, we can simply take one data point, modify that feature, and observe how this alters the prediction.
@@ -121,27 +123,22 @@ However, at very high and very low levels, the effect plateaus.
 
 The question now is whether and how the Shapley values for the alcohol feature will reflect this.
 
-TODO: Figure out how to compute the differences in intercept between PDP and SHAP here.
 ```{python}
 first_row = X.iloc[np.repeat(0, 100)]
-x_range = np.linspace(X[feature_name].min(), X[feature_name].max(), num=100)
-first_row[feature_name] = x_range
+x_range = np.linspace(
+  X[feature_name].min(), X[feature_name].max(), num=100
+)
+first_row.loc[:,feature_name] = x_range
 preds = model.predict(first_row)
-```
 
-```{python}
 Xpred = model.predict(X_test).mean()
-# plot SHAP values against feature values
 sv_values = shap_values.values[:, feature_idx]
-plt.scatter(X_test[feature_name], sv_values, alpha=0.2)
+plt.scatter(
+  X_test[feature_name], sv_values - np.mean(sv_values), alpha=0.2
+)
 plt.xlabel(feature_name)
 plt.ylabel('SHAP value')
-
-x0pred = model.predict(X_test.iloc[[0]])
-
-#plt.plot(feature_range, preds - x0pred, color='red')
-plt.plot(x_range, preds, color='red')
-
+plt.plot(x_range, preds - np.mean(preds), color='red')
 plt.show()
 ```
 
@@ -151,9 +148,4 @@ There's also a paper [@bordt2022shapley] showing that when the model is a GAM, t
 
 But things get tricky when we have interactions.
 
-And they get even trickier when we have interactions plus correlations.
-However, the situation is still manageable (and other interpretation methods have to deal with the same difficulties).
-
-Alright, now we allowed the model to have non-linear feature effects, but it still had to be additive.
-
-In the next step, we will allow the model to have interactions and see how this affects the interpretation of the Shapley values.
+In the next chapter, we will allow the model to have interactions and see how this affects the interpretation of the Shapley values.
