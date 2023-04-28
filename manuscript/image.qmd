@@ -112,7 +112,7 @@ shap_values = explainer(
 The code above calculates all Shapley values.
 However, for image Shap, we can't do much with the raw values, so we'll visualize them.
 
-The Shap values are best displayed by overlaying them on the original image.
+The Shapley values are best displayed by overlaying them on the original image.
 Now you can finally see the chosen images:
 
 ```{python}

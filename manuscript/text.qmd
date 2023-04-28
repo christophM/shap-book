@@ -299,7 +299,7 @@ output_text = tokenizer.decode(output[0], skip_special_tokens=True)
 print('The result: "' + output_text + '"')
 ```
 
-Now, we can obtain the Shap explanations for this sentence:
+Now, we can obtain the SHAP explanations for this sentence:
 
 ```{python}
 torch.manual_seed(0)
