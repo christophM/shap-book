@@ -53,10 +53,9 @@ $$val_{x}(S)=\int\hat{f}(x_{1},\ldots,x_{p})d\mathbb{P}_{X_{\bar{S}}}-E_X(\hat{f
 You actually perform multiple integrations for each feature not contained in S ($X_{\bar{S}}$).
 Consider this example:
 A machine learning model works with four features $X_1$, $X_2$, $X_3$, and $X_4$, and we evaluate the prediction for the coalition S consisting of feature values $X_1$ and $X_3$:
+$$val_{x}(S) = val_{x}(\{1, 3\}) = \int_{\mathbb{R}}\int_{\mathbb{R}}\hat{f}(x_{1}, X_{2}, x_{3}, X_{4})d\mathbb{P}_{X_2X_4} - E_X(\hat{f}(X))$$
 
-$$val_{x}(S)=val_{x}(\{1,3\})=\int_{\mathbb{R}}\int_{\mathbb{R}}\hat{f}(x_{1},X_{2},x_{3},X_{4})d\mathbb{P}_{X_2X_4}-E_X(\hat{f}(X))$$
-
-This is similar to the feature contributions in a linear model!
+This is similar to the feature contributions in a linear model.
 
 :::{.callout-note}
 
@@ -139,7 +138,8 @@ For a game with combined payouts val+val^+^, the respective Shapley values are a
 $$\phi_j+\phi_j^{+}$$
 
 $$\phi_j + \phi_j^+$$
-Implication: This is not as straightforward as the other axioms, but let's give it a try. 
+
+Implications:
 Suppose you trained a random forest, which means that the prediction is an average of many decision trees. 
 The Additivity property guarantees that for a feature value, you can calculate the Shapley value for each tree individually, average them, and obtain the Shapley value for the feature value for the random forest. 
 For an additive ensemble of models, the Shapley value is the sum of individual Shapley values.
