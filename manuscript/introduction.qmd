@@ -14,7 +14,8 @@ However, there are many practical reasons why interpretability is important.
 
 Interpretability is valuable for model debugging, as illustrated by a study predicting pneumonia [@caruana2015intelligible].
 The authors trained a rule-based model, which learned that if a patient has asthma, they have a lower risk of pneumonia.
-I mean, seriously? I'm no doctor, but that seems off.
+I mean, seriously?
+I'm no doctor, but that seems off.
 Asthma patients typically have a higher risk of lung-related diseases.
 It appears the model got it all wrong.
 However, it turns out that asthma patients in this dataset were less likely to get pneumonia.
@@ -29,7 +30,6 @@ Instead, the network would learn this rule but keep it hidden, potentially causi
 In theory, you could have spotted the problem by examining the data closely and applying domain knowledge.
 In reality, however, it's easier to identify such issues if the model can express what it has learned.
 Black box machine learning models create a distance between the data and the modeler, and interpretability methods help bridge that gap.
-
 
 ### Users may create their own interpretations anyway
 
@@ -66,7 +66,6 @@ The fear that something odd might be happening or that the model can't be used f
 For example, coefficients in a linear regression model could be used to make other decisions, or a dashboard might need to display explanations alongside model scores for others to work with the predictions.
 
 However, methods like Shapley Values can still work in these cases, as we'll see later.
-
 
 ## Inherently interpretable models have limitations
 
@@ -170,8 +169,7 @@ It's most useful to say SHAP when you use Shapley values for XAI to explain indi
 
 :::
 
-In the [Getting Started Chapter](#getting-started) you will see an example of using SHAP to explain the predictions of a regression model.
-
+In the [Getting Started Chapter](#getting-started), you will see an example of using SHAP to explain the predictions of a regression model.
 
 The rough idea behind Shapley values:
 
@@ -206,24 +204,31 @@ You'll learn about limitations in the appropriate places throughout this book.
 Now, it's time to be positive.
 There are good reasons why SHAP has become popular and why it's worth learning:
 
-- SHAP is built on a solid game-theoretic foundation
-- SHAP works for various types of input data: tabular, text, and images
-- SHAP has many good software implementations available in Python and R
-- Designed for local explanations (explaining individual predictions), SHAP explanations can be combined for global model understanding (feature importance, interactions, dependence)
-- SHAP received hype, leading to many research papers on extensions for special types of models
+- SHAP is model-agnostic, meaning it can be applied to any type of machine learning model.
+- It is based on a solid theoretical foundation, which is the concept of Shapley values from cooperative game theory.
+- SHAP values are consistent, meaning that if a model relies more on a certain feature, the SHAP value for that feature will be higher.
+- SHAP values are locally accurate, ensuring that the sum of the SHAP values for a specific prediction equals the actual prediction.
+- They provide a unified measure of feature importance, making it easier to compare the contributions of different features across various models.
+- The Python library 'shap' offers a user-friendly implementation and supports various visualization options.
+- SHAP values can be used for both global and local explanations, helping to understand the overall importance of features as well as individual predictions.
+- SHAP is built on a solid game-theoretic foundation.
+- SHAP works for various types of input data: tabular, text, and images.
+- SHAP has many good software implementations available in Python and R.
+- Designed for local explanations (explaining individual predictions), SHAP explanations can be combined for global model understanding (feature importance, interactions, dependence).
+- SHAP received hype, leading to many research papers on extensions for special types of models.
 - The hype also means abundant material and blog posts, although repetitive and noisy. Good thing you have this ultimate guide!
-- Extensions like shapash enable building dashboards with Shapley values
+- Extensions like shapash enable building dashboards with Shapley values.
 - Shapley values are useful beyond explaining predictions, as seen in other machine learning applications. The [Other Applications Chapter](#other) covers use cases ranging from valuing data to fairly attributing feature importance (based on loss function).
 
 SHAP values are used in various areas and predictive models:
 
-- Forecasting gold price [@jabeur2021forecasting]
-- Identifying mortality factors for COVID-19 [@smith2021identifying]
-- Predicting heat wave-related mortality [@kim2022explainable]
-- Wastewater management treatment plants [@wang2022towards]
-- Genome-wide association studies [@johnsen2021new]
-- Accident detection [@parsa2020toward]
-- NO2 forecasting [@garcia2020shapley]
-- Molecular design [@rodriguez2020interpretation]
+- Forecasting gold price [@jabeur2021forecasting].
+- Identifying mortality factors for COVID-19 [@smith2021identifying].
+- Predicting heat wave-related mortality [@kim2022explainable].
+- Wastewater management treatment plants [@wang2022towards].
+- Genome-wide association studies [@johnsen2021new].
+- Accident detection [@parsa2020toward].
+- NO2 forecasting [@garcia2020shapley].
+- Molecular design [@rodriguez2020interpretation].
 
 Now it's time to see Shapley values in action, starting with a getting-started example before diving into the intuition and theory of SHAP.

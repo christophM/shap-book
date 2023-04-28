@@ -60,8 +60,8 @@ We already have our model, the class names, and the sample images.
 
 Things we need now:
 
-- a prediction function that wraps the model
-- a masker that tells SHAP how to simulate absent features (clusters of pixels) 
+- A prediction function that wraps the model.
+- A masker that tells SHAP how to simulate absent features (clusters of pixels).
 
 The prediction function is straightforward, as it takes an image in the form of a numpy array, preprocesses it for the Resnet, and then feeds it to the Resnet.
 So, numpy array in, probability scores out.
@@ -78,7 +78,7 @@ Then, we define the masker:
 
 ```{python}
 masker = shap.maskers.Image(
-  "blur(128,128)", shape = X[0].shape
+  'blur(128,128)', shape = X[0].shape
 )
 ```
 
@@ -95,17 +95,17 @@ We'll choose the top 3 classes (`topk`).
 topk = 3
 
 # which of the 50 images to display
-index = [21,28]
+index = [21, 28]
 
 explainer = shap.Explainer(
-  predict, masker, output_names=class_names
+    predict, masker, output_names=class_names
 )
 
 shap_values = explainer(
-  X[index], max_evals=1000,
-  batch_size = 50,
-  outputs=shap.Explanation.argsort.flip[:topk],
-  silent=True
+    X[index], max_evals=1000,
+    batch_size=50,
+    outputs=shap.Explanation.argsort.flip[:topk],
+    silent=True
 )
 ```
 
@@ -120,7 +120,6 @@ shap.image_plot(shap_values, pixel_values=X[index]/255)
 ```
 
 Let's interpret those SHAP values:
-<!-- Interpretation is for (eval = 1000) -->
 
 Starting with the burger, it's misclassified as the top class is "bottlecap".
 Examining the Shapley values, the burger's top part mainly influenced the classification towards bottlecap.
@@ -179,14 +178,14 @@ arr[75264:] = False
 
 fig, axs = plt.subplots(2, 2)
 ind = 0
-for i in [0,1]:
-  for j in [0,1]:
-    axs[i, j].imshow(masks[ind](x=X[21], mask=arr)[0][0]/255)
-    axs[i, j].set_title(mask_names[ind])
-    axs[i, j].set_xticks([])
-    axs[i, j].set_yticks([])
-    axs[i, j].tick_params(axis='both', which='both', length=0)
-    ind += 1
+for i in [0, 1]:
+    for j in [0, 1]:
+        axs[i, j].imshow(masks[ind](x=X[21], mask=arr)[0][0] / 255)
+        axs[i, j].set_title(mask_names[ind])
+        axs[i, j].set_xticks([])
+        axs[i, j].set_yticks([])
+        axs[i, j].tick_params(axis='both', which='both', length=0)
+        ind += 1
 
 plt.show()
 ```
@@ -197,30 +196,29 @@ It's also similar to the Partition explainer, which further splits along the x-a
 
 Returning to maskers, these strategies have the commonality of not fully changing the image, unlike replacing all missing values with grey pixels.
 Blurring even retains the original data, only smoothing it out, resulting in a loss of some information.
-The blur(16,16) kernel, for example, doesn't change the image too much or at least to me the burger bottom is still pretty recognizable.
+The blur(16, 16) kernel, for example, doesn't change the image too much or at least to me the burger bottom is still pretty recognizable.
 Let's see how the masks impact the Shapley values.
 
 ```{python}
 topk = 3
 
-# walk through all the masks
+# Walk through all the masks
 for mask_name in mask_names:
     print(mask_name)
     mask = shap.maskers.Image(mask_name, shape=X[0].shape)
     explainer = shap.Explainer(
-      predict, mask, output_names=class_names, silent=True
+        predict, mask, output_names=class_names, silent=True
     )
     shap_values = explainer(X[[21]], max_evals=500, batch_size=50,
-                    outputs=shap.Explanation.argsort.flip[:topk])
-    shap.image_plot(shap_values, pixel_values=X[[21]]/255)
+                            outputs=shap.Explanation.argsort.flip[:topk])
+    shap.image_plot(shap_values, pixel_values=X[[21]] / 255)
 ```
 
-<!-- based on 500 evals -->
 The choice of masker does make a difference in explaining the cheeseburger classification.
 The incorrect classification identified the cheeseburger as a bottlecap.
-All maskers agreed that the most responsible pixels were at the top, except for the blur(16,16) masker, which found the side pixels most relevant.
-However, the blur(16,16) masker seems a bit unreliable, as it doesn't obscure much.
-Even as a human, I can could recognize the lower part as a burger, meaning the features aren't significantly removed.
+All maskers agreed that the most responsible pixels were at the top, except for the blur(16, 16) masker, which found the side pixels most relevant.
+However, the blur(16, 16) masker seems a bit unreliable, as it doesn't obscure much.
+Even as a human, I can recognize the lower part as a burger, meaning the features aren't significantly removed.
 In all cases, the pixels at the bottom of the burger appeared to argue against a bottlecap classification.
 
 Another interesting hyperparameter is the number of evaluation steps.
@@ -237,7 +235,7 @@ evals = [10, 100, 1000, 5000]
 topk = 1
 
 masker = shap.maskers.Image(
-  "blur(128,128)", shape = X[21].shape
+    "blur(128, 128)", shape=X[21].shape
 )
 
 # iterate through all the masks
@@ -259,4 +257,5 @@ Upon increasing the number of evaluations, we observe:
 - The Shapley values decrease as the partitions and the number of pixels become smaller. It makes sense that masking fewer pixels has less influence on the prediction.
 - Computation time scales linearly with the number of evaluations.
 
-However, the Partition explainer is not our only option for image classifiers. We can also generate explanations at the pixel-level, which we will explore in the next chapter.
+However, the Partition explainer is not our only option for image classifiers.
+We can also generate explanations at the pixel-level, which we will explore in the next chapter.

@@ -167,12 +167,11 @@ Let's break it down:
 
 One might argue that both data points should have almost the same Shapley value, and if anything, data point 2 should have a larger Shapley value since increasing $x_1$ increases the prediction.
 However, we observe a decrease instead.
-
 Comparing these two data points, only $x_1$ has changed.
 Since we know $f(x)$, we understand that no sudden change occurs in between, because $x_2$ is too large for that, and we are not in the special rectangle area.
 
 ```{python}
-Xnew = pd.DataFrame({"X1": [-0.6, -0.4], "X2": [8,8]})
+Xnew = pd.DataFrame({'X1': [-0.6, -0.4], 'X2': [8,8]})
 shap_values = explainer.shap_values(Xnew)
 print(rf_model.predict(Xnew.values))
 print(shap_values)
@@ -185,8 +184,9 @@ One-eighth of the data is in the special rectangle with a very high predicted va
 
 Upon further consideration, this actually makes sense:
 
-- Point 1 $(x_1=-0.6, _2=8)$: This point already has "one foot" in the special rectangle. From that standpoint, what is the role of $x_1$? We have to think about the background data as well. For 1/4th of the background data, adding the player $x_1=-0.6$ would mean stepping fully into the rectangle and getting that juicy +20 in the prediction. In that regard, $x_1$ plays a positive role. In fact, all data points with $x_1 < -0.5$ (including a buffer zone since the random forest does it a bit more gradually) have a positive Shapley value $\phi_1$!
+- Point 1 $(x_1=-0.6, x_2=8)$: This point already has "one foot" in the special rectangle. From that standpoint, what is the role of $x_1$? We have to think about the background data as well. For 1/4th of the background data, adding the player $x_1=-0.6$ would mean stepping fully into the rectangle and getting that juicy +20 in the prediction. In that regard, $x_1$ plays a positive role. In fact, all data points with $x_1 < -0.5$ (including a buffer zone since the random forest does it a bit more gradually) have a positive Shapley value $\phi_1$!
 - Point 2 with $(x_1=-0.4, x_2=8)$, on the other hand, has an $x_1$ value that is the worst of both worlds (if you see a low prediction as bad). It doesn't help **any** data point from the background data to enter the magical rectangle. But it's also on the lower end in terms of the linear factor. So, it makes sense to get a negative value.
+
 But what about the difference between the Shapley values $\phi_2$ for $x_2$?
 We observe that both are positive, but the second is larger.
 It makes sense that they are positive because for all data points with $x_2 \in [-5, 7.99]$, which means an improvement for 60% of the data points, and adding to that all the ones $x_2 < -5$ but $x_1 > -0.5$, which are 0.25 * 0.75 = 0.1875, another 18.75% and in total 78.75% of the data.
@@ -211,26 +211,28 @@ Shapley values mah not be interpreted as counterfactuals or what-if analyses!
 
 And you shouldn't interpret them as such.
 Because if you expect both of the above data points to have roughly the same Shapley values, then it's closer to a what-if analysis where you keep one part fixed (here $x_2$) and only change the feature we are looking at ($x_1$).
+
 However, Shapley values always operate on a background dataset and incorporate a more global view of the model.
 For our example, this means that even though we are operating on a data point outside the rectangle, the Shapley value includes the marginal contribution of coalitions that involve jumping into the rectangle.
 
 In that sense, for $x_2 > -5$, the Shapley values as a function of $x_1$ are a mix of:
 
-- locally changing $x_1$
-- globally changing everything
+- Locally changing $x_1$.
+- Globally changing everything.
 
 Take-home messages:
 
-- Shapley values are not what-if analyses
-- Shapley values are not local derivatives
-- Shapley values combine global and local properties of the prediction function
-- Shapley values' interpretation depends on the background data
-- A Shapley value must be interpreted in the context of background data and the full prediction function
-- A Shapley value is also influenced by interactions with other features, even if in a "what-if" scenario (just changing the feature in question), that interaction isn't "triggered"
+- Shapley values are not what-if analyses.
+- Shapley values are not local derivatives.
+- Shapley values combine global and local properties of the prediction function.
+- Shapley values' interpretation depends on the background data.
+- A Shapley value must be interpreted in the context of background data and the full prediction function.
+- A Shapley value is also influenced by interactions with other features, even if in a "what-if" scenario (just changing the feature in question), that interaction isn't "triggered".
 
 By the way, the exact same thing happens to $x_2$, with the difference that the linear trend is much steeper.
 
 But, what does such an artificial example have to do with real ML applications?
 
-The phenomenon that occurs here in the extreme plays out in more complex but subtle ways in real applications. Only potentially with more features, and the interactions won't be as blunt but might be more smooth and intricate.
+The phenomenon that occurs here in the extreme plays out in more complex but subtle ways in real applications.
 
+Only potentially with more features, and the interactions won't be as blunt but might be more smooth and intricate.

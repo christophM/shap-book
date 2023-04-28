@@ -1,4 +1,4 @@
-## Estimating Shapley Values -- An Overview {#estimation-overview}
+# Estimating Shapley Values - An Overview {#estimation-overview}
 
 There is more than one way to estimate Shapley values.
 This chapter gives an overview of the estimation methods, for a deeper dive go to the [Appendix](#estimation).
@@ -32,8 +32,6 @@ Here is an overview of the explainers, for your convenience:
 | Deep | Explains deep learning models by attributing the output to input features using the gradient of the output with respect to the inputs. | Neural Networks | Yes | DeepLIFT |
 | Partition | Calculates Shapley values for a hierarchy of features. | Agnostic | Yes | Owen values |
 
-
-
 ## When to use which estimator
 
 The big question: When should you use which explainer?
@@ -45,5 +43,3 @@ Here is a quick guide:
 - Avoid the Kernel explainer.
 - Tree SHAP is fast, so always consider tree-based models in your model selection process. It is best practice to include a tree-based solution in the model comparison.
 - Use the partition explainer for correlated features and applications like image processing.
-
-H

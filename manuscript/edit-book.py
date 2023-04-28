@@ -1,7 +1,18 @@
 import os
+import yaml
 
-chapter_files = ['correlation.qmd', 'aggregated.qmd', 'logistic.qmd', 'classification.qmd', 'history.qmd', 'image.qmd', 'image-deepexplainer.qmd', 'text.qmd', 'extensions.qmd', 'other.qmd', 'dashboard.qmd', 'limitations.qmd', 'shap-library.qmd']
+def edit(file_name):
+    # Your implementation here
+    print(f"Processing {file_name}")
+    os.system(f'python edit.py {file_name}')
 
-for chapter_file in chapter_files:
-    print('Editing ' + chapter_file)
-    os.system(f'python edit.py {chapter_file}')
+def main():
+    with open("_quarto.yml", "r") as f:
+        data = yaml.safe_load(f)
+    qmd_files = data["book"]["chapters"] + data["book"]["appendices"]
+    for file_name in qmd_files:
+        edit(file_name)
+
+if __name__ == "__main__":
+    main()
+

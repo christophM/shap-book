@@ -1,4 +1,4 @@
-## Limitations of Shapley Values
+# Limitations of Shapley Values
 
 As a statistician with both Bachelors and Masters degrees, I feel obliged to critically examine methods and resist hype.
 In this chapter, I will scrutinize Shapley values.
@@ -47,6 +47,7 @@ The question now is: Are these axioms useful for interpretation? Did we define t
 As demonstrated in the [Linear Chapter](#linear) and the [Additive Chapter](#additive), at least for these more restricted models, the results align with our expectations and what similar metrics (such as coefficients or PDP) would indicate.
 
 ### Shapley values aren't human-friendly explanations
+
 Human-friendly explanations should be concise, contrastive, and focus on "abnormal" causes [@miller2019explanation].
 However, Shapley values are not concise, as they attribute to all feature values.
 They are also not inherently contrastive.

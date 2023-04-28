@@ -20,7 +20,7 @@ For report capabilities, install it this way:
 pip install shapash
 ```
 
-## A quick example with shapash
+## A quick example with Shapash
 
 Let's build a simple dashboard using the California housing data.
 
@@ -58,7 +58,7 @@ To start the app, simply run:
 
 ```{python}
 #| output: False
-app = xpl.run_app(title_story="California Housing", port=8020)
+app = xpl.run_app(title_story='California Housing', port=8020)
 ```
 
 This will run the server locally on port 8020 and display a link to `http://0.0.0.0:8050/`, where the Shapash app is accessible.

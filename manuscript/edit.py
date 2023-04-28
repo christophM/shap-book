@@ -31,13 +31,28 @@ system_text = """You are an expert technical editor specializing in machine lear
 - output 1 line per sentence (same as input)
 """
 
+
+
+system_text = """You are an expert editor. Your job is to make documents
+consistent.
+
+- Fix spelling errors
+- Bullet point lists should end in period ".", except when the point is an item or a sentence fragment, then end without "."
+- Level 1 headers (#) in title case
+- Level 2 headers (##) sentence case. Except when it's within a "box", i.e. between ::: and :::
+- For strings in Python code examples use ' instead of "
+- Each sentence is on a new line
+- otherwise, don't change anything
+
+"""
+
 system_prompt = SystemMessage(content=system_text)
 
 keyfile = "oai.key"
 with open(keyfile, 'r') as f:
     key = f.read().strip()
 
-llm = ChatOpenAI(openai_api_key=key, model="gpt-4", request_timeout=120)
+llm = ChatOpenAI(openai_api_key=key, model="gpt-4", request_timeout=240)
 
 def process_file(input_file):
     output_file = os.path.splitext(input_file)[0] + ".qmd"
@@ -46,7 +61,7 @@ def process_file(input_file):
         content = f.read()
 
     #splitter = MarkdownTextSplitter(chunk_size=1000, chunk_overlap=0)
-    splitter = CharacterTextSplitter.from_tiktoken_encoder(chunk_size=500, chunk_overlap=0)
+    splitter = CharacterTextSplitter.from_tiktoken_encoder(chunk_size=1000, chunk_overlap=0)
 
     docs = splitter.split_text(content)
     print("Split into {} docs".format(len(docs)))

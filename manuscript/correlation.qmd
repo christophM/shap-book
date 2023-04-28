@@ -62,12 +62,14 @@ plt.ylabel('x2')
 
 plt.show()
 ```
+
 The plot above illustrates that when we ignore the correlation between $X_1$ and $X_2$ and sample $X_2$ independently from $X_1$, we create new data points outside of the distribution.
 This is what occurs with Shapley values.
 On the left, we can see what sampling from $P(X_2 | X_1)$ instead of $P(X_2)$ would look like.
 This conditional sampling will also be part of one of the solutions.
 
 ## A philosophical problem
+
 Before delving into solution details, let's explore the issue further.
 The problem of correlation and extrapolation is not just a technical challenge but also a philosophical one.
 We must decide what we truly want when interpreting a model.
@@ -139,12 +141,11 @@ Conditional sampling avoids the extrapolation problem.
 However, conditional sampling is easier said than done, considering that supervised machine learning focuses on learning $P(Y|X_1, \ldots, X_p)$, and we now need to learn more complex distributions for multiple variables.
 Typically, simplifying assumptions for the conditional distributions are used to make sampling easier, as done by @aas2021explaining:
 
-- Use multivariate Gaussians
-- Employ Gaussian copulas
-- Apply kernel estimators (if there are not too many dimensions)
+- Use multivariate Gaussians.
+- Employ Gaussian copulas.
+- Apply kernel estimators (if there are not too many dimensions).
 
-The paper proposed more techniques, but these are the key ones
-
+The paper proposed more techniques, but these are the key ones.
 ::: {.callout-warning}
 Switching the sampling from marginal to conditional alters the game payout.
 For instance, the resulting Shapley values may appear to no longer adhere to the Dummy axiom, as unused features like $\beta_j=0$ in a linear model can suddenly have non-zero Shapley values.

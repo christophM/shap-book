@@ -1,4 +1,4 @@
-# Extensions of Shapley values {#extensions}
+# Extensions of Shapley Values {#extensions}
 
 This chapter highlights some extensions for Shapley values, focusing on adaptations for specific model or data structures while still maintaining their purpose in explaining predictions.
 
@@ -13,6 +13,7 @@ For text, L-Shapley considers only neighboring words instead of interactions bet
 Group SHAP [@lin2022model] is a straightforward approach that groups features together and computes a single Shapley value per group rather than for each feature value. This method is less computationally expensive and offers a potential solution to the correlation problem. The `shap` library's Partition explainer allows this by providing custom groupings.
 
 ## n-Shapley values
+
 The n-Shapley values [@bordt2022shapley] connect Shapley values with GAMs (generalized additive models), where n represents the interaction depth considered during Shapley value computation, depending on the GAM's training.
 A "vanilla" GAM features no interaction (n=1), but interactions can be added.
 The paper demonstrates the relationship between n-Shapley values and functional decomposition, providing the [nshap package in Python](https://github.com/tml-tuebingen/nshap) for implementation.
@@ -36,6 +37,7 @@ These approaches typically utilize directed acyclic graphs to identify (or assum
 Occasionally, they modify or expand the original Shapley axioms, which can alter the resulting Shapley game.
 
 ## Counterfactual SHAP
+
 As discussed in the [Limitations Chapter](#limitations), Shapley values are not necessarily the best option for counterfactual explanations.
 A counterfactual explanation is a contrastive explanation, explaining why the current prediction was made instead of a counterfactual outcome.
 This is important, for example, in recourse situations when someone affected by a decision wants to challenge a prediction, such as a creditworthiness classifier.

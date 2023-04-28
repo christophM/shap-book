@@ -5,15 +5,15 @@ In the previous chapter, we explored the Partition explainer, where larger image
 In this chapter, we will explain image classifier classifications using a different approach, more akin to tabular data.
 This entails two key aspects:
 
-- Assigning one Shapley value for each input pixel
-- Simulating feature absence (pixel absence) by replacing it with a pixel from a background dataset
+- Assigning one Shapley value for each input pixel.
+- Simulating feature absence (pixel absence) by replacing it with a pixel from a background dataset.
 
 Although the network receives individual pixels as input, we don't need to use the same granularity for explanations.
 
 As we are working with a neural network, two model-specific tools are available:
 
-- The gradient explainer, since neural networks often rely on gradients
-- The deep explainer, which utilizes neural network layers to backpropagate Shapley values
+- The gradient explainer, since neural networks often rely on gradients.
+- The deep explainer, which utilizes neural network layers to backpropagate Shapley values.
 
 Both methods are discussed in greater detail in the [Estimation Chapter](#estimation).
 For this example, we will use the MNIST dataset.
@@ -27,8 +27,8 @@ Because using pixel-wise explanations with Gradient or Deep explainer requires s
 
 Essentially, there are two options to replace a value with images:
 
-- replace them with background data
-- substitute them with a reference, such as blurring or replacing them with grey pixels (or another "neutral" color)
+- Replace them with background data.
+- Substitute them with a reference, such as blurring or replacing them with grey pixels (or another "neutral" color).
 
 Imagine using the ImageNet dataset, where we have an image of a burger and replace the "absent" pixels with pixels from a dog image - it would result in a strange outcome.
 However, for the MNIST dataset, this approach is more reasonable, as digits are more similar to each other, and replacing some pixels of a "2" with those of a "3" won't generate bizarre images.
@@ -142,7 +142,7 @@ Let's plot the Shapley values:
 shap.image_plot(shap_values, x_test[:3])
 ```
 
-All the red pixels contributed positively to the respective class and blues one negatively.
+All the red pixels contributed positively to the respective class and blue ones negatively.
 Grey pixels have a near zero Shapley value.
 For example, for the "2", the class output "1" has blue pixels at the left and right beginning/ending of the "2" image.
 This makes sense, since these are the pixels that make it a "2" and not a "1".
@@ -166,9 +166,9 @@ shap.image_plot(shap_values, x_test[:3])
 ```
 
 The Shapley values are very similar to the Gradient Explainer.
-Make sense, since in both cases the result should be the same Shapley values and difference only due to the fact that both are approximated.
+This makes sense, since in both cases the result should be the same Shapley values and the difference is only due to the fact that both are approximated.
 
-## Time comparison between deep explainer
+## Time comparison between Deep Explainer
 
 We measured the time for both gradient and deep explainer.
 

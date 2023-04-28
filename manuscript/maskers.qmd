@@ -1,4 +1,4 @@
-# The Role of Maskers (and Background Data)
+# The Role of Maskers and Background Data
 
 ::: {.callout-note}
 Maskers are the technical solution for "removing" feature values to compute marginal contributions and Shapley values.
@@ -31,7 +31,7 @@ A binary mask can be viewed as a team description, indicating which players part
 - The model's predictions are obtained and averaged.
 - A masker can be a function that performs this mapping, or directly an array or pandas.DataFrame, providing a shortcut.
 
-## Masker for tabular Data
+## Masker for tabular data
 
 ::: {.callout-note}
 Typical maskers for tabular data replace absent feature values with samples from a background dataset.
@@ -41,7 +41,7 @@ For tabular data, we can provide a background dataset, and the masker replaces m
 
 There are two choices for maskers: Independent masker and Partition masker.
 
-### Independent Masker
+### Independent masker
 
 Depending on the Explainer, this can involve sampling from the background data or iterating through all background data for each instance and feature value to compute the Shapley values.
 
@@ -68,8 +68,8 @@ masker = shap.maskers.Independent(data=X_train)
 explainer = shap.LinearExplainer(model, masker=masker)
 ```
 
-Here is an illustration of how that Independent masker operates.
-For that we simulate a background dataset.
+Here is an illustration of how the Independent masker operates.
+For that, we simulate a background dataset.
 
 ```{python}
 #| warning: false
@@ -90,7 +90,7 @@ print(df)
 ```
 
 This dataframe is our background dataset.
-Next we create a masker an apply it to data point (f1=0, f2=0, f3=0).
+Next, we create a masker and apply it to data point (f1=0, f2=0, f3=0).
 
 ```{python}
 #| warning: false
@@ -144,7 +144,7 @@ Tokenization by word is often a good first choice for interpretation with SHAP.
 :::
 
 For the following discussions, let's assume the input is tokenized by word.
-The next question is: How do we represent the "absence" of a word.
+The next question is: How do we represent the "absence" of a word?
 This decision is up to the user.
 By default, the word is replaced by an empty string, but it could also be replaced with "..." (which is the default in `shap`) or even a randomly chosen word from background data or based on a grammar tool.
 The chosen method will influence the prediction, as shown in the [text chapter](#text).
@@ -153,7 +153,7 @@ The chosen method will influence the prediction, as shown in the [text chapter](
 ```{python}
 import shap
 m = shap.maskers.Text()
-s = "Hello is this the Krusty Krab?"
+s = 'Hello is this the Krusty Krab?'
 print(m(s=s, mask = [1,1,1,1,1,1]))
 print(m(s=s, mask = [1,0,0,1,0,1]))
 print(m(s=s, mask = [1,1,1,1,0,0]))
@@ -168,6 +168,7 @@ For images, maskers replace missing pixels with blurred versions or use inpainti
 
 :::
 Similar to text data, the representation of an image for SHAP can be independent of its representation for the model, as long as there is a mapping between the SHAP version and the model version to calculate the marginal contributions.
+
 For images, we have two options for players: individual pixels or larger units containing multiple pixels.
 The composition of these units is flexible, and they can be created based on a grid, such as dividing a 224x224 image into 196 rectangles of size 16x16.
 In this case, the number of players would be 196 instead of 224x224 = 50,176.

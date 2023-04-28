@@ -1,6 +1,5 @@
 # Shapley Values for Additive Models
 
-
 In this next step, we allow the relationship between a feature and the target to be non-linear.
 However, we do not allow interactions between the features.
 Additive models with non-linear base functions are perfectly modeled with so-called generalized additive models, also known as GAMs.
@@ -95,7 +94,7 @@ A SHAP-specific note here: since the explainer is a Permutation explainer, we ca
 This waterfall plot presents a different picture of what's happening, compared to the purely linear model.
 
 - For this wine, the most important features were alcohol and free sulfur dioxide, while in the linear model, it was residual sugar and free sulfur dioxide.
-- Generally, the prediction for the GAM is lower in this case (around 6.0
+- Generally, the prediction for the GAM is lower in this case (around 6.0).
 - This example beautifully demonstrates how, although the global average prediction and the local prediction are quite similar, there are numerous Shapley values canceling each other out.
 
 ## Shapley values recover non-linear functions
@@ -108,8 +107,8 @@ Since it's an additive model, this curve will be the same for all data points, o
 # plot SHAP values against feature values
 import matplotlib.pyplot as plt
 import numpy as np
-feature_name='alcohol'
-feature_idx = np.where(X_test.columns==feature_name)
+feature_name = 'alcohol'
+feature_idx = np.where(X_test.columns == feature_name)
 sv = shap_values.values[:, feature_idx]
 plt.scatter(X_test[feature_name], sv, alpha=0.1)
 plt.xlabel(feature_name)
@@ -128,7 +127,7 @@ first_row = X.iloc[np.repeat(0, 100)]
 x_range = np.linspace(
   X[feature_name].min(), X[feature_name].max(), num=100
 )
-first_row.loc[:,feature_name] = x_range
+first_row.loc[:, feature_name] = x_range
 preds = model.predict(first_row)
 
 Xpred = model.predict(X_test).mean()

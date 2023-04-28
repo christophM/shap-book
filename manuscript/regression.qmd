@@ -118,7 +118,7 @@ Some key observations:
 
 - Generally, an increase in alcohol level raises the Shapley value, which in turn increases the predicted values.
 - Examining cases with low volatile acidity reveals an interesting interaction with wines that have a low alcohol level. While wines with low alcohol (around 9%) typically have a negative Shapley value, low volatile acidity seems to have a slightly positive impact.
-- When alcohol levels are high (11 - 14 %), having a higher volatile acidity appears to be slightly beneficial, though the effect is quite subtle.
+- When alcohol levels are high (11 - 14%), having a higher volatile acidity appears to be slightly beneficial, though the effect is quite subtle.
 
 ::: {.callout-note}
 General advice on reading the interaction part of the dependence plot:
@@ -135,7 +135,7 @@ Residual sugar indicates the remaining sugar in the wine, with higher amounts ma
 
 ```{python}
 shap.dependence_plot(
-  "residual sugar", shap_values.values, X_test,
+  'residual sugar', shap_values.values, X_test,
   feature_names=wine.columns
 )
 ```

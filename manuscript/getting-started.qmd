@@ -40,8 +40,6 @@ source venv/bin/activate
 pip install shap
 ```
 
-
-
 ### If you use conda
 
 If you're using conda, use these commands to install SHAP:
@@ -128,7 +126,6 @@ error = 1 - accuracy_score(y_test, predictions)
 print('Prediction error on the test set: {:.4f}'.format(error))
 ```
 
-
 Alright, now we have our finely-tuned XGBoost model with an acceptable prediction error. 
 Next up, we are going to interpret the model.
 
@@ -165,7 +162,6 @@ Let's visualize the attributions (i.e., the Shapley values) for one data point.
 # Plot the explanation
 shap.waterfall_plot(shap_values[1])
 ```
-
 
 The plot above is called a waterfall plot.
 It's named "waterfall" because each step resembles flowing water.
@@ -235,15 +231,16 @@ This provides a global model interpretation.
 In the previous step, we computed the Shapley values for the test data, which are now stored in the `shap_values` variable.
 From this, we can create a summary plot that offers further insights into the model.
 
-```{python}
+```python
 shap.summary_plot(shap_values)
 ```
+
 The plot displays Shapley values for all features and data points for which we computed the values.
 This plot provides a comprehensive overview of several aspects:
 
-- The importance of each feature (greater variance indicates higher importance)
-- The dependence of the target on each feature
-- Some intriguing details
+- The importance of each feature (greater variance indicates higher importance).
+- The dependence of the target on each feature.
+- Some intriguing details.
 
 Each point represents the Shapley value of a feature for a specific data instance.
 So, in total, there are a number of features multiplied by the number of instances of points in the summary plot (typically with significant overplotting).

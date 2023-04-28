@@ -1,7 +1,7 @@
 # A Short History of SHAP and Shapley Values {#history}
 
-A brief overview of the "history" of SHAP and Shapley values, focusing on the chronological order of inventions.
-I divide the history into 3 parts marked by a milestone each: 
+A brief overview of the history of SHAP and Shapley values, focusing on the chronological order of inventions.
+I divide the history into 3 parts marked by a milestone each:
 
 - 1951: Game theory
 - 2012: First steps in machine learning
@@ -43,9 +43,9 @@ At least not in the way it eventually would.
 
 Some possible reasons for its lack of popularity:
 
-- Explainable AI/Interpretable machine learning wasn't as widely recognized at the time
-- The papers by \v{S}trumbelj and Kononenko didn't include code, making it harder to use
-- The sampling method was still relatively slow and not suitable for image or text classification
+- Explainable AI/Interpretable machine learning wasn't as widely recognized at the time.
+- The papers by Štrumbelj and Kononenko didn't include code, making it harder to use.
+- The sampling method was still relatively slow and not suitable for image or text classification.
 
 But all these reasons are somewhat speculative.
 Let's examine the events that led to Shapley values becoming popular in machine learning.
@@ -70,8 +70,8 @@ Additionally, the paper showed how their proposed estimation method "unites" oth
 
 Thus, the novel contributions were:
 
-1. A new estimator for Shapley values[^new-estimator]
-2. Unification of several existing methods[^unification]
+1. A new estimator for Shapley values[^new-estimator].
+2. Unification of several existing methods[^unification].
 
 [^unification]: I'm not particularly fond of the unification framing.
 Although having a framework that connects different methods is useful, SHAP itself doesn't truly unify them, as you need to modify other methods to produce Shapley values.
@@ -82,11 +82,11 @@ I know I may sound harsh, but in this chapter, I want to not only discuss Shaple
 
 Here are my thoughts on why SHAP gained popularity:
 
-- The venue it was published in (NIPS/NeurIPS)
-- The timing
-- Luck (always a factor)
-- Continued research by the authors and others
-- Solid, open-source Python implementation
+- The venue it was published in (NIPS/NeurIPS).
+- The timing.
+- Luck (always a factor).
+- Continued research by the authors and others.
+- Solid, open-source Python implementation.
 
 The role of open source code shouldn't be underestimated, as it allowed people to incorporate Shapley values into their projects.
 

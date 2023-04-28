@@ -5,7 +5,8 @@ Simple because it is already interpretable, allowing us to compare Shapley value
 
 ## What about coefficients?
 
-But why do we need Shapley values for linear regression anyway? Couldn't we just look at the coefficients?
+But why do we need Shapley values for linear regression anyway?
+Couldn't we just look at the coefficients?
 
 We could, but that would only tell half of the story.
 The coefficient is always the same, regardless of the data point we want to explain.
@@ -26,7 +27,7 @@ The goal is to predict wine quality based on its physico-chemical attributes.
 The target variable "quality" is the average rating from three blind testers and ranges from 0 to 10.
 
 Now, let's take a quick look at what the features look like in the data.
-First we download the data.
+First, we download the data.
 
 
 ```{python}
@@ -73,9 +74,9 @@ Before that, though, let's split the data into training and test data.
 ```{python}
 from sklearn.model_selection import train_test_split
 # Extract the target variable (wine quality) from the data
-y = wine["quality"]
+y = wine['quality']
 # Remove the target variable from the data
-X = wine.drop("quality", axis=1)
+X = wine.drop('quality', axis=1)
 X_train, X_test, y_train, y_test = train_test_split(
   X, y, test_size=0.2, random_state=42
 )
@@ -182,11 +183,10 @@ shap.waterfall_plot(exp)
 
 Observations:
 
-- The most crucial feature was residual sugar (=10.8), with a Shapley value of 0.27, signifying it had an increasing effect on the quality
-- Overall, the prediction was higher than the average, indicating good quality wine
-- Most feature values of this wine were assigned a positive Shapley value
-- pH of 3.09 is the feature value with the largest negative Shapley value
-
+- The most crucial feature was residual sugar (=10.8), with a Shapley value of 0.27, signifying it had an increasing effect on the quality.
+- Overall, the prediction was higher than the average, indicating good quality wine.
+- Most feature values of this wine were assigned a positive Shapley value.
+- pH of 3.09 is the feature value with the largest negative Shapley value.
 This plot provides a nice overview, but it somewhat omits crucial information that one often desires.
 For instance, in the case of residual sugar, we know it increased the prediction, but we cannot determine from the waterfall plot alone what happens to the prediction if the value of residual sugar (10.8) increased or decreased.
 We could infer this from the coefficient, but this will change in the next chapter when we discuss additive models.
@@ -214,7 +214,7 @@ With this plot, we can hopefully confirm that the Shapley values also show a lin
 
 ```{python}
 shap.dependence_plot(
-  "alcohol", shap_values, X_test,
+  'alcohol', shap_values, X_test,
   feature_names=wine.columns,
   interaction_index=None
 )
@@ -231,7 +231,7 @@ We can observe that the Shapley value increases linearly with each increment in 
 This increase corresponds to the slope in:
 
 ```{python}
-feature = "alcohol"
+feature = 'alcohol'
 ind = X_test.columns.get_loc(feature)
 coefs.coefficient[ind]
 ```

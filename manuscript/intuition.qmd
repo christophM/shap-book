@@ -74,7 +74,7 @@ The first row shows the coalition without any feature values.
 The second, third, and fourth rows show different coalitions with increasing coalition size, separated by "|".
 In total, the following coalitions are possible:
 
-- `No feature values`
+- No feature values
 - `park-nearby`
 - `area-50`
 - `floor-2nd`

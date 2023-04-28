@@ -11,12 +11,10 @@ If we have 3 inputs, it's 4 coalitions.
 If we have 4 inputs, it's 8 coalitions.
 In fact, there are $2^{(p-1)}$ coalitions to which we can add the feature value, where $p$ is the number of features in the predictive model.
 
-
 There is another aspect that requires estimation or the use of "shortcuts".
 The absence of a feature must be simulated by replacing the feature with a background sample.
 However, if we were to do this only once, it would result in a poor estimate, as the coalition would heavily depend on the sampled background dataset.
 Therefore, we need to sample multiple times and average the results, effectively removing the effect of the particular sample.
-
 
 ## Exact Explainer: Computing all the coalitions
 
@@ -37,7 +35,7 @@ We can use the exact method with the following code in `shap`:
 
 ```{python}
 #| eval: false
-explainer = shap.explainers.Exact(model, background)
+explainer = shap.Explainer(model, background)
 ```
 
 However, `shap` limits the marginal contributions of features being added to coalitions of size 0, 1, p-2, and p-1, which means it covers interactions of a maximum size of 2.
@@ -113,8 +111,7 @@ In `shap`, the explainer is implemented in:
 #| eval: false
 explainer = shap.explainers.Sampling(model, background)
 ```
-
-- The default number of samples (`nsamples`) is `auto` which is 1,000 times the number of features.
+- The default number of samples (`nsamples`) is `auto`, which is 1,000 times the number of features.
 - The sampling explainer only accepts the identity link (relevant for classifiers).
 
 However, the sampling explainer is not the most efficient way to estimate Shapley values, even though it's an improvement over the exact explainer when dealing with larger datasets.
@@ -222,7 +219,7 @@ This implies that there are no interactions[^interactions] and no non-linear rel
 In this case, the Shapley values are quite straightforward to compute, as we have seen in the [Theory Chapter](#theory).
 The Shapley values are then defined as:
 
-$$\phi_j = \beta_j \cdot (x_j - \mathbb{E}[X_j]))$$
+$$\phi_j = \beta_j \cdot (x_j - \mathbb{E}[X_j])$$
 
 This also works if you have a non-linear link function.
 This means that the model is not entirely linear, but the weighted sum is transformed before making the prediction.
@@ -243,20 +240,19 @@ Keep in mind that this adds a bit of complexity to the interpretation.
 
 Notes on implementation:
 
-```{python}
+```python
 #| eval: false
 shap.explainers.Linear(model, background)
 ```
+
 - To use the link function, you can set `link` in the explainer. The default is the identity link. Learn more about this in the [Classification Chapter](#classification).
 - The implementation in SHAP also allows accounting for feature correlations when `feature_perturbation` is set to "correlation_dependent".
 However, this will lead to a different "game" and therefore different Shapley values. Read more about that in the [Correlation Chapter](#correlation).
 
 ## Additive Explainer: For additive models
 
-:::{.callout-note}
-
+::: {.callout-note}
 Model-specific explainer that makes use of the fact that features don't interact in additive models.
-
 :::
 
 The additive explainer is a generalization of the linear explainer.
@@ -271,7 +267,7 @@ Typical examples include splines to model a smooth, non-linear relationship betw
 However, we can still utilize the fact that there are no interactions between the features.
 In other words, the additive explainer assumes that the model only has first-order effects.
 
-How does does the knowledge of additivity (absence of interactions) help with the computation of Shapley values?
+How does the knowledge of additivity (absence of interactions) help with the computation of Shapley values?
 It actually helps a lot.
 When considering marginal contributions and coalitions, an absence of interaction means that the effect of a feature values on the prediction is independent of the features already in the coalition.
 The marginal contribution of a feature is always the same.
@@ -373,12 +369,10 @@ Implementation details in `shap`:
 
 ## Tree Explainer: For tree-based models
 
-:::{.callout-note}
-
+::: {.callout-note}
 ## Tree Explainer
 
 An explainer specific to tree-based models like decision trees, random forests, and gradient boosted trees.
-
 :::
 
 The Tree Explainer is one of the reasons why SHAP is so popular.
@@ -475,7 +469,7 @@ The Gradient Explainer is a model-specific explainer designed for gradient-based
 :::
 
 Several models are gradient-based, including many neural networks.
-This means that  we can compute the gradient of the loss function with respect to the model input.
+This means that we can compute the gradient of the loss function with respect to the model input.
 When we can compute the gradient with respect to the input, this information can be used to calculate Shapley values more efficiently.
 
 Gradient SHAP is defined as the expected value of the gradients x (inputs - baselines).
@@ -488,9 +482,8 @@ $$\text{GradientShap}(x) = \frac{1}{n_{bg}}\sum_{i=1}^{n_{bg}} (x_j - \tilde{x}_
 
 So, what does this formula do?
 For feature value $x_j$, this explainer iterates through the background data of size $n_{bg}$ and computes two terms:
-
-- the distance between the data point to explain $x_j$ and the background sample 
-- the gradient $g$ of the prediction with respect to the j-th feature, but not at the position of the point to explain, rather at a random location of feature $X_j$ between the data point of interest and background data. The $\alpha_i$ is uniformly sampled from $[0,1]$.
+- The distance between the data point to explain $x_j$ and the background sample.
+- The gradient $g$ of the prediction with respect to the j-th feature, but not at the position of the point to explain, rather at a random location of feature $X_j$ between the data point of interest and background data. The $\alpha_i$ is uniformly sampled from $[0,1]$.
 
 These terms are multiplied and are averaged over the background data to approximate Shapley values.
 There is a connection between the Gradient Explainer and a method called Integrated Gradients [@sundararajan2017axiomatic].
@@ -504,10 +497,10 @@ $$IG(x) = (x_j - \tilde{x}_j) \cdot \int_{\alpha = 0}^1 \frac{\delta g(\tilde{x}
 
 These are the terms of the equation:
 
-- $x$: the data point to be explained
-- $\tilde{x}$: the reference data point. For images, this can be a completely black or gray image
-- $g$: the gradient function of the gradient-based model with respect to the input feature $x_j$ in our case
-- The integral is along the path between $x_j$ and $\tilde{x}_j$
+- $x$: the data point to be explained.
+- $\tilde{x}$: the reference data point. For images, this can be a completely black or gray image.
+- $g$: the gradient function of the gradient-based model with respect to the input feature $x_j$ in our case.
+- The integral is along the path between $x_j$ and $\tilde{x}_j$.
 
 The Gradient Explainer modifies this concept by using more than one data point as a reference and integrating over an entire background dataset.
 
@@ -518,8 +511,8 @@ Implementation details in `shap`:
 shap.GradientExplainer(model, data)
 ```
 
-- Compatible with PyTorch, TensorFlow, and Keras
-- Data can be provided as numpy arrays, pandas DataFrames, or torch.tensors
+- Compatible with PyTorch, TensorFlow, and Keras.
+- Data can be provided as numpy arrays, pandas DataFrames, or torch.tensors.
 - The gradient explainer is highly versatile, allowing the use of gradients based on parameters, which enables Shapley values to attribute predictions to layers within a neural network. See [this example](https://shap.readthedocs.io/en/latest/example_notebooks/image_examples/image_classification/Explain%20an%20Intermediate%20Layer%20of%20VGG16%20on%20ImageNet%20(PyTorch).html?highlight=Gradient).
 
 ## Deep Explainer: For neural networks
@@ -570,8 +563,7 @@ Implementation details in `shap`:
 - Consequently, incorporating unusual or custom operations may result in errors from the Deep Explainer
 - Complexity increases linearly with the number of background data rows
 
-## Partition Explainer: For hierarchically grouped data
-
+## Partition Explainer: for hierarchically grouped data
 The partition explainer is based on a hierarchy of features, similar to a tree-based hierarchy, such as hierarchical clustering.
 The partition explainer iterates recursively through this hierarchy tree.
 
@@ -582,6 +574,7 @@ This means that features bundled together in a group act as a single player.
 
 Then, within each group, the Shapley value for that group can be attributed to the individual features.
 Alternatively, if the hierarchy involves splitting into further subgroups, we would attribute the Shapley value again at the subgroup level.
+
 How is this useful?
 Sometimes, we are not concerned with individual features but rather a group of features.
 Or, multiple feature columns may encode a similar concept, and we are interested in the attribution of the concept, not the individual features.
@@ -605,10 +598,11 @@ Implementation details:
 #| eval: false
 shap.PartitionExplainer(model, partition_tree=None)
 ```
+
 - A required input is a partition tree, which is a hierarchical clustering of the input features and should have a format similar to `scipy.cluster.hierarchy`, essentially a matrix.
 - Alternatively, you can use `masker.clustering` to leverage a built-in feature clustering in SHAP, which will be used by default when `partition_tree=None`.
 
 
 [^interactions]: You can generally add interactions to a linear model, but in the case of the linear explainer, this option is not available.
 
-[^og-meaning]: OG referring to the original Explainer as proposed in the paper
+[^og-meaning]: OG referring to the original Explainer as proposed in the paper.

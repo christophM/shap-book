@@ -4,9 +4,9 @@ This chapter demonstrates how to use and interpret SHAP with logistic regression
 
 Differences from linear regression include:
 
-- Two outcomes instead of one
-- Outcome is a probability [^no-probability]
-- Non-linear function with option to scale to linear using log odds
+- Two outcomes instead of one.
+- Outcome is a probability [^no-probability].
+- Non-linear function with option to scale to linear using log odds.
 
 Logistic regression is a special case of multi-class classification and what you learn in this chapter applies to multi-class classifiers as well.
 In general, for binary classification, we have two outputs: one probability output for the first class and one for the second.
@@ -14,7 +14,6 @@ However, since one class probability already defines the other's probability, yo
 Nonetheless, having two classes is a special case of having $k$ classes.
 
 From the SHAP perspective, this is similar to regression, except the scale is the score output, not regression.
-
 
 ## Training the model
 
@@ -31,6 +30,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 In the next step, we train the model and compute the Shapley values.
 If you have followed the previous chapters, you will notice something new here:
+
 ```{python}
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
@@ -92,10 +92,10 @@ We can combine the preprocessing and logistic regression into a pipeline and tre
 This is similar to functions:
 
 - Our model is $Y = f(\tilde{X})$, where $\tilde{X}$ is the preprocessed data.
-- We have our preprocessing steps, which we'll call $g$, and we can express the preprocessed data as $\tilde{X} = g(X)$
-- The less desirable option would be to use Shapley values on $f$
-- The better option is to define a new function $\tilde{f}(X) = f(g(X))$, where the input is $X$ and not $\tilde{X}$
-- We use Shapley values applied to $\tilde{f}$ instead of $f$
+- We have our preprocessing steps, which we'll call $g$, and we can express the preprocessed data as $\tilde{X} = g(X)$.
+- The less desirable option would be to use Shapley values on $f$.
+- The better option is to define a new function $\tilde{f}(X) = f(g(X))$, where the input is $X$ and not $\tilde{X}$.
+- We use Shapley values applied to $\tilde{f}$ instead of $f$.
 
 This allows us to interpret the features in their original form.
 
@@ -153,6 +153,7 @@ For logistic regression, it is common to interpret the model in terms of log odd
 
 To do this, the explainer has a `link` argument, which defaults to the identity link $l(x) = x$.
 A useful choice for classification is the logit link: $l(x) = log\left(\frac{x}{1 - x}\right)$.
+
 ```{python}
 ex_logit = shap.Explainer(
   model.predict_proba, X_sub, link=shap.links.logit

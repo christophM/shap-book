@@ -50,6 +50,7 @@ format:
     highlight-style: nord
     toc: true
     toc-depth: 2
+    number-depth: 2
     toc-title: "Content"
     lof: false
     lot: false

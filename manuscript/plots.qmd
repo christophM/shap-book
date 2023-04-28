@@ -22,12 +22,12 @@ This chapter covers:
 
 The `shap.plots.waterfall` reveals various insights:
 
-- The y-axis displays the individual features, including the values for the first instance in our dataset
-- The x-axis is on the scale of the output
-- Each bar represents the Shapley value for that specific feature value
-- Positive Shapley values point to the right
-- The x-axis also indicates the overall expected prediction $E[f(X)]$ and the actual prediction of the instance $f(x)$
-- The bars start at the bottom from the expected prediction and add up to the actual prediction
+- The y-axis displays the individual features, including the values for the first instance in our dataset.
+- The x-axis is on the scale of the output.
+- Each bar represents the Shapley value for that specific feature value.
+- Positive Shapley values point to the right.
+- The x-axis also indicates the overall expected prediction $E[f(X)]$ and the actual prediction of the instance $f(x)$.
+- The bars start at the bottom from the expected prediction and add up to the actual prediction.
 
 ## Force Plot
 
