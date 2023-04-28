@@ -65,7 +65,7 @@ This will run the server locally on port 8020 and display a link to `http://0.0.
 
 ## Dashboard overview
 
-![Shapash Webapp](images/shapash.png)
+![Shapash Webapp](images/shapash.jpg)
 
 The interactive dashboard contains several sections:
 

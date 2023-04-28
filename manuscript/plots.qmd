@@ -18,7 +18,7 @@ This chapter covers:
 
 ## Waterfall Plot
 
-![Waterfall plot](images/waterfall.png)
+![Waterfall plot](images/waterfall.jpg)
 
 The `shap.plots.waterfall` reveals various insights:
 
@@ -31,7 +31,7 @@ The `shap.plots.waterfall` reveals various insights:
 
 ## Force Plot
 
-![Force Plot](images/force-plot-single.png)
+![Force Plot](images/force-plot-single.jpg)
 
 The `shap.plots.force` contains the same information as a waterfall plot, just that the arrows are arranged into the same horizontal level.
 Requires javascript, meaning you can embed it, e.g., into a Jupyter notebook, but not in a PDF file.
@@ -52,7 +52,7 @@ $$I_j=\frac{1}{n}\sum_{i=1}^n{}|\phi_j^{(i)}|$$
 Next, we sort the features by decreasing importance and plot them.
 The following figure displays the SHAP feature importance for the random forest previously trained to predict cervical cancer.
 
-![Importance plot](images/shap-importance.png)
+![Importance plot](images/shap-importance.jpg)
 
 
 SHAP feature importance offers an alternative to [permutation feature importance](#feature-importance).
@@ -71,7 +71,7 @@ Color indicates the feature value, ranging from low to high.
 Overlapping points are jittered in the y-axis direction to show the distribution of Shapley values per feature.
 Features are ordered by their importance.
 
-![Summary Plot](images/summary-plot.png)
+![Summary Plot](images/summary-plot.jpg)
 
 The summary plot provides initial insights into the relationship between a feature's value and its impact on the prediction.
 However, to understand the exact nature of this relationship, we must examine SHAP dependence plots.
@@ -87,7 +87,7 @@ Mathematically, the plot contains the following points: $\{(x_j^{(i)},\phi_j^{(i
 
 The following figure displays the SHAP feature dependence for years on hormonal contraceptives:
 
-![Dependence Plot](images/dependence.png)
+![Dependence Plot](images/dependence.jpg)
 
 SHAP dependence plots offer an alternative to [partial dependence plots](#pdp) and [accumulated local effects](#ale).
 While PDP and ALE plots display average effects, SHAP dependence plots also reveal variance on the y-axis.
@@ -114,7 +114,7 @@ By calculating the SHAP interaction values for all features, we obtain one matri
 How can we utilize the interaction index?
 One example is to automatically color the SHAP feature dependence plot according to the strongest interaction:
 
-![Interaction Plot](images/dependence-interaction.png)
+![Interaction Plot](images/dependence-interaction.jpg)
 
 
 ## Clustering Plot
@@ -133,5 +133,5 @@ The following example uses hierarchical agglomerative clustering to order the in
 The plot consists of many force plots, each of which explains the prediction of an instance.
 We rotate the force plots vertically and place them side by side according to their clustering similarity.
 
-![Clustering Plot](images/force-plot-multiple.png)
+![Clustering Plot](images/force-plot-multiple.jpg)
 

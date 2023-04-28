@@ -202,7 +202,7 @@ However, if changes in extreme probabilities near 0 and 1 are more crucial for t
 
 You can also see the difference in step sizes visualized in the following Figure.
 
-![Probabilities versus Logits](images/logits.png)
+![Probabilities versus Logits](images/logits.jpg)
 
 ## Understanding the data globally
 

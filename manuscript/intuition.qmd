@@ -32,7 +32,7 @@ You have trained a machine learning model to predict apartment prices.
 For a specific apartment, it predicts €300,000 and you need to explain this prediction.
 The apartment has an area of 50 m^2^ (538 square feet), is located on the 2nd floor, has a park nearby, and cats are banned:
 
-![The predicted price for a 50 $m^2$ 2nd floor apartment with a nearby park and cat ban is €300,000. Our goal is to explain how each of these feature values contributed to the prediction.](images/shapley-instance.png)
+![The predicted price for a 50 $m^2$ 2nd floor apartment with a nearby park and cat ban is €300,000. Our goal is to explain how each of these feature values contributed to the prediction.](images/shapley-instance.jpg)
 The average prediction for all apartments in the test data is €310,000.
 How much has each feature value contributed to the prediction compared to the average prediction?
 
@@ -62,7 +62,7 @@ We predict the apartment price for the coalition of `park-nearby` and `area-50` 
 The contribution of `cat-banned` is €310,000 - €320,000 = -€10,000.
 This estimate depends on the values of the randomly drawn apartment that served as a "donor" for the cat and floor feature values.
 We can obtain better estimates by repeating this sampling step and averaging the contributions.
-![One sample repetition to estimate the contribution of `cat-banned` to the prediction when added to the coalition of `park-nearby` and `area-50`.](images/shapley-instance-intervention.png)
+![One sample repetition to estimate the contribution of `cat-banned` to the prediction when added to the coalition of `park-nearby` and `area-50`.](images/shapley-instance-intervention.jpg)
 
 We repeat this computation for all possible coalitions.
 The Shapley value is the average of all the marginal contributions to all possible coalitions.
@@ -87,7 +87,7 @@ For each of these coalitions, we compute the predicted apartment price with and 
 The Shapley value is the (weighted) average of these marginal contributions.
 To get a prediction from the machine learning model, we replace the feature values of features not in a coalition with random feature values from the apartment dataset.
 
-![All 8 coalitions needed for computing the exact Shapley value of the `cat-banned` feature value.](images/shapley-coalitions.png)
+![All 8 coalitions needed for computing the exact Shapley value of the `cat-banned` feature value.](images/shapley-coalitions.jpg)
 
 By estimating the Shapley values for all feature values, we obtain the complete distribution of the prediction (minus the average) among the feature values.
 That's not the only way to estimate Shapley values, nor is it explained in detail here.
