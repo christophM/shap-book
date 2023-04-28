@@ -14,7 +14,7 @@ No matter which estimation method you choose, you'll get the same Shapley values
 Exceptions: Linear SHAP with `feature_perturbation='correlation_dependent'` and Tree Explainer with `feature_perturbation='tree_path_dependent'`.
 :::
 
-## Overview
+## Overview of the many estimators
 
 Here is an overview of the explainers, for your convenience:
 
@@ -31,14 +31,10 @@ Here is an overview of the explainers, for your convenience:
 | Gradient | Explains models by computing the gradient of the output with respect to the inputs. | Gradient-based | Yes | Input Gradient |
 | Deep | Explains deep learning models by attributing the output to input features using the gradient of the output with respect to the inputs. | Neural Networks | Yes | DeepLIFT |
 | Partition | Calculates Shapley values for a hierarchy of features. | Agnostic | Yes | Owen values |
-<!---
-TODO: incorporate benchmark
-https://shap.readthedocs.io/en/latest/example_notebooks/benchmarks/tabular/Benchmark%20XGBoost%20explanations.html
--->
 
 
 
-## When to use which
+## When to use which estimator
 
 The big question: When should you use which explainer?
 

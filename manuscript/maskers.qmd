@@ -31,7 +31,7 @@ A binary mask can be viewed as a team description, indicating which players part
 - The model's predictions are obtained and averaged.
 - A masker can be a function that performs this mapping, or directly an array or pandas.DataFrame, providing a shortcut.
 
-## Masker for Tabular Data
+## Masker for tabular Data
 
 ::: {.callout-note}
 Typical maskers for tabular data replace absent feature values with samples from a background dataset.

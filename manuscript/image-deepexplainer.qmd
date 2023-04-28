@@ -136,7 +136,7 @@ print(shap_values[0].shape)
 The first dimension represents the number of images for which we computed the Shapley values.
 The second, third, and fourth dimensions contain the Shapley values in the form of an image since the input data was an image.
 
-Let's plot the Shap values:
+Let's plot the Shapley values:
 
 ```{python}
 shap.image_plot(shap_values, x_test[:3])
@@ -147,7 +147,7 @@ Grey pixels have a near zero Shapley value.
 For example, for the "2", the class output "1" has blue pixels at the left and right beginning/ending of the "2" image.
 This makes sense, since these are the pixels that make it a "2" and not a "1".
 
-## Deep Explainer
+## SHAP with the Deep Explainer
 
 We follow the same process, but use the DeepExplainer this time:
 

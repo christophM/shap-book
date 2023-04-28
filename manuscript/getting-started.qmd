@@ -3,7 +3,7 @@
 Let's dive into an example.
 In this chapter, we'll explore the use of Shapley values to explain a prediction using the `shap` library.
 
-## The Adult Dataset
+## The adult dataset
 
 For the classification task, we will use the Adult dataset.
 The UCI Adult dataset is widely used in machine learning tasks.
@@ -58,7 +58,7 @@ conda install -c conda-forge shap=0.41.0
 
 The installation process is straightforward.
 
-## Training the Model
+## Training the model
 
 Since SHAP is a post-hoc method, we can train the model without considering interpretability at this stage.
 First, we load the necessary libraries and the data which we already split into training and test data.
@@ -225,7 +225,7 @@ There are alternative visualizations to this plot, which we will explore in the 
 This plot only explains a single instance.
 But how can we understand the model's overall behavior?
 
-## Explain the Model with SHAP
+## Explain the model with SHAP
 
 Shapley values are used to explain individual predictions.
 However, we can also compute Shapley values for more data points, ideally even for the entire (test) dataset.

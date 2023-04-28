@@ -1,4 +1,4 @@
-# Estimating Shapley Values
+# SHAP Explainers
 
 In each of the explainers covered in this chapter, I have attempted to distinguish between the theory and their implementation in SHAP.
 Admittedly, this distinction is not perfect, and I apologize for any confusion.
@@ -120,7 +120,7 @@ explainer = shap.explainers.Sampling(model, background)
 However, the sampling explainer is not the most efficient way to estimate Shapley values, even though it's an improvement over the exact explainer when dealing with larger datasets.
 Next, let's discuss the permutation explainer.
 
-## Permutation Explainer: sampling Permutations
+## Permutation Explainer: Sampling permutations
 
 :::{.callout-note}
 
@@ -207,7 +207,7 @@ explainer = shap.explainers.Permutation(model, background)
 - The implementation also supports hierarchical data structures with partition trees, which are not implemented in the Kernel explainer (see later) or the sampling explainer.
 - Since the permutations are sampled, it is recommended to set a seed in the explainer for reproducibility of the results.
 
-## Linear Explainer: For Linear Models
+## Linear Explainer: For linear models
 
 We now transition from the realm of model-agnostic explainers to explore model-specific explainers.
 These explainers take advantage of the internal structure of the model.
@@ -251,7 +251,7 @@ shap.explainers.Linear(model, background)
 - The implementation in SHAP also allows accounting for feature correlations when `feature_perturbation` is set to "correlation_dependent".
 However, this will lead to a different "game" and therefore different Shapley values. Read more about that in the [Correlation Chapter](#correlation).
 
-## Additive Explainer: for additive models
+## Additive Explainer: For additive models
 
 :::{.callout-note}
 
@@ -522,7 +522,7 @@ shap.GradientExplainer(model, data)
 - Data can be provided as numpy arrays, pandas DataFrames, or torch.tensors
 - The gradient explainer is highly versatile, allowing the use of gradients based on parameters, which enables Shapley values to attribute predictions to layers within a neural network. See [this example](https://shap.readthedocs.io/en/latest/example_notebooks/image_examples/image_classification/Explain%20an%20Intermediate%20Layer%20of%20VGG16%20on%20ImageNet%20(PyTorch).html?highlight=Gradient).
 
-## Deep Explainer: For Neural Networks
+## Deep Explainer: For neural networks
 
 The Deep Explainer is specifically designed for deep neural networks [@chen2021explaining].
 This makes the Deep Explainer more model-specific compared to the Gradient Explainer, which, in theory, works for all gradient-based methods.
@@ -570,7 +570,7 @@ Implementation details in `shap`:
 - Consequently, incorporating unusual or custom operations may result in errors from the Deep Explainer
 - Complexity increases linearly with the number of background data rows
 
-## Partition Explainer: For Hierarchically Grouped Data
+## Partition Explainer: For hierarchically grouped data
 
 The partition explainer is based on a hierarchy of features, similar to a tree-based hierarchy, such as hierarchical clustering.
 The partition explainer iterates recursively through this hierarchy tree.

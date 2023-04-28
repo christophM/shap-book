@@ -143,6 +143,7 @@ Methods like Shapley values can be applied to any model, so even with a decision
 Among model-agnostic interpretation methods, Shapley values, sometimes referred to as SHAP, have become very popular.
 We'll delve deeper into the distinction between SHAP and Shapley values in the  [history chapter](#history).
 For now, let's consider these two definitions:
+
 ::: {.callout-note}
 
 ## Shapley values
@@ -162,7 +163,7 @@ When you hear SHAP, consider this useful interpretation:
 
 ::: {.callout-note}
 
-## What is SHAP (Shapley Additive exPlanations)?
+## SHAP (Shapley Additive exPlanations)
 
 SHAP is an umbrella term for Shapley values used to explain predictions. It can refer to the original paper, the Shapley values themselves, or the implementation.
 It's most useful to say SHAP when you use Shapley values for XAI to explain individual predictions.
@@ -181,7 +182,7 @@ The rough idea behind Shapley values:
 - Shapley values define what a "fair" attribution looks like, which we'll discuss in detail in the [Theory Chapter](#theory).
 
 
-## What's so great about SHAP?
+## Why SHAP is a good option
 
 I, the author of this book, have also written another book about Interpretable Machine Learning.
 Interpretable Machine Learning covers a wide range of XAI techniques, from counterfactual explanations, ICE curves, and PDPs to Accumulated Local Effect Plots, Permutation Feature Importance, and LIME.
