@@ -16,13 +16,13 @@ Or, consider a positive coefficient: for a data point with a positive feature, w
 Thus, the coefficient only reveals half of the story; to provide an explanation of how this affects a specific prediction, we also need to know the feature values of an instance.
 The Shapley value in the linear case is:
 
-$\phi_{ji}(\hat{f}) = \beta_j x_j - E(\beta_jX_j) = \beta_j (x_j - E(X_j))$.
+$\phi_{ji}(\hat{f}) = \beta_j x_{ij} - E(\beta_jX_j) = \beta_{j} (x_{ij} - E(X_j))$.
 
 Let's see how this works in the wine data.
 
 ## The wine data
 
-We will be using the wine dataset available from the sklearn library.
+We will be using the wine dataset available from the `scikit-learn` library.
 The goal is to predict wine quality based on its physico-chemical attributes.
 The target variable "quality" is the average rating from three blind testers and ranges from 0 to 10.
 
@@ -65,7 +65,7 @@ print(markdown_table)
 Here, we observe that the highest quality is 9 (out of a possible 10) and the lowest is 3.
 The other features have different scales, but as we will discover, this is not an issue for Shapley values, since they explain the prediction **on the scale of the outcome**.
 
-## Estimating Linear Shapley Values with SHAP
+## Fitting a linear regression model
 
 Now that we have our wine dataset, we want to predict the quality of a wine based on its chemical features.
 Since we've decided to use a linear regression model, let's proceed with that.
@@ -137,19 +137,20 @@ However, this information alone does not help us understand the effect of these 
 
 ## Computing Shapley values
 
-To better understand this, we can compute Shapley values for one of the data instances.
+To better understand the feature effects, we can compute Shapley values for one of the data instances.
 To do this, we create a `LinearExplainer` object.
 
 ```{python}
 import shap
 explainer = shap.LinearExplainer(model, X_train)
 ```
-Alternatively, you could use the `Explainer` like this:
+Alternatively, one could use the `Explainer` like this:
 
 ```{python}
 shap.Explainer(model, X_train)
 ```
-As you can see, this is also a `Linear` explainer object.
+
+This is also a `Linear` explainer object.
 That's the magic of the `algorithm='auto'` option, which is the default when creating an Explainer.
 In this case, `shap` identifies the model as a linear regression model and selects the efficient linear explainer.
 
@@ -192,6 +193,17 @@ For instance, in the case of residual sugar, we know it increased the prediction
 We could infer this from the coefficient, but this will change in the next chapter when we discuss additive models.
 
 ## Global model understanding
+
+::: {.callout-note}
+
+## Global versus local interpretation
+
+Shapley values allows a local interpretation -- how features affected a prediction.
+Global interpretations are about how the model behaves *on average*.
+This includes how features affect the prediction, how important each feature was for the prediction and how features interact.
+
+:::
+
 
 Additionally, we lack a global understanding of the most important features.
 To address this, we can use the summary plot:

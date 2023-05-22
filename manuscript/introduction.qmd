@@ -3,14 +3,11 @@
 <!-- Motivation for XAI -->
 Machine learning models are ubiquitous and powerful tools, but their lack of interpretability poses a significant challenge.
 It is often unclear why a certain prediction was made and what general factors are important to a model's decision.
-
-## Why you need interpretability 
-
 <!-- is it important? -->
 Many people argue that as long as a machine learning model performs well, interpretability is unnecessary.
 However, there are many practical reasons why interpretability is important.
 
-### Interpret to debug
+## Interpret to debug
 
 Interpretability is valuable for model debugging, as illustrated by a study predicting pneumonia [@caruana2015intelligible].
 The authors trained a rule-based model, which learned that if a patient has asthma, they have a lower risk of pneumonia.
@@ -21,8 +18,11 @@ It appears the model got it all wrong.
 However, it turns out that asthma patients in this dataset were less likely to get pneumonia.
 The indirect reason was that these patients received "aggressive care," such as early antibiotic treatment.
 Consequently, they were less likely to develop pneumonia.
+A typical case of "correlation does not imply causation" as you can see in @fig-asthma.
 
-The asthma shortcut was discovered only because the model was intelligible.
+![In reality, asthma increases likelihood of pneumonia. However, in the study, asthma also increased the (preemptive) use of antibioitics which protects against pneumonia.](images/asthma-dag.jpg){#fig-asthma}
+
+That the model relied on the asthma feature in this way was only discovered because the model was interpretable.
 Imagine repeating this scenario with a neural network.
 No rule would jump out, saying "asthma $\Rightarrow$ lower risk."
 Instead, the network would learn this rule but keep it hidden, potentially causing harm if deployed in the real world.
@@ -31,10 +31,10 @@ In theory, you could have spotted the problem by examining the data closely and 
 In reality, however, it's easier to identify such issues if the model can express what it has learned.
 Black box machine learning models create a distance between the data and the modeler, and interpretability methods help bridge that gap.
 
-### Users may create their own interpretations anyway
+## Users may create their own interpretations anyway
 
-Sepsis is nasty.
-It's a serious medical condition that can develop from any infection.
+This is a story of how the lack of interpretability made the users come up with their own (wrong) explanations.
+The story starts with sepsis, a life-threatening medical condition in which the body responds in extreme ways to an infection.
 It's one of the most common causes of death in hospitals.
 Diagnosing it consistently is notoriously difficult, making it an ideal candidate for AI-based intervention.
 
@@ -65,7 +65,7 @@ A lack of interpretability can be a barrier to using models that aren't perceive
 The fear that something odd might be happening or that the model can't be used for its usual use case is too significant.
 For example, coefficients in a linear regression model could be used to make other decisions, or a dashboard might need to display explanations alongside model scores for others to work with the predictions.
 
-However, methods like Shapley Values can still work in these cases, as we'll see later.
+However, methods like SHAP can still work in these cases, as we'll see later.
 
 ## Inherently interpretable models have limitations
 
@@ -75,7 +75,6 @@ By that, I mean models such as:
 - Linear regression and logistic regression
 - Generalized additive models
 - Decision rules & decision trees
-- Many more sophisticated inherently interpretable models
 
 Inherently interpretable usually means the model is structured so we can understand its individual parts.
 The prediction may be a weighted sum (linear model) or based on intelligible rules.
@@ -83,34 +82,31 @@ Some have even called for only using such models when the stakes are high [@rudi
 
 However, there are a few problems.
 
-Problem 1:
-It's unclear what constitutes an interpretable model.
+*Problem: It's unclear what constitutes an interpretable model.*
 One group might understand linear regression models, while another might not due to lack of experience.
 Even if you accept a linear regression model as interpretable, it's easy to make it difficult to interpret.
 Consider log-transforming the target, adding interaction terms, using harder-to-interpret features, or adding thousands of features.
 An inherently interpretable model can quickly become hard to interpret.
 Making a decision tree very deep doesn't help interpretation if there are hundreds of if-conditions.
 
-Problem 2:
-The best models are often not inherently interpretable.
+*Problem: The models with best predictive performance are often not inherently interpretable.*
 In machine learning, you usually optimize a metric.
 Boosted trees often seem to be the best option in many cases [@grinsztajn2022tree].
 Most people wouldn't consider them interpretable, at least not in their raw form.
 The same applies to transformers, standard for text (GPT, anyone?), and convolutional neural networks for image classification.
-Ensembles of models often produce the best solutions.
+Ensembles of models often produce the best esolutions.
 So limiting model selection to inherently interpretable models may lead to sub-optimal performance.
 
 So, what to do?
 
 ## Model-agnostic interpretation is the solution
 
-A solution comes from explainable artificial intelligence (XAI) or interpretable machine learning (IML) methods, especially model-agnostic ones.
+A solution comes from explainable artificial intelligence (XAI) or interpretable machine learning (IML) methods[^keywords], especially model-agnostic ones.
 These can be applied to any model.
 It might seem strange, but how can a method explain ANY machine learning model?
 From k-nearest neighbors to deep neural networks and support vector machines.
 Models are so different; shouldn't interpretation methods differ too?
 No, because model-agnostic methods *don't care* about the model's inner workings.
-They work more like sensitivity analysis of a complex system.
 Think of playing fighting games on a console, pushing inputs (the controller) and observing what happens (the character fights).
 Model-agnostic interpretable machine learning may be more sophisticated than playing Tekken, but the principle is the same:
 Treat the model as a box with inputs and output, manipulate the inputs, observe how the outputs change, and draw conclusions.
@@ -122,41 +118,77 @@ More formally, this can be described by SIPA [@scholbeck2020sampling]:
 - **P**rediction step
 - **A**ggregating the results
 
-There are many methods that work by this principle:
+There are many methods that work by this principle [@molnar2022], such as:
 
 - Partial dependence plots show how changing one (or two) of the features changes the prediction on average
 - Individual conditional expectation curves do the same for a single data point
 - Accumulated Local Effect Plots are an alternative to partial dependence plots
 - Permutation Feature Importance quantifies a feature's importance for correct predictions
-- And many more
+- Local interpretable model-agnostic explanations (LIME)[@ribeiro2016should]
 
 As you may have guessed:
 **Shapley values (or SHAP) is another model-agnostic interpretation method.**
 
+::: {.callout-tip}
+
 Even if you use an interpretable model, this book can help.
 Methods like Shapley values can be applied to any model, so even with a decision tree, you can use Shapley values for additional interpretation.
 
-## SHAP is an explainable AI technique
-
-<!-- SHAP -->
-Among model-agnostic interpretation methods, Shapley values, sometimes referred to as SHAP, have become very popular.
-We'll delve deeper into the distinction between SHAP and Shapley values in the  [history chapter](#history).
-For now, let's consider these two definitions:
-
-::: {.callout-note}
-
-## Shapley values
-
-Shapley values are a method for fairly attributing the payout to each player in a coalition.
-In the context of Explainable AI, Shapley values can be used to explain the contribution of each input feature to the model's output.
-
 :::
 
+## Shapley Values, a solution from game theory
+
+<!-- TODO: Improve this paragraph -->
+
+<!-- reader comments
+
+Junaid;
+It may be worth expanding on this and including a motivating example. What is a payout, what constitutes a coalition. Usually the taxi sharing example is a good one from game theory.
+
+Joshua:
+Second this: I like the theoretical grounding of shap in cooperative game theory -- think some extra material here is warranted... even a simple diagram / illustration
+
+Some nice examples from auction theory pricing or group project / assignment grades are in the economics literature -- could tie in to the theory section later (haven't got there yet)
+
+-->
+
+A way to explain predictions comes from game theory and is called Shapley values[@shapley1953value], named after their inventor, Lloyd Shapley.
+Shapley values are a method for fairly attributing the payout to each player in a coalition.
+Shapley values were invented to solve the problem of fair attribution.
+Let's say you have a game with team players, they get some payout, and now the goal is to fairly share the payout among the players.
+If the players contributed differently, it would be fair if this is reflected in the individual payouts.
+Shapley values is a method to do this fairly.
+An example could be a taxi ride.
+While not a game, Shapley values still work here:
+You share a taxi with 2 friends and you want to fairly attribute the payout.
+Well, in this case, it's negative because you have to pay the taxi driver, but Shapley values work as well here.
+The idea behind Shapley values is to compute how much each of the players contributed to the payout in various constellations to the team.
+So you would calculate how much the taxi would have cost if only your two friends would have taken it, without you.
+How much did the price change when adding you?
+
+TODO: an image with the attributions for the taxi
+TODO: Also add example with image of taxi ride where everyone goes
+
 Shapley values not only refer to the method but also to the resulting values, which can be confusing.
+Shapley values are motivated by axioms of what a fair attribution is.
+But more on that in the [Theory Chapter](#theory).
+Let's talk now how this concept is useful to explain predictions.
+
+
+## SHAP is an explainable AI technique
+
+<!-- TODO: slightly rewrite -->
+
+<!-- SHAP -->
+In the context of Explainable AI, Shapley values can be used to explain the contribution of each input feature to the model's output.
+Among model-agnostic interpretation methods, Shapley values, sometimes referred to as SHAP, have become very popular.
+We'll dive deeper into the distinction between SHAP and Shapley values in the  [history chapter](#history).
+For now, let's consider these two definitions:
+
 Adding to the confusion is SHAP  [@NIPS2017_7062].
 SHAP stands for **SH**apley **A**dditive ex**P**lanations and it's many things.
 It's the name of a paper that introduces a new method for estimating Shapley values, the Python library "shap" that we'll use in this book, and various algorithms for computing Shapley values.
-But it's also the name of the library `shap` in Python, which we are going to use in this book.
+It's also the name of the library `shap` in Python, which we are going to use in this book.
 But SHAP also capture varies algorithms to compute Shapley values.
 When you hear SHAP, consider this useful interpretation:
 
@@ -173,14 +205,14 @@ In the [Getting Started Chapter](#getting-started), you will see an example of u
 
 The rough idea behind Shapley values:
 
-- A prediction is like a game, and the payout is the prediction itself, minus the average prediction of all (test) data.
+- A prediction is like a game, and the payout is the prediction itself, minus the average prediction of all (test) data[^naive-model] .
 - By explaining this difference, Shapley values can be interpreted as an explanation of why the prediction differs from what we'd expect without knowing anything about the data point.
-- The difference is then attributed to each feature value that the data point has.
+- The difference between the prediction and the average prediction is attributed across the feature values for the data point being considered.
 - The feature values are like a team working together to achieve the particular prediction.
 - Shapley values define what a "fair" attribution looks like, which we'll discuss in detail in the [Theory Chapter](#theory).
 
 
-## Why SHAP is a good option
+## Why a separate book for SHAP? 
 
 I, the author of this book, have also written another book about Interpretable Machine Learning.
 Interpretable Machine Learning covers a wide range of XAI techniques, from counterfactual explanations, ICE curves, and PDPs to Accumulated Local Effect Plots, Permutation Feature Importance, and LIME.
@@ -202,23 +234,7 @@ Many people use SHAP, for better or worse, which alone justifies writing an ulti
 However, this section is not the place for pessimism.
 You'll learn about limitations in the appropriate places throughout this book.
 Now, it's time to be positive.
-There are good reasons why SHAP has become popular and why it's worth learning:
-
-- SHAP is model-agnostic, meaning it can be applied to any type of machine learning model.
-- It is based on a solid theoretical foundation, which is the concept of Shapley values from cooperative game theory.
-- SHAP values are consistent, meaning that if a model relies more on a certain feature, the SHAP value for that feature will be higher.
-- SHAP values are locally accurate, ensuring that the sum of the SHAP values for a specific prediction equals the actual prediction.
-- They provide a unified measure of feature importance, making it easier to compare the contributions of different features across various models.
-- The Python library 'shap' offers a user-friendly implementation and supports various visualization options.
-- SHAP values can be used for both global and local explanations, helping to understand the overall importance of features as well as individual predictions.
-- SHAP is built on a solid game-theoretic foundation.
-- SHAP works for various types of input data: tabular, text, and images.
-- SHAP has many good software implementations available in Python and R.
-- Designed for local explanations (explaining individual predictions), SHAP explanations can be combined for global model understanding (feature importance, interactions, dependence).
-- SHAP received hype, leading to many research papers on extensions for special types of models.
-- The hype also means abundant material and blog posts, although repetitive and noisy. Good thing you have this ultimate guide!
-- Extensions like shapash enable building dashboards with Shapley values.
-- Shapley values are useful beyond explaining predictions, as seen in other machine learning applications. The [Other Applications Chapter](#other) covers use cases ranging from valuing data to fairly attributing feature importance (based on loss function).
+There are good reasons why SHAP has become popular and why it's worth learning: It's model-agnostic, has a solid theoretic foundation and it's very flexible as we will discover throughout the book.
 
 SHAP values are used in various areas and predictive models:
 
@@ -232,3 +248,7 @@ SHAP values are used in various areas and predictive models:
 - Molecular design [@rodriguez2020interpretation].
 
 Now it's time to see Shapley values in action, starting with a getting-started example before diving into the intuition and theory of SHAP.
+
+[^keywords]: I use "Explainable AI" and "interpretable machine learning" interchangeably. Some use XAI more for post-hoc explanations of predictions and interpretable ML for inherently interpretable models. But in many cases they are used interchangeably and, for example, if searching for a particular method it's best to search with both terms.
+
+[^naive-model]: The average prediction can also be interpreted as the "naive" model. Consider you would have to make a prediction for a new data point which comes from the same distribution as the training data, but you don't know any of the feature values. Further assuming that the squared error is your metric of choice, your best "prediction" would be the average 

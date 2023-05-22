@@ -43,6 +43,14 @@ To translate the game scenario to machine learning predictions:
 - The "players" are the feature values of the instance that collaborate to receive the gain (i.e., predict a certain value).
 
 In the apartment example, the feature values `park-nearby`, `cat-banned`, `area-50`, and `floor-2nd` worked together to achieve the prediction of €300,000.
+In the data, the row would look like this:
+
+<!-- TODO: Check markdown tables again if correct values -->
+
+| Park| Cat | Area | Floor | Predicted Price   |
+|-------------|------------|------|-------|---------|
+| Nearby | Banned | 50   | 2nd   | €300,000|
+
 Our goal is to explain the difference between the actual prediction (€300,000) and the average prediction (€310,000), which amounts to a difference of -€10,000.
 
 The answer could be as follows:
@@ -51,12 +59,31 @@ The contributions add up to -€10,000, which is the final prediction minus the 
 
 ## How to calculate the Shapley value for one feature
 
+
 The Shapley value represents the average marginal contribution of a feature value across all possible coalitions.
+A coalition is, in this case, any subset of feature values, including the empty set and the set containing all feature values of the instance.
 In the following figure, we evaluate the contribution of the `cat-banned` feature value when added to a coalition of `park-nearby` and `area-50`.
 We simulate a coalition consisting of only `park-nearby`, `cat-banned`, and `area-50` by randomly drawing another apartment from the data and using its value for the floor feature.
-The value `floor-2nd` is replaced by the randomly drawn `floor-1st`.
+The other apartment might look like this:
+
+| Park | Cat | Area | Floor | Predicted Price   |
+|-------------|------------|------|-------|---------|
+| Nearby | Allowed    | 100   | 1st  | €504,000|
+
+Then we replace the value `floor-2nd` of the original apartment by the randomly drawn `floor-1st`.
 We then predict the price of the apartment with this combination (€310,000).
+
+
+| Park        | Cat        | Area | Floor | Predicted Price   |
+|-------------|------------|------|-------|---------|
+| Nearby      | Banned     | 50   | 1st   | €310,000|
+
 Next, we remove `cat-banned` from the coalition by replacing it with a random value of the cat allowed/banned feature from the randomly drawn apartment.
+
+| Park        | Cat        | Area | Floor | Predicted Price   |
+|-------------|------------|------|-------|---------|
+| Nearby      | Allowed    | 50   | 1st   | €320,000|
+
 In this example, it is `cat-allowed`, but it could have been `cat-banned` again.
 We predict the apartment price for the coalition of `park-nearby` and `area-50` (€320,000).
 The contribution of `cat-banned` is €310,000 - €320,000 = -€10,000.
@@ -66,7 +93,7 @@ We can obtain better estimates by repeating this sampling step and averaging the
 
 We repeat this computation for all possible coalitions.
 The Shapley value is the average of all the marginal contributions to all possible coalitions.
-The computation time increases exponentially with the number of features.
+The computation time increases exponentially with the number of features, because there are $2^p$ possible coalitions, where $p$ is the number of features.
 One solution to keep the computation time manageable is to compute contributions for only a few samples of the possible coalitions.
 
 The following figure shows all coalitions of feature values that are needed to determine the Shapley value for `cat-banned`.

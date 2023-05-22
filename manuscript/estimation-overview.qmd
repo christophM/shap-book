@@ -38,8 +38,8 @@ The big question: When should you use which explainer?
 
 Here is a quick guide:
 
-- In most cases, you can just use the `Explainer` as it will usually select the best explainer based on the provided model.
+- In most cases, you can just use the `Explainer` as it will usually select the best explainer based on the provided model. Best usually means fastest.
 - The general recommendation is to use a model-specific explainer if possible; otherwise, the permutation explainer is the best choice for most model-agnostic options. That's what the `auto` option does.
-- Avoid the Kernel explainer.
+- Avoid the Kernel explainer -- it's no longer the default because the Permutation explainer is faster.
 - Tree SHAP is fast, so always consider tree-based models in your model selection process. It is best practice to include a tree-based solution in the model comparison.
 - Use the partition explainer for correlated features and applications like image processing.

@@ -1,11 +1,23 @@
 # Theory of Shapley Values
 
-This chapter delves deep into the theory.
-But who wouldn't have guessed that from the title?
 Keep in mind, you don't need to read this chapter if you only want to use Shapley values.
 It's intended for those who want to explore the mathematics behind them.
 
-We'll start from the basics and build up our understanding.
+## Mathematical terms used
+
+But before we begin, here is an overview of the terms so you can come back here whenever you feel uncertain about a mathematical term.
+
+| Symbol | Description |
+|--------|-------------|
+| \hat{f}(x) | The prediction for the instance 'x' using the model 'f'. |
+| \beta₀, \beta₁, ... , \betaₚ | The coefficients or weights of the linear model. They quantify the impact of each feature on the prediction.|
+| x₁, ..., xₚ | These represent the feature values of the instance 'x'. Each feature is indexed by a subscript number.|
+| xⱼ | This represents the 'j-th' feature value of the instance 'x'.|
+| \phiⱼ(\hat{f}) | This represents the contribution of the 'j-th' feature to the prediction \hat{f}(x).|
+| E(\hat{f}(X)) | The expected (or average) prediction of the model $\hat{f}$ over all instances in the data.|
+| p | The total number of features in the instance 'x'.|
+| val_{\hat{f}, x} | The value function for a game, which maps from a coalition to the payout. In the case of ML from feature coalitions to prediction minus expected prediction. $val: 2^p \mapsto \mathbb{R}$|
+
 Let's begin with a linear prediction model, as it's easier to comprehend.
 
 ## Shapley values for linear models
@@ -23,7 +35,7 @@ The $\beta_j$ is the weight corresponding to feature j.
 
 The contribution $\phi_j$ of the j-th feature on the prediction $\hat{f}(x)$ is:
 
-$$\phi_j(\hat{f})=\beta_{j}x_j-E(\beta_{j}X_{j})=\beta_{j}x_j-\beta_{j}E(X_{j})$$
+$$\phi_j(\hat{f})=\beta_{j}x_j-E(\beta_{j}X_{j})=\beta_{j}(x_j - E(X_{j}))$$
 
 Where $E(\beta_jX_{j})$ is the mean effect estimate for feature j, the contribution is the difference between the feature effect and the average effect.
 Nice!
@@ -35,7 +47,7 @@ If we sum all the feature contributions for one instance, the result is the foll
 This is the predicted value for the data point x minus the average predicted value.
 Feature contributions can be negative.
 
-So for now, you had to believe me that for a linear model, the formula above indeed are related to Shapley values.
+Until now, you had to believe me that for a linear model, the formula above indeed are related to Shapley values.
 Let's actually see the definition of Shapley values for the general case.
 
 ## How Shapley values are defined
@@ -43,17 +55,17 @@ Let's actually see the definition of Shapley values for the general case.
 The Shapley values require a value function $val$ which determines a payout and which takes a set of players $S$ (in our case feature values of a data point) as input.
 The Shapley value of a feature value is then defined as its contribution to the payout, calculated as a weighted sum over all possible feature value combinations:
 
-$$\phi_j(val)=\sum_{S\subseteq\{1,\ldots,p\} \backslash \{j\}}\frac{|S|!\left(p-|S|-1\right)!}{p!}\left(val\left(S\cup\{j\}\right)-val(S)\right)$$
+$$\phi_j(val)=\sum_{S\subseteq\{1,\ldots,p\} \backslash \{j\}}\frac{|S|!\left(p-|S|-1\right)!}{p!}\left(val\left(S\cup\{j\}\right)-val_{hat{f},x}(S)\right)$$
 
 Here, S represents a subset of the features used in the model, j is the index of the feature for which we compute the Shapley value, $S$ a coalition of some features (without $j$), and $p$ is the number of features in the model.
-$val_x(S)$ is the prediction for feature values in set S, marginalized over features not included in set S:
+$val_{hat{f},x}(S)$ is the prediction for feature values in set S, marginalized over features not included in set S:
 
-$$val_{x}(S)=\int\hat{f}(x_{1},\ldots,x_{p})d\mathbb{P}_{X_{\bar{S}}}-E_X(\hat{f}(X))$$
+$$val_{hat{f},x}(S)=\int\hat{f}(x_{1},\ldots,x_{p})d\mathbb{P}_{X_{\bar{S}}}-E_X(\hat{f}(X))$$
 
 You actually perform multiple integrations for each feature not contained in S ($X_{\bar{S}}$).
 Consider this example:
 A machine learning model works with four features $X_1$, $X_2$, $X_3$, and $X_4$, and we evaluate the prediction for the coalition S consisting of feature values $X_1$ and $X_3$:
-$$val_{x}(S) = val_{x}(\{1, 3\}) = \int_{\mathbb{R}}\int_{\mathbb{R}}\hat{f}(x_{1}, X_{2}, x_{3}, X_{4})d\mathbb{P}_{X_2X_4} - E_X(\hat{f}(X))$$
+$$val_{hat{f},x}(S) = val_{x}(\{1, 3\}) = \int_{\mathbb{R}}\int_{\mathbb{R}}\hat{f}(x_{1}, X_{2}, x_{3}, X_{4})d\mathbb{P}_{X_2X_4} - E_X(\hat{f}(X))$$
 
 This is similar to the feature contributions in a linear model.
 
@@ -96,7 +108,7 @@ The contributions of two feature values j and k should be the same if they contr
 
 If
 
-$$val(S \cup \{j\}) = val(S \cup \{k\})$$
+$$val_{\hat{f},x}(S \cup \{j\}) = val_{hat{f},x}(S \cup \{k\})$$
 
 for all
 
@@ -118,7 +130,7 @@ A feature j that does not change the predicted value – regardless of which coa
 
 If
 
-$$val(S \cup \{j\}) = val(S)$$
+$$val_{hat{f},x}(S \cup \{j\}) = val_{hat{f},x}(S)$$
 
 for all
 

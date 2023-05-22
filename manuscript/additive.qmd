@@ -2,6 +2,9 @@
 
 In this next step, we allow the relationship between a feature and the target to be non-linear.
 However, we do not allow interactions between the features.
+
+## Introducing the generalized additive model (GAM)
+
 Additive models with non-linear base functions are perfectly modeled with so-called generalized additive models, also known as GAMs.
 
 A GAM models the target in the following way:
@@ -17,6 +20,8 @@ A popular choice is spline functions, which allow for rather flexible shapes of 
 
 Educationally, to understand Shapley values, they are perfect because they allow us to study what happens with non-linear functions, but without interactions.
 It is only with interactions that the interpretation becomes trickier.
+
+## Fitting the GAM
 
 So, we go back to the same wine example and fit a GAM instead of a linear regression model.
 
@@ -70,6 +75,8 @@ The mean absolute error on the test data is better than for the linear regressio
 That's great news.
 It means that by using a GAM and allowing feature effects to be non-linear, we were able to improve the predictions and some effects actually appeared to be non-linear.
 
+## Interpreting the GAM with SHAP
+
 Now let's see what the SHAP values have to say about how the model works:
 
 ```{python}
@@ -97,7 +104,7 @@ This waterfall plot presents a different picture of what's happening, compared t
 - Generally, the prediction for the GAM is lower in this case (around 6.0).
 - This example beautifully demonstrates how, although the global average prediction and the local prediction are quite similar, there are numerous Shapley values canceling each other out.
 
-## Shapley values recover non-linear functions
+## SHAP recover non-linear functions
 
 We know that it's an additive model.
 This means that to understand the effect a feature has, we can simply take one data point, modify that feature, and observe how this alters the prediction.
@@ -120,7 +127,11 @@ In the case of alcohol, we see a positive effect.
 The higher the alcohol content, the higher the predicted quality.
 However, at very high and very low levels, the effect plateaus.
 
-The question now is whether and how the Shapley values for the alcohol feature will reflect this.
+Let's compare this now with the raw predictions.
+Well, we have to accommodate for the fact that data points with different alcohol levels also differ in other features.
+But we can make use of a property of the GAM: Since the alcohol is modeled without interactions with other features, changing the alcohol has the same effect no matter the other features.
+That means we can draw a line for one data point and just change the alcohol level.
+Like this we get the effect of alcohol which looks the same for all data points (only with different intercepts).
 
 ```{python}
 first_row = X.iloc[np.repeat(0, 100)]
@@ -145,6 +156,6 @@ Again, as you can see, the SHAP values follow the same trajectory as when we wou
 This gives us another boost in trust for understanding Shapley values.
 There's also a paper [@bordt2022shapley] showing that when the model is a GAM, then the non-linear components can be recovered by SHAP.
 
-But things get tricky when we have interactions.
+Similarly to the linear case, in the additive case, Shapley values track the feature effect well and are aligned to what we would expect.
 
-In the next chapter, we will allow the model to have interactions and see how this affects the interpretation of the Shapley values.
+

@@ -62,7 +62,7 @@ Permutation feature importance is based on the decrease in model performance, wh
 Although the feature importance plot is useful, it provides no information beyond the importances.
 For a more informative plot, we will examine the summary plot next.
 
-## Summary Plot
+## Summary or Bee Swarm Plot
 
 The summary plot combines feature importance and feature effects.
 Each point on the plot represents a Shapley value for a feature and an instance.
@@ -75,6 +75,16 @@ Features are ordered by their importance.
 
 The summary plot provides initial insights into the relationship between a feature's value and its impact on the prediction.
 However, to understand the exact nature of this relationship, we must examine SHAP dependence plots.
+
+<!-- TODO: Check again -->
+
+What to look for in the plot:
+
+- Look at the ranking of the features. The higher up the feature, the larger the shap importance.
+- Then for each feature you are interested in:
+  - Look at the distribution of the points. This tells you about the different ways the feature values can influence the prediction. A high spread for example tells you that there is a wide range of influence.
+  - Look at the color trend for a feature: This gives you a first hint whether the relationship is monotonic or shows some patterns.  
+  - Look for color clusters
 
 ## Dependence Plot
 

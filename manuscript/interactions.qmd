@@ -1,9 +1,6 @@
 ## Understanding Feature Interactions with SHAP
 
-
-This chapter is all about getting a feel for how Shapley values are to be interpreted when there are interactions.
-We started with a linear regression model, extended it with non-linear functions but still let it be an additive model, and now it's time to think about feature interactions.
-Realistically, most models and problems include interactions between features, and Shapley values should also work for that case.
+Interpretation gets tricky when the model has interactions.
 
 ::: {.callout-note}
 
@@ -12,6 +9,12 @@ Realistically, most models and problems include interactions between features, a
 Two features interact when the prediction can't be explained by the sum of the feature effects.
 
 :::
+
+
+
+This chapter is all about getting a feel for how Shapley values are to be interpreted when there are interactions.
+We started with a linear regression model, extended it with non-linear functions but still let it be an additive model, and now it's time to think about feature interactions.
+Realistically, most models and problems include interactions between features, and Shapley values should also work for that case.
 
 ## A function with interactions
 
