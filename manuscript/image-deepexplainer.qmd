@@ -1,4 +1,4 @@
-# Explaining MNIST Model with Deep Explainer and Gradient Explainer
+# Explaining MNIST Model with Deep Explainer and Gradient Explainer {#image-deep-explainer}
 
 In the previous chapter, we explored the Partition explainer, where larger image patches were treated as features for SHAP.
 
@@ -27,7 +27,7 @@ Because using pixel-wise explanations with Gradient or Deep explainer requires s
 
 Essentially, there are two options to replace a value with images:
 
-- Replace them with background data.
+- Replace them with background data, which means with pixels from a dataset of other images.
 - Substitute them with a reference, such as blurring or replacing them with grey pixels (or another "neutral" color).
 
 Imagine using the ImageNet dataset, where we have an image of a burger and replace the "absent" pixels with pixels from a dog image - it would result in a strange outcome.

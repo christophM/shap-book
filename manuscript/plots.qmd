@@ -22,7 +22,7 @@ This chapter covers:
 
 The `shap.plots.waterfall` reveals various insights:
 
-- The y-axis displays the individual features, including the values for the first instance in our dataset.
+- The y-axis displays the individual features, including the values for selected data instance.
 - The x-axis is on the scale of the output.
 - Each bar represents the Shapley value for that specific feature value.
 - Positive Shapley values point to the right.
@@ -57,7 +57,13 @@ The following figure displays the SHAP feature importance for the random forest 
 
 SHAP feature importance offers an alternative to [permutation feature importance](#feature-importance).
 A significant difference exists between these importance measures:
-Permutation feature importance is based on the decrease in model performance, while SHAP is based on the magnitude of feature attributions.
+
+::: {.callout-note}
+
+Permutation feature importance (PFI) is based on the decrease in model performance, while SHAP is based on the magnitude of feature attributions.
+This difference is especially stark if the model is overfitting, because a feature that in reality doesn't have a relation to the target will have an expected PFI of zero, but may have a non-zero SHAP importance.
+
+:::
 
 Although the feature importance plot is useful, it provides no information beyond the importances.
 For a more informative plot, we will examine the summary plot next.
@@ -109,17 +115,10 @@ Essentially, a dependence plot is a summary plot for a single feature where, ins
 ## Interaction Plot
 
 Interaction effects represent the combined feature effects after accounting for individual feature effects.
-The Shapley interaction index, derived from game theory, is defined as:
 
-$$\phi_{i,j}=\sum_{S\subseteq\backslash\{i,j\}}\frac{|S|!(M-|S|-2)!}{2(M-1)!}\delta_{ij}(S)$$
 
-when $i\neq{}j$ and:
 
-$$\delta_{ij}(S)=\hat{f}_x(S\cup\{i,j\})-\hat{f}_x(S\cup\{i\})-\hat{f}_x(S\cup\{j\})+\hat{f}_x(S)$$
 
-This formula removes the main effects of the features, resulting in the pure interaction effect after accounting for individual effects.
-We then average the values over all possible feature coalitions S, similar to the Shapley value computation.
-By calculating the SHAP interaction values for all features, we obtain one matrix per instance with dimensions M x M, where M represents the number of features.
 
 How can we utilize the interaction index?
 One example is to automatically color the SHAP feature dependence plot according to the strongest interaction:

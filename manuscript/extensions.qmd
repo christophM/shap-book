@@ -1,6 +1,6 @@
 # Extensions of Shapley Values {#extensions}
 
-This chapter highlights some extensions for Shapley values, focusing on adaptations for specific model or data structures while still maintaining their purpose in explaining predictions.
+This chapter highlights some extensions for Shapley values, focusing on adaptations for specific models or data structures while still maintaining their purpose in explaining predictions.
 
 ## L-Shapley and C-Shapley for data with a graph structure
 

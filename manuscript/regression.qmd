@@ -17,10 +17,9 @@ pip install lightgbm
 LightGBM is a gradient boosting framework based on decision trees.
 It's fast, efficient, and generally performs well.
 Using a histogram-based approach to represent feature values, it excels with large datasets.
-But enough advertisement.
+But enough advertisement, let's train the LightGBM model.
 
 ```{python}
-#| echo: False
 import pandas as pd
 import lightgbm as lgb
 import shap
@@ -90,6 +89,7 @@ These interactions are not visible in this plot.
 
 ## Global model interpretation
 
+Global SHAP plots enable us to see how features impact the overall predictions in the model.
 Let's examine the summary plot:
 
 ```{python}
@@ -114,6 +114,20 @@ shap.dependence_plot(
 ```
 
 The shap package automatically selects the `volatile acidity` feature for interaction detection, coloring the Shapley values accordingly.
+The feature `volatile acidity` was picked because it had the highest estimated interaction with `alcohol`.
+
+::: {.callout-note}
+
+## Automatic Interaction Detection
+
+By default, the `shap` dependence plot picks the feature that has the strongest interaction with the feature of interest.
+The dependence plot function calls the  `approximate_interactions` function which measures interaction between features through correlation of SHAP values, with stronger correlation indicating stronger interaction.
+It then returns a ranking of features based on their interaction strength with a selected feature.
+You can also pick a feature by hand.
+
+:::
+
+
 Some key observations:
 
 - Generally, an increase in alcohol level raises the Shapley value, which in turn increases the predicted values.
@@ -144,7 +158,7 @@ shap.dependence_plot(
 Observations:
 
 - Higher residual sugar corresponds to higher Shapley values.
-- The SHAP package identifies the highest interaction with density.
+- The `shap` package identifies the highest interaction with density.
 - Density and residual sugar are correlated (not independent); for instance, high sugar levels result in high density values. Physics.
 - Comparing curves for low density (around 0.99) and high density (around 0.998):
   - When density is low, increasing residual sugar has a significant increasing effect.

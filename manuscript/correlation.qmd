@@ -71,8 +71,7 @@ This conditional sampling will also be part of one of the solutions.
 ## A philosophical problem
 
 Before delving into solution details, let's explore the issue further.
-The problem of correlation and extrapolation is not just a technical challenge but also a philosophical one.
-We must decide what we truly want when interpreting a model.
+The problem of correlation and extrapolation is not just a technical challenge but also a philosophical one: do we want the interpretation reflect the modeled relations or the data?
 
 Consider this: What does it **mean** when features are correlated, and what are the consequences for interpretation?
 From an information theoretic perspective, correlation means that two features share information.
@@ -82,19 +81,7 @@ For example, let's say we have two strongly correlated features: rainfall yester
 If it rained yesterday, we know it must have been cloudy - this is correlation.
 How can we isolate the effect of rain while ignoring the cloudiness?
 
-## What about images and text?
-
-SHAP for image and text features works differently: no background data is involved.
-However, simulating absent feature values still generates new images and texts that might deviate from the distribution.
-In case of images, the removed areas are blurred or inpainted.
-For text, it's replaced by a replacement token like "..." or just a whitespace " ".
-It's difficult to gauge the severity of the problem, but inpainting can be seen as a form of conditional sampling, and blurring is even more unique as it doesn't use all the feature's information.
-
-The question becomes: What is a meaningful "reference data point"?
-For images, the default is a blurred or inpainted image.
-For text, it's an empty string.
-
-## Solution: Reduce correlation in the model
+# Solution: Reduce correlation in the model
 
 While it may seem overly simplistic, avoiding the correlation problem can be achieved by eliminating correlated features.
 This solution requires flexibility in training the model with a different set of features.
@@ -102,8 +89,8 @@ If you have the option to change the features, we can leverage a wider range of 
 
 - Employ feature selection methods, particularly those that eliminate correlated features.
 - Remove features with minimal variance.
-- Utilize dimensionality reduction techniques.
-- Apply feature engineering to decrease correlation: For instance, if you have a person's height and weight, use height and BMI instead.
+- Utilize dimensionality reduction techniques. But this might come with a loss of interpretability, for example, principal component analysis creates difficult to interpret features.
+- Apply feature engineering to decrease correlation. For example, if you have the features "apartment rent" and "number of rooms", they will be correlated. Instead you can decorrelate them by using turning the rent into "rent per square meter". 
 - Combine features: Perhaps you have the amount of rain in the morning and afternoon as separate features. Maybe daily rainfall is sufficient? Test it out.
 
 Reducing correlated features and the overall number of features can significantly benefit model fitting.
@@ -146,11 +133,14 @@ Typically, simplifying assumptions for the conditional distributions are used to
 - Apply kernel estimators (if there are not too many dimensions).
 
 The paper proposed more techniques, but these are the key ones.
+
 ::: {.callout-warning}
+
 Switching the sampling from marginal to conditional alters the game payout.
 For instance, the resulting Shapley values may appear to no longer adhere to the Dummy axiom, as unused features like $\beta_j=0$ in a linear model can suddenly have non-zero Shapley values.
 However, this doesn't actually violate the Dummy axiom, since based on the new payout using conditional distributions, they still qualify as Shapley values.
-Just be mindful of this shift in interpretation.
+And it only happens if features are correlated.
+Without correlation, marginal and conditional sampling work the same, because then $P(X_1) = P(X_1|X_2)$.
 
 :::
 
@@ -162,8 +152,4 @@ If you want to better understand the data, conditional sampling could be the bet
 This trade-off is also characterized as being true to the model (marginal sampling) or true to the data (conditional sampling) [@chen2020true].
 This concept is further discussed by @sundararajan2020many.
 
-::: {.callout-note}
 
-When features are uncorrelated, marginal and conditional distributions are identical.
-
-:::

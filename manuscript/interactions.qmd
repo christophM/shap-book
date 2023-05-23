@@ -1,4 +1,4 @@
-## Understanding Feature Interactions with SHAP
+## Understanding Feature Interactions with SHAP {#interaction}
 
 Interpretation gets tricky when the model has interactions.
 

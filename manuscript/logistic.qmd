@@ -1,6 +1,6 @@
 # Classification with Logistic Regression
 
-This chapter demonstrates how to use and interpret SHAP with logistic regression.
+This chapter shows how to use and interpret SHAP with logistic regression.
 
 Differences from linear regression include:
 
@@ -70,9 +70,8 @@ shap_values = ex(X_test.iloc[0:100])
 ```
 
 The novelties: 
-We only use a subset of the training data as background dataset.
-Also, we apply SHAP not only to the model, but the entire pipeline.
-For a good reason.
+- We only use a subset of the training data as background dataset. This can help with computation speed at the cost of less accurate Shapley value estimates.
+- Also, we apply SHAP not only to the model, but the entire pipeline. This is because we don't want the inputs to the model as basis for interpretation, because these are one-hot encoded and scaled features. Instead, we want the more interpretable "raw" features as basis of interpretation.
 
 The adult dataset contains both categorical and numerical features.
 Both are transformed before inputting them into the logistic regression model:
@@ -207,7 +206,7 @@ You can also see the difference in step sizes visualized in the following Figure
 
 ## Understanding the data globally
 
-Global SHAP plots enable us to see how features impact the overall predictions in the model.
+To finish up the model interpretation, let's have a look at the global importances and effects with the summary plot:
 
 ```{python}
 shap.summary_plot(

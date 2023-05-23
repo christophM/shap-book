@@ -1,4 +1,4 @@
-## Image Classification with Partition Explainer
+## Image Classification with Partition Explainer {#image}
 
 
 So far, we've only explored tabular data.

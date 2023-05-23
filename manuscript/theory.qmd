@@ -163,4 +163,23 @@ There exists an alternative formulation of Shapley values in which the Dummy and
 :::
 
 
+## Interaction Index
+
+Each feature gets assigned one Shapley value and the sum of Shapley values yields the prediction.
+Any interactions between feature values are fairly shared between them.
+But sometimes it can be interesting to not fairly share them, but instead attribute the prediction also to two-way interactions between features.
+For interactions there is also a solution called interaction index.
+
+The Shapley interaction index, derived from game theory, is defined as:
+
+$$\phi_{i,j}=\sum_{S\subseteq\backslash\{i,j\}}\frac{|S|!(M-|S|-2)!}{2(M-1)!}\delta_{ij}(S)$$
+when $i\neq{}j$ and:
+
+$$\delta_{ij}(S)=\hat{f}_x(S\cup\{i,j\})-\hat{f}_x(S\cup\{i\})-\hat{f}_x(S\cup\{j\})+\hat{f}_x(S)$$
+
+This formula removes the main effects of the features, resulting in the pure interaction effect after accounting for individual effects.
+We then average the values over all possible feature coalitions $S$, similar to the Shapley value computation.
+By calculating the SHAP interaction values for all features, we obtain one matrix per instance with dimensions M x M, where M represents the number of features.
+
+
 The next chapter will delve deeper into the theoretical side of things, focusing on how to estimate Shapley values, because having just one method would be too simplistic.

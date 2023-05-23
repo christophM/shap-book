@@ -25,7 +25,7 @@ I would expect all Shapley importances to be equal.
 However, they also assign equal importance to two features with different scales, such as $X_1$ ranging from -1 to +1 and $X_2$ ranging from -1000 to +1000.
 Although $X_2$ seems to have a greater influence on the prediction due to its larger scale, the Shapley importance for both features is the same.
 This makes sense because knowing $X_1$ is as important as knowing $X_2$.
-Despite the significant difference in range, the prediction could go in any direction without knowing $X_1$ due to the multiplicative nature of the problem.
+$X_2$ has a much larger range, but it doesn't matter for the Shapley value, because $X_1$ can set the prediction to zero or flip the sign.
 This demonstrates that interpreting interactions is not always intuitive.
 In the [Interaction Chapter](#interaction), we also observed how interactions are divided between features and often exhibit a combination of local and global effects.
 Keep this peculiarity in mind.

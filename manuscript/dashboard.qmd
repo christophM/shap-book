@@ -61,7 +61,7 @@ To start the app, simply run:
 app = xpl.run_app(title_story='California Housing', port=8020)
 ```
 
-This will run the server locally on port 8020 and display a link to `http://0.0.0.0:8050/`, where the Shapash app is accessible.
+This will run the server locally on port 8020 and display a link to `http://0.0.0.0:8020/`, where the Shapash app is accessible.
 
 ## Dashboard overview
 

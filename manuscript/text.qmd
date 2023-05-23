@@ -1,4 +1,4 @@
-# Explaining Language Models
+# Explaining Language Models {#text}
 
 Let's dive into text-based models.
 All models in this chapter share a common trait: their inputs are texts.
