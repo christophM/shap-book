@@ -2,8 +2,8 @@ project:
   type: book
 
 book:
-  title: "Mastering Machine Learning Interpretation with Shapley Values"
-  subtitle: "The Ultimate Guide to SHAP in Python"
+  title: "Interpreting Machine Learning Models With SHAP"
+  subtitle: "A Comprehensive Guide With Python"
   author: "Christoph Molnar"
   output-file: shap
   chapters:
