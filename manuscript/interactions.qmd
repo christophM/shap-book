@@ -32,7 +32,7 @@ We simulate a score of much a fan will enjoy the concert based on two features:
 
 We simulate the target as:
 
-$$y = 0.1 \cdot x_1 + x_2 + 50 \cdot \mathbb{1}_{x_1 < 150 \text{ and } x_2 < 3}$$
+$$y = 0.1 \cdot x_1 - 1 \cdot x_2 + 10 \cdot \mathbb{1}_{x_1 < 160 \text{ and } x_2 < 7}$$
 
 - The taller the fan, the better
 - The smaller the distance to the stage, the better
