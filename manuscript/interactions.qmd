@@ -1,6 +1,4 @@
-## Understanding Feature Interactions with SHAP {#interaction}
-
-<!-- TODO: Reread chapter, also GPT it -->
+# Understanding Feature Interactions with SHAP {#interaction}
 
 Interpretation gets tricky when the model has interactions.
 This chapter goes deep into a simulated example so we can get to better understand how interactions are distributed among the features.
@@ -10,8 +8,8 @@ This chapter goes deep into a simulated example so we can get to better understa
 ## Feature Interaction
 
 Two features interact when the prediction can't be explained by the sum of both feature effects.
-Alternatively formulated: interaction means the effect of one feature changes depending on the level of the other feature. 
- 
+Alternatively formulated: interaction means the effect of one feature changes depending on the level of the other feature.
+
 For example, let's consider the price of a hotel room, based on room size and sea view.
 Both individually add to the price: the larger the room, the more expensive and you pay extra for a sea view.
 In addition, size and view interact: For small rooms, the sea view adds less to the price compared to large rooms, since the small rooms aren't inviting for staying a long time in them.
@@ -28,7 +26,7 @@ Now, it depends on your size how much you'll be able to actually see.
 And it depends on who is in front of you, but we'll ignore that for now.
 We simulate a score of much a fan will enjoy the concert based on two features:
 
-- $x_1$: Height in cm, and
+- $x_1$: Height in cm
 - $x_2$: Distance to the stage (from 0 to 10)
 - $y$: How much the fan enjoys the concert
 
@@ -70,7 +68,7 @@ rf_model = RandomForestRegressor(n_estimators=100, random_state=42)
 rf_model.fit(X_train, y_train)
 ```
 
-Let's plot what the prediction looks like, since this gives us a an idea.
+Let's plot what the prediction looks like, since this gives us an idea.
 
 ```{python}
 # Generate x1 and x2 grids
@@ -98,17 +96,8 @@ Seems like the random forest approximates the function quite well.
 
 ## Computing Shapley values
 
-Alright, for this random forest we will now get us some Shapley values.
-We know that, based on the axioms, Shapley values fairly attribute the prediction to the individual features.
-For the simulated example it's clear that the first two terms
-Shapley values fairly attribute the prediction to the individual features.
-Let's walk through the terms in the example above:
+Alright, for this random forest, we will now get us some Shapley values:
 
-- The first term is fully attributed to $x_1$
-- The second term is fully attributed to $x_2$
-- The third term must be split between the two features
-
-But let's have a look what the Shapley values look like:
 
 ```{python}
 import shap
@@ -125,28 +114,29 @@ shap.summary_plot(shap_values, X_test)
 
 The summary plot already shows us the general relationships:
 
-- The further away from the stage ($x_2$) the larger smaller the Shapley values
-- The taller the fan ($x_1$) the smaller the Shapley values
+- The further away from the stage ($x_2$), the smaller the Shapley values.
+- The taller the fan ($x_1$), the smaller the Shapley values.
 
-But there are also some breaks in the patters: There are small fans that receive a large Shapley value. This is due to the interaction (sitting on shoulders).
+But there are also some breaks in the patterns: There are small fans that receive a large Shapley value. This is due to the interaction (sitting on shoulders).
 To investigate deeper, let's look into the dependence plot.
 
-```{python}
+```python
 shap.dependence_plot("x1", shap_values, X_test)
 ```
 
 The dependence plot automatically colors the points by values of feature $x_2$.
 By default, the points are colored by the feature with the largest approximate interaction.
-Since our model only contains two features, the selection is of course feature $x_2$
+Since our model only contains two features, the selection is, of course, feature $x_2$.
 We can make 3 observations:
 
-1. There is a large jump at $x_1=160$. Make sense because we know that above 160cm there is no chance that you will get on someones shoulders (at least in our simulated data).
-2. Ignoring the jump, there seems to be a linear upward trend. Also makes sense since $Y$ has a linear dependence on $x_1$ and the slope is the coefficient in the simulated function ($\beta_1=0.1$). 
+1. There is a large jump at $x_1=160$. Makes sense because we know that above 160cm, there is no chance that you will get on someone's shoulders (at least in our simulated data).
+2. Ignoring the jump, there seems to be a linear upward trend. Also makes sense since $Y$ has a linear dependence on $x_1$, and the slope is the coefficient in the simulated function ($\beta_1=0.1$).
 3. There are two "clusters" of points: one with a small jump and one with a large jump. This one is a bit tougher to explain.
 
 Part 3 becomes clearer because the curves are colored by the feature value $x_2$. There are two "lines":
-- One line is for people that are >7 away from the stage ($x_2$). Here we see the large jump, which makes sense, since at >160cm, these fans have no chance of getting on someones shoulders.
-- The other line is for values of $x_2$ below 7. It has a smaller jump. But why does it have a jump at all? People in this "cluster" don't get to sit on someones shoulders when below <160cm.
+
+- One line is for people that are >7 away from the stage ($x_2$). Here we see the large jump, which makes sense since at >160cm, these fans have no chance of getting on someone's shoulders.
+- The other line is for values of $x_2$ below 7. It has a smaller jump. But why does it have a jump at all? People in this "cluster" don't get to sit on someone's shoulders when below <160cm.
 
 The reason why the interaction also "bleeds" into the cluster where we wouldn't expect it has to do with how Shapley values work.
 
@@ -154,8 +144,8 @@ The reason why the interaction also "bleeds" into the cluster where we wouldn't 
 
 Let's investigate the two fans:
 
-1. Mia, 159cm tall with a distance of 4 to the stage
-1. Tom, 161cm tall standing right next to Mia with a distance of 4 to the stage
+1. Mia, 159cm tall with a distance of 4 to the stage.
+2. Tom, 161cm tall standing right next to Mia with a distance of 4 to the stage.
 
 The model predicts the following for how much they will enjoy the concert:
 
@@ -164,8 +154,7 @@ The model predicts the following for how much they will enjoy the concert:
 Xnew = pd.DataFrame({'X1': [159, 161], 'X2': [2,2]})
 print(rf_model.predict(Xnew.values))
 ```
-
-They have a rather similar predicted joy for the concert, with Mia having a slightly worse prediction -- makes sense given she is slightly smaller an neither of them qualify for shoulders.
+They have a rather similar predicted joy for the concert, with Mia having a slightly worse prediction -- makes sense given she is slightly smaller and neither of them qualify for shoulders.
 
 Let's have a look at their Shapley values.
 
@@ -182,11 +171,10 @@ The Shapley values differ quite substantially.
 - But Tom's Shapley values are more extreme.
 
 So even though Tom is actually taller than Mia, his height has a more negative impact on the prediction.
-Neither have a chance to get on someones shoulders since they are both already in the front.
-
+Neither have a chance to get on someone's shoulders since they are both already in the front.
 
 Even though Mia is smaller, her height has less of a negative impact compared to Tom.
-And we also can't explain it with the interaction since Mia is to close to the band that she doesn't profit from the shoulder bonus.
+And we also can't explain it with the interaction since Mia is too close to the band that she doesn't profit from the shoulder bonus.
 
 But the surprising answer is that Mia's Shapley value actually is influenced by the interaction, even though she isn't directly affected by it. And this is because of how Shapley values are computed.
 
@@ -205,14 +193,14 @@ So even though Mia's closeness to the stage means that she wouldn't profit from 
 
 That's why I would refer to Shapley values as having a global component: The interactions also influence data points further away.
 
-Also that makes Shapley values different from a "what-if" analysis.
+Also, that makes Shapley values different from a "what-if" analysis.
 The what-if analysis of the height is:
 How would the prediction change if we change the height of Mia or Tom?
-The answer would be that the effect would be quite similar for both Mia and Tom would we, for example, increase their height by 10cm.
+The answer would be that the effect would be quite similar for both Mia and Tom if we, for example, increase their height by 10cm.
 But Shapley values don't work that way.
 The values reflect interactions with other features, even if we have to change multiple feature values of a data instance.
 
-Because in a what-if analysis we would only evaluate how the prediction changes when the height changes, which should be rather similar for Tom and Mia.
+Because in a what-if analysis, we would only evaluate how the prediction changes when the height changes, which should be rather similar for Tom and Mia.
 
 But, what does such an artificial example have to do with real ML applications?
 The phenomenon that occurs here in the extreme plays out in more complex but subtle ways in real applications.
@@ -223,8 +211,8 @@ Only potentially with more features, and the interactions won't be as blunt but 
 
 ## Takeaways
 
-- Shapley values are not to be interpreted as a what-if analysis
-- Feature interactions are split across the Shapley values
+- Shapley values are not to be interpreted as a what-if analysis.
+- Feature interactions are split across the Shapley values.
 - A Shapley value must be interpreted in the context of background data and the full prediction function.
 
 :::
