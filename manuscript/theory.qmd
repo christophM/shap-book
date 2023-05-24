@@ -9,14 +9,14 @@ But before we begin, here is an overview of the terms so you can come back here 
 
 | Symbol | Description |
 |--------|-------------|
-| \hat{f}(x) | The prediction for the instance 'x' using the model 'f'. |
-| \beta₀, \beta₁, ... , \betaₚ | The coefficients or weights of the linear model. They quantify the impact of each feature on the prediction.|
-| x₁, ..., xₚ | These represent the feature values of the instance 'x'. Each feature is indexed by a subscript number.|
-| xⱼ | This represents the 'j-th' feature value of the instance 'x'.|
-| \phiⱼ(\hat{f}) | This represents the contribution of the 'j-th' feature to the prediction \hat{f}(x).|
-| E(\hat{f}(X)) | The expected (or average) prediction of the model $\hat{f}$ over all instances in the data.|
-| p | The total number of features in the instance 'x'.|
-| val_{\hat{f}, x} | The value function for a game, which maps from a coalition to the payout. In the case of ML from feature coalitions to prediction minus expected prediction. $val: 2^p \mapsto \mathbb{R}$|
+| $\hat{f}(x)$ | The prediction for the instance $x$ using the model $\hat{f}$. |
+| $\beta_0, \beta_1, \ldots , \beta_p$ | The coefficients or weights of the linear model. They quantify the impact of each feature on the prediction.|
+| $x_1, \ldots, x_p$ | These represent the feature values of the instance $x$. Each feature is indexed by a subscript number.|
+| $x_j$ | This represents the j-th feature value of the instance $x$.|
+| $\phi_j(\hat{f})$ | This represents the contribution of the j-th feature to the prediction $\hat{f}(x)$.|
+| $E(\hat{f}(X))$ | The expected (or average) prediction of the model $\hat{f}$ over all instances in the data.|
+| $p$ | The total number of features in the instance $x$.|
+| $val_{\hat{f}, x}$ | The value function for a game, which maps from a coalition to the payout. In the case of ML from feature coalitions to prediction minus expected prediction. $val: 2^p \mapsto \mathbb{R}$|
 
 Let's begin with a linear prediction model, as it's easier to comprehend.
 

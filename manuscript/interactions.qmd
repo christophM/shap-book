@@ -1,45 +1,51 @@
 ## Understanding Feature Interactions with SHAP {#interaction}
 
+<!-- TODO: Reread chapter, also GPT it -->
+
 Interpretation gets tricky when the model has interactions.
+This chapter goes deep into a simulated example so we can get to better understand how interactions are distributed among the features.
 
 ::: {.callout-note}
 
 ## Feature Interaction
 
-Two features interact when the prediction can't be explained by the sum of the feature effects.
+Two features interact when the prediction can't be explained by the sum of both feature effects.
+Alternatively formulated: interaction means the effect of one feature changes depending on the level of the other feature. 
+ 
+For example, let's consider the price of a hotel room, based on room size and sea view.
+Both individually add to the price: the larger the room, the more expensive and you pay extra for a sea view.
+In addition, size and view interact: For small rooms, the sea view adds less to the price compared to large rooms, since the small rooms aren't inviting for staying a long time in them.
+
+We have to distinguish interactions in reality and in the model.
+Even if an interaction exists in your data, if you use a purely linear model the interaction won't show in the model.
 
 :::
 
-
-
-This chapter is all about getting a feel for how Shapley values are to be interpreted when there are interactions.
-We started with a linear regression model, extended it with non-linear functions but still let it be an additive model, and now it's time to think about feature interactions.
-Realistically, most models and problems include interactions between features, and Shapley values should also work for that case.
-
 ## A function with interactions
 
-A simple example of a model with interactions:
+You are at a concert and you love when you can actually see the band.
+Now, it depends on your size how much you'll be able to actually see.
+And it depends on who is in front of you, but we'll ignore that for now.
+We simulate a score of much a fan will enjoy the concert based on two features:
 
-$$y = \mathbb{1}_{x_1 \geq -5 \text{ or } x_2 \geq -0.5}(x_1 + x_2) + 20 \cdot \mathbb{1}_{x_1 < -0.5 \text{ and } x_2 < -5}$$
+- $x_1$: Height in cm, and
+- $x_2$: Distance to the stage (from 0 to 10)
+- $y$: How much the fan enjoys the concert
 
-The formula takes two input values, x1 and x2, and calculates an output value, y.
-If either x1 is at least -5 or x2 is at least -0.5, then y is the sum of x1 and x2.
-If both x1 and x2 are less than -0.5 and -5, respectively, then y is set to a fixed value of 20.
+We simulate the target as:
 
-We can't explain the prediction as a sum of only two feature effects, because we have this term where both features are "entangled".
+$$y = 0.1 \cdot x_1 + x_2 + 50 \cdot \mathbb{1}_{x_1 < 150 \text{ and } x_2 < 3}$$
 
-What does this mean for Shapley values?
+- The taller the fan, the better
+- The smaller the distance to the stage, the better
+- These are both linear relations to the concert joy
+- Additional interaction: Fans that are small and far away from the stage, can sit on the shoulders of their friends, which adds to the concert experience.
 
-Let's go back to the fundamentals:
-Shapley values fairly attribute the prediction to the individual features.
-Let's walk through the terms in the example above:
-$x_1$ can be attributed to feature 1, of course, same for $x_2$ to feature 2.
-And the effect of the product needs to be fairly split between the features.
-
-Let's first plot the "prediction"-function in Python, because visualize it's simple to understand.
+We simulate some this data and fit a random forest on the relation.
+Then we also visualize the modeled relation which makes it easier to understand.
 
 ```{python}
-#| output: False
+#| output: false
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -48,12 +54,11 @@ import matplotlib.pyplot as plt
 
 n = 1000
 df = pd.DataFrame({
-  'x1': np.random.uniform(-1, 1, n),
-  'x2': np.random.uniform(-10, 10, n)
+  'x1': np.random.uniform(140, 200, n),
+  'x2': np.random.uniform(0, 10, n)
 })
 
-df['y'] = ((df.x1 >= -5) | (df.x2 >= -.5)) * (df.x1 + df.x2) + \
-          20 * (df.x1 < -.5) * (df.x2 < -5)
+df['y'] = 0.1 * df.x1 -  1 *  df.x2 + 10 * (df.x1 < 160) * (df.x2 > 7)
 
 # Split the data into training and test sets
 X_train, X_test, y_train, y_test = train_test_split(
@@ -65,12 +70,12 @@ rf_model = RandomForestRegressor(n_estimators=100, random_state=42)
 rf_model.fit(X_train, y_train)
 ```
 
-This is what the function looks like:
+Let's plot what the prediction looks like, since this gives us a an idea.
 
 ```{python}
 # Generate x1 and x2 grids
-x1 = np.linspace(-1, 1, 100)
-x2 = np.linspace(-10, 10, 100)
+x1 = np.linspace(140, 200, 100)
+x2 = np.linspace(0, 10, 100)
 xx1, xx2 = np.meshgrid(x1, x2)
 
 # Flatten the grids and predict color
@@ -82,17 +87,28 @@ color = color.reshape(xx1.shape)
 
 # Plot the heatmap
 plt.imshow(color, extent=[x1.min(), x1.max(), x2.min(), x2.max()],
-           origin='lower', cmap='coolwarm', aspect=0.1)
-plt.xlabel('x1')
-plt.ylabel('x2')
+           origin='lower', cmap='coolwarm', aspect=6)
+plt.xlabel('Height of fan')
+plt.ylabel('Distance to stage')
 plt.colorbar()
 plt.show()
 ```
 
+Seems like the random forest approximates the function quite well.
+
 ## Computing Shapley values
 
-Alright, for this function we will now get us some Shapley values.
+Alright, for this random forest we will now get us some Shapley values.
+We know that, based on the axioms, Shapley values fairly attribute the prediction to the individual features.
+For the simulated example it's clear that the first two terms
+Shapley values fairly attribute the prediction to the individual features.
+Let's walk through the terms in the example above:
 
+- The first term is fully attributed to $x_1$
+- The second term is fully attributed to $x_2$
+- The third term must be split between the two features
+
+But let's have a look what the Shapley values look like:
 
 ```{python}
 import shap
@@ -107,135 +123,111 @@ shap_values = explainer.shap_values(X_test)
 shap.summary_plot(shap_values, X_test)
 ```
 
-This requires a deeper investigation to understand what's going on, because the Shapley values show an unusual pattern.
+The summary plot already shows us the general relationships:
 
-Let's examine the dependence plot of $x_1$.
-The dependence plot shows how the SHAP values depend on the feature, in our case $x_1$.
+- The further away from the stage ($x_2$) the larger smaller the Shapley values
+- The taller the fan ($x_1$) the smaller the Shapley values
+
+But there are also some breaks in the patters: There are small fans that receive a large Shapley value. This is due to the interaction (sitting on shoulders).
+To investigate deeper, let's look into the dependence plot.
 
 ```{python}
 shap.dependence_plot("x1", shap_values, X_test)
 ```
 
-The dependence plot does something very interesting automatically.
-It detects interactions with other features.
-Since we only have $x_2$ as another feature, it shows interactions with $x_2$.
-These are indicated by the color.
-
-But first, let's see what's going on.
+The dependence plot automatically colors the points by values of feature $x_2$.
+By default, the points are colored by the feature with the largest approximate interaction.
+Since our model only contains two features, the selection is of course feature $x_2$
 We can make 3 observations:
 
-1. Something happens at $x_1=-0.5$: a large jump down in prediction.
-2. Ignoring the jump, there seems to be a linear upward trend.
-3. There are two "clusters" of points: one with a small jump and one with a large jump.
+1. There is a large jump at $x_1=160$. Make sense because we know that above 160cm there is no chance that you will get on someones shoulders (at least in our simulated data).
+2. Ignoring the jump, there seems to be a linear upward trend. Also makes sense since $Y$ has a linear dependence on $x_1$ and the slope is the coefficient in the simulated function ($\beta_1=0.1$). 
+3. There are two "clusters" of points: one with a small jump and one with a large jump. This one is a bit tougher to explain.
 
-Part 3 becomes clearer because the curves are colored by the feature value $x_2$.
+Part 3 becomes clearer because the curves are colored by the feature value $x_2$. There are two "lines":
+- One line is for people that are >7 away from the stage ($x_2$). Here we see the large jump, which makes sense, since at >160cm, these fans have no chance of getting on someones shoulders.
+- The other line is for values of $x_2$ below 7. It has a smaller jump. But why does it have a jump at all? People in this "cluster" don't get to sit on someones shoulders when below <160cm.
 
-Let's explain all these occurrences:
-
-- The linear trend aligns with the coefficient of how we simulated the data.
-- The jump at -0.5 also makes sense.
-- It is logical to see two curves:
-  - One curve is for values of $x_2$ below -5.
-  - The other curve is for values of $x_2$ above -5.
-
-It makes sense to observe this significant jump for the $x_2 < 5$ cluster because, in this case, the value of $x_1$ determines whether the data point lies in the special rectangle, greatly increasing the predictions.
-
-However, a big question remains: Why do we also see the jump when $x_2 > -5$?
+The reason why the interaction also "bleeds" into the cluster where we wouldn't expect it has to do with how Shapley values work.
 
 ## Shapley values have a "global" component
 
-To answer this, we must return to the basics of Shapley values.
-The Shapley value for $x_1$ is the marginal contribution of adding $x_1$ to a coalition.
-In our case, that can be an empty coalition or a coalition where $x_2$ is already present.
+Let's investigate the two fans:
 
-Keep in mind that we are currently examining the Shapley values for a subset of the data where $x_2 > -5$.
+1. Mia, 159cm tall with a distance of 4 to the stage
+1. Tom, 161cm tall standing right next to Mia with a distance of 4 to the stage
 
-So, when we compute the Shapley value for $x_1$, it is a mix of two coalitions:
-
-1. Adding to $\emptyset$: In this case, we sample $x_2$ and also $(x_1, x_2)$.
-2. Adding to $x_2$: In this case, we sample $x_2$ and don't sample anything for the full coalition.
-
-
-In the first case, where we start with an empty coalition and sample both $x_1$ and $x_2$, we also sometimes sample from the special rectangle.
-And then, it makes a difference whether the value of $x_1$ for the current instances for which we compute Shapley values is below -0.5 or not.
-That's why we see the jump as well for this subset when $x_2 > -5$.
-
-Tricky, right?
-
-Where does this leave us when we apply Shapley values for model interpretation?
-Let's break it down:
-
-- A data point with $(x_1 = -0.6, x_2 = +8)$ has a Shapley value of $\phi_1 \approx 1$.
-- A data point with $(x_1 = -0.4, x_2 = +8)$ has a Shapley value of $\phi_1 \approx -1.5$.
-
-One might argue that both data points should have almost the same Shapley value, and if anything, data point 2 should have a larger Shapley value since increasing $x_1$ increases the prediction.
-However, we observe a decrease instead.
-Comparing these two data points, only $x_1$ has changed.
-Since we know $f(x)$, we understand that no sudden change occurs in between, because $x_2$ is too large for that, and we are not in the special rectangle area.
+The model predicts the following for how much they will enjoy the concert:
 
 ```{python}
-Xnew = pd.DataFrame({'X1': [-0.6, -0.4], 'X2': [8,8]})
-shap_values = explainer.shap_values(Xnew)
+# Creating data for Mia and Tom
+Xnew = pd.DataFrame({'X1': [159, 161], 'X2': [2,2]})
 print(rf_model.predict(Xnew.values))
+```
+
+They have a rather similar predicted joy for the concert, with Mia having a slightly worse prediction -- makes sense given she is slightly smaller an neither of them qualify for shoulders.
+
+Let's have a look at their Shapley values.
+
+```{python}
+shap_values = explainer.shap_values(Xnew)
 print(shap_values)
 ```
 
-Although the predictions are almost identical, the Shapley values in one case are both positive, while in the second case, the $x_1$ Shapley value is negative, and the $x_2$ value is more positive than in the other data point.
+The Shapley values differ quite substantially.
 
-Now, let's examine the background data: It is uniformly distributed across -10 to 10 for $x_2$ and -1 to 1 for $x_1$.
-One-eighth of the data is in the special rectangle with a very high predicted value, while for the remaining 7/8ths of the data, we have a simple linear predictor.
+- Mia has a slightly negative value for the height. Makes sense because she is rather small, compared to the majority of the simulated heights.
+- Mia has a positive Shapley value for the distance, which also makes sense because she stands rather close to the front.
+- For Tom, the directions are similar, which makes sense since they have the same distance and are almost the same height.
+- But Tom's Shapley values are more extreme.
 
-Upon further consideration, this actually makes sense:
+So even though Tom is actually taller than Mia, his height has a more negative impact on the prediction.
+Neither have a chance to get on someones shoulders since they are both already in the front.
 
-- Point 1 $(x_1=-0.6, x_2=8)$: This point already has "one foot" in the special rectangle. From that standpoint, what is the role of $x_1$? We have to think about the background data as well. For 1/4th of the background data, adding the player $x_1=-0.6$ would mean stepping fully into the rectangle and getting that juicy +20 in the prediction. In that regard, $x_1$ plays a positive role. In fact, all data points with $x_1 < -0.5$ (including a buffer zone since the random forest does it a bit more gradually) have a positive Shapley value $\phi_1$!
-- Point 2 with $(x_1=-0.4, x_2=8)$, on the other hand, has an $x_1$ value that is the worst of both worlds (if you see a low prediction as bad). It doesn't help **any** data point from the background data to enter the magical rectangle. But it's also on the lower end in terms of the linear factor. So, it makes sense to get a negative value.
 
-But what about the difference between the Shapley values $\phi_2$ for $x_2$?
-We observe that both are positive, but the second is larger.
-It makes sense that they are positive because for all data points with $x_2 \in [-5, 7.99]$, which means an improvement for 60% of the data points, and adding to that all the ones $x_2 < -5$ but $x_1 > -0.5$, which are 0.25 * 0.75 = 0.1875, another 18.75% and in total 78.75% of the data.
-Of course, it's not the percentage that counts, but the expected value (value times probability) but that's to get a feel for it.
-But why is $\phi_2$ larger for the second data point, even though $x_2=8$ for both instances?
-Because adding $x_2=8$ to a data point with $x_1=-0.6$ is different than adding it to a data point $x_1=-0.4$.
+Even though Mia is smaller, her height has less of a negative impact compared to Tom.
+And we also can't explain it with the interaction since Mia is to close to the band that she doesn't profit from the shoulder bonus.
 
-Why?
+But the surprising answer is that Mia's Shapley value actually is influenced by the interaction, even though she isn't directly affected by it. And this is because of how Shapley values are computed.
 
-In both cases, adding to an empty coalition is the same.
-But the difference is adding to the $x_1$, which differs between the two data points.
-Adding to an $x_1=-0.6$ "robs" that data point of the chance of being placed in the special rectangle.
-But adding it to $x_1=0.4$ is only positive.
-Again, look at the background data: on average, adding $x_2=8$ is worse if we already know that the data point is with one step in the special rectangle because some of the background data would have made it into the rectangle.
-In comparison, any coalition with $x_1=-0.4$ means no change of special rectangular time anyway.
+When we compute the Shapley value for Mia's height, her height value is either added to an empty coalition ($\emptyset$) or to a coalition where her stage distance is already present ($\{x_2=2\}$).
+The same happens for Tom.
+Adding to a coalition where stage distance is already present returns roughly the same marginal contribution for both Mia and Tom.
 
-:::{.callout-warning}
+But the results are different when we add either Mia's or Tom's height to an empty coalition.
+Because for the empty coalition, we sample the distance to the stage from the data.
 
-Shapley values mah not be interpreted as counterfactuals or what-if analyses!
+So sometimes we sample stage distances that are far away and then the interaction comes into play (shoulder bonus).
+But only for Mia and not for Tom.
+And since the shoulder bonus increases the concert joy, the Shapley value for Mia's height is increased compared to Tom's.
+
+So even though Mia's closeness to the stage means that she wouldn't profit from the shoulder bonus, the Shapley value for her height still reflects the existence of that bonus.
+
+That's why I would refer to Shapley values as having a global component: The interactions also influence data points further away.
+
+Also that makes Shapley values different from a "what-if" analysis.
+The what-if analysis of the height is:
+How would the prediction change if we change the height of Mia or Tom?
+The answer would be that the effect would be quite similar for both Mia and Tom would we, for example, increase their height by 10cm.
+But Shapley values don't work that way.
+The values reflect interactions with other features, even if we have to change multiple feature values of a data instance.
+
+Because in a what-if analysis we would only evaluate how the prediction changes when the height changes, which should be rather similar for Tom and Mia.
+
+But, what does such an artificial example have to do with real ML applications?
+The phenomenon that occurs here in the extreme plays out in more complex but subtle ways in real applications.
+Only potentially with more features, and the interactions won't be as blunt but might be more smooth and intricate.
+
+
+::: {.callout-tip}
+
+## Takeaways
+
+- Shapley values are not to be interpreted as a what-if analysis
+- Feature interactions are split across the Shapley values
+- A Shapley value must be interpreted in the context of background data and the full prediction function.
 
 :::
 
-And you shouldn't interpret them as such.
-Because if you expect both of the above data points to have roughly the same Shapley values, then it's closer to a what-if analysis where you keep one part fixed (here $x_2$) and only change the feature we are looking at ($x_1$).
 
-However, Shapley values always operate on a background dataset and incorporate a more global view of the model.
-For our example, this means that even though we are operating on a data point outside the rectangle, the Shapley value includes the marginal contribution of coalitions that involve jumping into the rectangle.
 
-In that sense, for $x_2 > -5$, the Shapley values as a function of $x_1$ are a mix of:
-
-- Locally changing $x_1$.
-- Globally changing everything.
-
-Take-home messages:
-
-- Shapley values are not what-if analyses.
-- Shapley values are not local derivatives.
-- Shapley values combine global and local properties of the prediction function.
-- Shapley values' interpretation depends on the background data.
-- A Shapley value must be interpreted in the context of background data and the full prediction function.
-- A Shapley value is also influenced by interactions with other features, even if in a "what-if" scenario (just changing the feature in question), that interaction isn't "triggered".
-
-By the way, the exact same thing happens to $x_2$, with the difference that the linear trend is much steeper.
-
-But, what does such an artificial example have to do with real ML applications?
-
-The phenomenon that occurs here in the extreme plays out in more complex but subtle ways in real applications.
-
-Only potentially with more features, and the interactions won't be as blunt but might be more smooth and intricate.

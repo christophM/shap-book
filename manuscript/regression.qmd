@@ -1,7 +1,6 @@
 # Regression
 
 In this chapter, we will revisit the wine data and fit a tree-based model.
-
 This means the model potentially includes numerous interactions and non-linear functions, resulting in a more complex interpretation compared to previous chapters.
 But, on the good side, we can utilize the fast `shap.TreeExplainer`.
 
@@ -103,7 +102,8 @@ Observations:
 - Factors that influenced the predicted quality of some wines in the most extreme ways included:
   - High alcohol levels for higher predicted quality.
   - Low levels of free sulfur dioxide for lower quality.
-As discussed in the [interaction chapter](#interaction), interactions can be seen in global plots like the dependence plot.
+
+The interactions can be analyzed in the global plots such as the dependence plots.
 Here is the dependence plot for the alcohol feature:
 
 ```{python}
