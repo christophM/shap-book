@@ -20,7 +20,7 @@ The indirect reason was that these patients received "aggressive care," such as 
 Consequently, they were less likely to develop pneumonia.
 A typical case of "correlation does not imply causation" as you can see in @fig-asthma.
 
-![In reality, asthma increases likelihood of pneumonia. However, in the study, asthma also increased the (preemptive) use of antibioitics which protects against pneumonia.](images/asthma-dag.jpg){#fig-asthma}
+![In reality, asthma increases the likelihood of pneumonia. However, in the study, asthma also increased the (preemptive) use of antibiotics which protects against pneumonia.](images/asthma-dag.jpg){#fig-asthma}
 
 That the model relied on the asthma feature in this way was only discovered because the model was interpretable.
 Imagine repeating this scenario with a neural network.
@@ -136,70 +136,87 @@ Methods like Shapley values can be applied to any model, so even with a decision
 
 :::
 
+## Paying for the taxi
+
+To motivate SHAP, we first have to talk about how to fairly share a taxi.
+Alice, Bob, and Charlie ride home from a dinner.
+They share a taxi which costs \$45.
+Alice and Bob are a couple and live together.
+The taxi driver first drops them off, then drives further to drop Charlie off.
+Splitting the bill by 3 wouldn't be completely fair.
+How much did each of them contribute to the costs?
+
+For that we can use a method called Shapley values.
+This requires calculating for each combination of Alice, Bob, and Charlie how much the ride would have cost.
+The next table shows this:
+
+| Passengers           | Costs | Note |
+|----------------------|-------| ---- |
+| {}                   |   $0  | No taxi ride, no costs |
+| {Alice}              |   $15 | Normal ride fare |
+| {Bob}                |   $25 | Bob always insists of getting luxury taxis |
+| {Charlie}            |   $38 | Charlies lives a bit further away |
+| {Alice, Bob}         |   $25 | Bob always gets his way | 
+| {Alice, Charlie}     |   $41 | Alice & Bob's place requires a slight detour | 
+| {Bob, Charlie}       |   $51 | Bob requires luxury |
+| {Alice, Bob, Charlie}|   $51 | Alice and Bob live together |
+
+But still more work is required to find out how much each of them actually has to pay.
+To do that, starting with Alice, we have to calculate how much costs she adds when she is added to every possible passenger constellation -- in this case to {Bob}, to {Charlie}, and to the empty set. 
+
+Adding Alice to an empty taxi raises the costs from \$0 to \$15, adding her to a taxi with Bob already in it doesn't change the price of \$25, and the same is true if both Bob and Charlie are already in it (\$45).
+
+We also do these calculations for Bob and Charlie and do some calculations (more in the [Theory Chapter](#theory).
+
+As a result we get the individual costs:
+
+- Alice: \$5.5
+- Bob: \$15.5
+- Charlie: \$30
+
+The method computing these attributions is called Shapley values and according to this method, the above would be a fair share of the costs.
+
 ## Shapley Values, a solution from game theory
-
-<!-- TODO: Improve this paragraph -->
-
-<!-- reader comments
-
-Junaid;
-It may be worth expanding on this and including a motivating example. What is a payout, what constitutes a coalition. Usually the taxi sharing example is a good one from game theory.
-
-Joshua:
-Second this: I like the theoretical grounding of shap in cooperative game theory -- think some extra material here is warranted... even a simple diagram / illustration
-
-Some nice examples from auction theory pricing or group project / assignment grades are in the economics literature -- could tie in to the theory section later (haven't got there yet)
-
--->
 
 A way to explain predictions comes from game theory and is called Shapley values[@shapley1953value], named after their inventor, Lloyd Shapley.
 Shapley values are a method for fairly attributing the payout to each player in a coalition.
 Shapley values were invented to solve the problem of fair attribution.
-Let's say you have a game with team players, they get some payout, and now the goal is to fairly share the payout among the players.
-If the players contributed differently, it would be fair if this is reflected in the individual payouts.
-Shapley values is a method to do this fairly.
-An example could be a taxi ride.
-While not a game, Shapley values still work here:
-You share a taxi with 2 friends and you want to fairly attribute the payout.
-Well, in this case, it's negative because you have to pay the taxi driver, but Shapley values work as well here.
-The idea behind Shapley values is to compute how much each of the players contributed to the payout in various constellations to the team.
-So you would calculate how much the taxi would have cost if only your two friends would have taken it, without you.
-How much did the price change when adding you?
-
-TODO: an image with the attributions for the taxi
-TODO: Also add example with image of taxi ride where everyone goes
-
+To return to the taxi example: Each passenger is a player, the coalition is the ride share, the payout in this case is the cost.
+And the goal was to fairly share the costs between the passengers.
+Shapley values is a method to do this "fairly".
 Shapley values not only refer to the method but also to the resulting values, which can be confusing.
 Shapley values are motivated by axioms of what a fair attribution is.
 But more on that in the [Theory Chapter](#theory).
-Let's talk now how this concept is useful to explain predictions.
-
-
-## SHAP is an explainable AI technique
-
-<!-- TODO: slightly rewrite -->
-
-<!-- SHAP -->
-In the context of Explainable AI, Shapley values can be used to explain the contribution of each input feature to the model's output.
-Among model-agnostic interpretation methods, Shapley values, sometimes referred to as SHAP, have become very popular.
-We'll dive deeper into the distinction between SHAP and Shapley values in the  [history chapter](#history).
-For now, let's consider these two definitions:
-
-Adding to the confusion is SHAP  [@NIPS2017_7062].
-SHAP stands for **SH**apley **A**dditive ex**P**lanations and it's many things.
-It's the name of a paper that introduces a new method for estimating Shapley values, the Python library "shap" that we'll use in this book, and various algorithms for computing Shapley values.
-It's also the name of the library `shap` in Python, which we are going to use in this book.
-But SHAP also capture varies algorithms to compute Shapley values.
-When you hear SHAP, consider this useful interpretation:
 
 ::: {.callout-note}
 
-## SHAP (Shapley Additive exPlanations)
+## Naming conventions
 
-SHAP is an umbrella term for Shapley values used to explain predictions. It can refer to the original paper, the Shapley values themselves, or the implementation.
-It's most useful to say SHAP when you use Shapley values for XAI to explain individual predictions.
+Naming can be a bit confusing, because of two reasons: The term "Shapley values" can refer to both the method and the resulting numbers.
+The term SHAP is also used in machine learning and not really defined.
+So I'll just use the following conventions:
+
+- Shapley values: the original method from game theory
+- SHAP: the application of Shapley values to explain machine learning predictions
+- `shap`: the library that implements SHAP
+- Attributions: the resulting values from Shapley values / SHAP
 
 :::
+
+
+Let's talk now how this concept from game theory (Shapley values) is useful to explain predictions.
+
+## SHAP is an explainable AI technique
+
+
+SHAP is the application of Shapley values in Explainable AI [@NIPS2017_7062].
+Among model-agnostic interpretation methods, SHAP has become very popular.
+SHAP originally stands for **SH**apley **A**dditive ex**P**lanations and it's actually many things.
+It's the name of a paper that introduces a new method for estimating Shapley values, the Python library "shap" that we'll use in this book, and various algorithms for computing Shapley values.
+Since then, many other algorithms have been proposed to compute Shapley values for the attributing a prediction to the features.
+SHAP has become a bit of an umbrella term that captures different estimation methods for Shapley values in machine learning.
+It's a bit like sometimes a brand name is used to describe a product category, such as Post-it, Jacuzzi, Frisbee, or Band-Aid.
+
 
 In the [Getting Started Chapter](#getting-started), you will see an example of using SHAP to explain the predictions of a regression model.
 
