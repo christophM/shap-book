@@ -120,11 +120,11 @@ More formally, this can be described by SIPA [@scholbeck2020sampling]:
 
 There are many methods that work by this principle [@molnar2022], such as:
 
-- Partial dependence plots show how changing one (or two) of the features changes the prediction on average
-- Individual conditional expectation curves do the same for a single data point
-- Accumulated Local Effect Plots are an alternative to partial dependence plots
-- Permutation Feature Importance quantifies a feature's importance for correct predictions
-- Local interpretable model-agnostic explanations (LIME)[@ribeiro2016should]
+- Partial dependence plots show how changing one (or two) of the features changes the prediction on average.
+- Individual conditional expectation curves do the same for a single data point.
+- Accumulated Local Effect Plots are an alternative to partial dependence plots.
+- Permutation Feature Importance quantifies a feature's importance for correct predictions.
+- Local interpretable model-agnostic explanations (LIME)[@ribeiro2016should].
 
 As you may have guessed:
 **SHAP is another model-agnostic interpretation method.**
@@ -144,19 +144,19 @@ Alice, Bob, and Charlie had dinner together and now hail a taxi to get home.
 They discuss what would be a fair way to share these costs of \$51.
 A solution to their problem is called Shapley values [@shapley1953value].
 Shapley values are a method for fairly attributing the payout to each player in a coalition.
-This method that comes from game theory requires to calculate for  each combination of Alice, Bob, and Charlie how much the ride would have cost.
+This method that comes from game theory requires to calculate for each combination of Alice, Bob, and Charlie how much the ride would have cost.
 The next table shows this:
 
-| Passengers           | Costs | Note |
-|----------------------|-------| ---- |
-| {}                   |   $0  | No taxi ride, no costs |
+| Passengers           | Costs | Note                                  |
+|----------------------|-------|--------------------------------------|
+| {}                   |   $0  | No taxi ride, no costs               |
 | {Alice}              |   $15 | Normal ride fare to Alice's & Bob's place |
-| {Bob}                |   $25 | Bob always insists of getting luxury taxis |
-| {Charlie}            |   $38 | Charlies lives a bit further away |
-| {Alice, Bob}         |   $25 | Bob always gets his way | 
-| {Alice, Charlie}     |   $41 | Alice & Bob's place requires a slight detour | 
+| {Bob}                |   $25 | Bob always insists on getting luxury taxis |
+| {Charlie}            |   $38 | Charlie lives a bit further away      |
+| {Alice, Bob}         |   $25 | Bob always gets his way               |
+| {Alice, Charlie}     |   $41 | Alice & Bob's place requires a slight detour |
 | {Bob, Charlie}       |   $51 | Bob requires luxury, even when Charlie is there |
-| {Alice, Bob, Charlie}|   $51 | The full fare with all 3 of them  |
+| {Alice, Bob, Charlie}|   $51 | The full fare with all 3 of them      |
 
 But still more work is required to find out how much each of them actually has to pay.
 To do that, starting with Alice, we have to calculate how much costs she adds when she is added to every possible passenger constellation -- in this case to {Bob}, to {Charlie}, and to the empty set. 
@@ -165,26 +165,24 @@ Adding Alice to an empty taxi raises the costs from \$0 to \$15, adding her to a
 
 We also do these calculations for Bob and Charlie and do some calculations (more in the [Theory Chapter](#theory).
 
-As a result we get the individual costs:
+As a result, we get the individual costs:
 
 - Alice: \$5.5
 - Bob: \$15.5
 - Charlie: \$30
 
-The method computing these attributions is called Shapley values and according to this method, the above would be a fair share of the costs.
+The method computing these attributions is called Shapley values, and according to this method, the above would be a fair share of the costs.
 But more on that in the [Theory Chapter](#theory).
 
-
-Let's talk now how this concept from game theory (Shapley values) is useful to explain predictions.
+Let's talk now about how this concept from game theory (Shapley values) is useful to explain predictions.
 
 ## SHAP is an explainable AI technique
 
-
 SHAP is the application of Shapley values in Explainable AI [@NIPS2017_7062].
 Among model-agnostic interpretation methods, SHAP has become very popular.
-SHAP originally stands for **SH**apley **A**dditive ex**P**lanations and it's actually many things.
+SHAP originally stands for **SH**apley **A**dditive ex**P**lanations, and it's actually many things.
 It's the name of a paper that introduces a new method for estimating Shapley values, the Python library `shap` that we'll use in this book, and various algorithms for computing Shapley values.
-Since then, many other algorithms have been proposed to compute Shapley values for the attributing a prediction to the features.
+Since then, many other algorithms have been proposed to compute Shapley values for attributing a prediction to the features.
 SHAP has become a bit of an umbrella term that captures different estimation methods for Shapley values in machine learning.
 It's a bit like sometimes a brand name is used to describe a product category, such as Post-it, Jacuzzi, Frisbee, or Band-Aid.
 
@@ -213,30 +211,26 @@ The rough idea behind SHAP explanations:
 - The feature values are like a team working together to achieve the particular prediction.
 - Shapley values define what a "fair" attribution looks like, which we'll discuss in detail in the [Theory Chapter](#theory).
 
-
-## Why a separate book for SHAP? 
+## Why a separate book for SHAP?
 
 I have also written another book about Interpretable Machine Learning.
 Interpretable Machine Learning covers a wide range of XAI techniques, from counterfactual explanations, ICE curves, and PDPs to Accumulated Local Effect Plots, Permutation Feature Importance, and LIME.
 Shapley values and SHAP are also covered in this book.
 
 ::: {.callout-note}
-
 [Interpretable Machine Learning book](https://christophmolnar.com/books/interpretable-machine-learning/) [@molnar2022]
 
 ![](images/cover-interpretable-ml.jpg){width=24% fig-align="center"}
-
 :::
 
 I have even written a blog post titled [SHAP Is Not All You Need](https://mindfulmodeler.substack.com/p/shap-is-not-all-you-need) (catchy, I know).
 So, why write a book only about SHAP?
 Well, I do think it's a great method.
 Many people use SHAP, for better or worse, which alone justifies writing an ultimate guide that is down-to-earth, especially by a statistician like me, who can also look serious and write in a pessimistic tone.
-
 However, this section is not the place for pessimism.
 You'll learn about limitations in the appropriate places throughout this book.
 Now, it's time to be positive.
-There are good reasons why SHAP has become popular and why it's worth learning: It's model-agnostic, has a solid theoretic foundation and it's very flexible as we will discover throughout the book.
+There are good reasons why SHAP has become popular and why it's worth learning: it's model-agnostic, has a solid theoretic foundation, and it's very flexible, as we will discover throughout the book.
 
 SHAP values are used in various areas and predictive models:
 
