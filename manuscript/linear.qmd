@@ -1,11 +1,11 @@
 # SHAP for Linear Models
 
 Let's begin with a simple model.
-Simple because it is already interpretable, allowing us to compare Shapley values with our intuitive understanding of the model: a linear regression model.
+Simple because it is already interpretable, allowing us to compare SHAP values with our intuitive understanding of the model: a linear regression model.
 
 ## What about coefficients?
 
-But why do we need Shapley values for linear regression anyway?
+But why do we need SHAP values for linear regression anyway?
 Couldn't we just look at the coefficients?
 
 We could, but that would only tell half of the story.
@@ -14,7 +14,7 @@ So, surely, it isn't the best explanation for how a feature affected the predict
 Imagine a feature with a value of zero; its contribution would also be zero.
 Or, consider a positive coefficient: for a data point with a positive feature, when multiplied with the coefficient, the result will be positive, but if the feature value is negative, the result will be negative.
 Thus, the coefficient only reveals half of the story; to provide an explanation of how this affects a specific prediction, we also need to know the feature values of an instance.
-The Shapley value in the linear case is:
+The SHAP value in the linear case is:
 
 $\phi_{ji}(\hat{f}) = \beta_j x_{ij} - E(\beta_jX_j) = \beta_{j} (x_{ij} - E(X_j))$.
 
@@ -63,7 +63,7 @@ print(markdown_table)
 ```
 
 Here, we observe that the highest quality is 9 (out of a possible 10) and the lowest is 3.
-The other features have different scales, but as we will discover, this is not an issue for Shapley values, since they explain the prediction **on the scale of the outcome**.
+The other features have different scales, but as we will discover, this is not an issue for SHAP values, since they explain the prediction **on the scale of the outcome**.
 
 ## Fitting a linear regression model
 
@@ -117,7 +117,7 @@ For a given wine, how is the predicted quality connected to the input features?
 
 ## Interpreting the coefficients
 
-First, let's examine the coefficients and then compare them to the corresponding Shapley values.
+First, let's examine the coefficients and then compare them to the corresponding SHAP values.
 
 ```{python}
 #| output: asis
@@ -135,9 +135,9 @@ Interpretation:
 
 However, this information alone does not help us understand the effect of these factors on a single prediction, as it also depends on the specific value of the feature for that data instance.
 
-## Computing Shapley values
+## Computing SHAP values
 
-To better understand the feature effects, we can compute Shapley values for one of the data instances.
+To better understand the feature effects, we can compute SHAP values for one of the data instances.
 To do this, we create a `LinearExplainer` object.
 
 ```{python}
@@ -160,16 +160,16 @@ There is another way, which involves directly choosing the appropriate `algorith
 shap.Explainer(model, X_train, algorithm='linear')
 ```
 
-And to finally compute Shapley values we call the `.shap_values` method from the explainer.
+And to finally compute SHAP values we call the `.shap_values` method from the explainer.
 
 ```{python}
 shap_values = explainer.shap_values(X_test)
 ```
 
-## Interpreting Shapley values
+## Interpreting SHAP values
 
-We still haven't seen the Shapley values.
-So, let's take the first data instance and visualize its Shapley values:
+We still haven't seen the SHAP values.
+So, let's take the first data instance and visualize its SHAP values:
 
 ```{python}
 exp = shap.Explanation(
@@ -184,10 +184,10 @@ shap.waterfall_plot(exp)
 
 Observations:
 
-- The most crucial feature was residual sugar (=10.8), with a Shapley value of 0.27, signifying it had an increasing effect on the quality.
+- The most crucial feature was residual sugar (=10.8), with a SHAP value of 0.27, signifying it had an increasing effect on the quality.
 - Overall, the prediction was higher than the average, indicating good quality wine.
-- Most feature values of this wine were assigned a positive Shapley value.
-- pH of 3.09 is the feature value with the largest negative Shapley value.
+- Most feature values of this wine were assigned a positive SHAP value.
+- pH of 3.09 is the feature value with the largest negative SHAP value.
 This plot provides a nice overview, but it somewhat omits crucial information that one often desires.
 For instance, in the case of residual sugar, we know it increased the prediction, but we cannot determine from the waterfall plot alone what happens to the prediction if the value of residual sugar (10.8) increased or decreased.
 We could infer this from the coefficient, but this will change in the next chapter when we discuss additive models.
@@ -198,7 +198,7 @@ We could infer this from the coefficient, but this will change in the next chapt
 
 ## Global versus local interpretation
 
-Shapley values allows a local interpretation -- how features affected a prediction.
+SHAP values allows a local interpretation -- how features affected a prediction.
 Global interpretations are about how the model behaves *on average*.
 This includes how features affect the prediction, how important each feature was for the prediction and how features interact.
 
@@ -213,16 +213,16 @@ shap.summary_plot(shap_values, X_test, feature_names=wine.columns)
 ```
 This plot automatically ranks the features by importance.
 Density, residual sugar, and alcohol are the most important features for predicting wine quality, according to SHAP values.
-The importance ordering is determined by the average absolute Shapley values across the test data (in this case).
+The importance ordering is determined by the average absolute SHAP values across the test data (in this case).
 
 The coloring also shows us that the relationships are monotonic for all features:
 Increasing (or decreasing) a feature always increases the prediction, and only in one direction.
 Since we know that the model is a linear regression model, we also know that this relationship must be linear.
 
-## Comparing coefficients and Shapley values
+## Comparing coefficients and SHAP values
 
 Now, let's introduce a new kind of plot - the SHAP dependence plot.
-With this plot, we can hopefully confirm that the Shapley values also show a linear relationship with the target for features we know have a linear relation:
+With this plot, we can hopefully confirm that the SHAP values also show a linear relationship with the target for features we know have a linear relation:
 
 ```{python}
 shap.dependence_plot(
@@ -239,7 +239,7 @@ Here are a few more explanations about the dependence plot:
 - I set the interaction index argument to avoid attempting to detect interactions with other features, as it's a linear model and detecting interactions wouldn't make sense.
 - If we don't provide the feature names, we need to use an index in the first position of the features we're interested in.
 
-We can observe that the Shapley value increases linearly with each increment in the feature.
+We can observe that the SHAP value increases linearly with each increment in the feature.
 This increase corresponds to the slope in:
 
 ```{python}

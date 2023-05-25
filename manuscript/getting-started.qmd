@@ -1,7 +1,7 @@
 # Getting Started with SHAP {#getting-started}
 
 Let's dive into an example.
-In this chapter, we'll explore the use of Shapley values to explain a prediction using the `shap` library.
+In this chapter, we'll explore the use of SHAP values to explain a prediction using the `shap` library.
 
 ## The adult dataset
 
@@ -22,7 +22,7 @@ As with most Python packages, you can install it using `pip`.
 pip install shap
 ```
 
-All examples in this book use SHAP version 0.41.0.
+All examples in this book use `shap` version 0.41.0.
 To install this exact version, use the following command:
 
 ```{sh}
@@ -42,7 +42,7 @@ pip install shap
 
 ### If you use conda
 
-If you're using conda, use these commands to install SHAP:
+If you're using conda, use these commands to install `shap`:
 
 ```{sh}
 conda install -c conda-forge shap
@@ -129,10 +129,10 @@ print('Prediction error on the test set: {:.4f}'.format(error))
 Alright, now we have our finely-tuned XGBoost model with an acceptable prediction error. 
 Next up, we are going to interpret the model.
 
-## Computing Shapley values
+## Computing SHAP
 
 To do this, we need to create an `Explainer` object that holds our model.
-We can compute the Shapley values by providing the following code:
+We can compute the SHAP values by providing the following code:
 
 ```{python}
 #| message: false
@@ -153,7 +153,7 @@ But, full disclosure: I haven't seen much research on that, so take it with a gr
 
 :::
 
-Now, let's examine the contents of the Shapley values.
+Now, let's examine the SHAP values.
 It's gonna look a bit ugly but it's informative to inspect the `Explanation` object.
 
 ```{python}
@@ -161,14 +161,14 @@ print(shap_values)
 ```
 
 This Explanation object contains `.values`, `.base_values`, and `.data` fields.
-The `.values` represent the Shapley values, `.base_values` is the average prediction (the same for each data point), and `.data` contains the feature values.
-Each element in these arrays corresponds to one data point in `X_test`, which we submitted to compute the Shapley values.
-However, having only the raw Shapley values isn't very helpful.
+The `.values` represent the feature SHAP values, `.base_values` is the average prediction (the same for each data point), and `.data` contains the feature values.
+Each element in these arrays corresponds to one data point in `X_test`, which we submitted to compute the SHAP values.
+However, having only the raw SHAP values isn't very helpful.
 The true power of the shap library lies in the various visualizations it offers.
 
 ## Explaining a prediction with SHAP
 
-Let's visualize the attributions (i.e., the Shapley values) for data point with index 1 (second row in the DataFrame).
+Let's visualize the SHAP values for data point with index 1 (second row in the DataFrame).
 
 ```{python}
 shap.waterfall_plot(shap_values[1])
@@ -176,8 +176,8 @@ shap.waterfall_plot(shap_values[1])
 
 The plot above is called a waterfall plot.
 It's named "waterfall" because each step resembles flowing water.
-However, sometimes the water can flow in both directions, as Shapley values can be either negative or positive.
-The feature values are ordered by their Shapley value magnitudes.
+However, sometimes the water can flow in both directions, as SHAP values can be either negative or positive.
+The feature values are ordered by the magnitudes of their SHAP values.
 The x-axis represents the scale of the predictions, while the y-axis shows the different feature values.
 
 ```{python}
@@ -212,7 +212,7 @@ Interpretation: The predicted value of {y} for instance {i} differs from the exp
 - {feature3} equals {fv3}, contributed {sv3}
 - ...
 
-The sum of all Shapley values equals the difference between the prediction ({y}) and expected value ({base_value}).
+The sum of all SHAP values equals the difference between the prediction ({y}) and expected value ({base_value}).
 """.format(base_value=round(bv, 2), y=np.round(y, 2), i=i, diff=np.round(diff, 2),
            feature1=feature1, fv1=fv1, sv1=round(sv1, 2),
            feature2=feature2, fv2=fv2, sv2=round(sv2, 2),
@@ -236,7 +236,7 @@ shap.waterfall_plot(shap_values[34])
 ```
 
 Here we see an example where Relationship=0 has a negative effect, which is mostly cancelled through the Education feature.
-In general it's a good example of how attributions can cancel each other out -- the actual prediction is close to the average prediction.
+In general it's a good example of how SHAP values can cancel each other out -- the actual prediction is close to the average prediction.
 
 There are alternative visualizations to this plot, which we will explore in the later [Plots Chapter](#plots).
 This plot only explains a single instance.
@@ -244,35 +244,35 @@ But how can we understand the model's overall behavior?
 
 ## Explain the model with SHAP
 
-Shapley values are used to explain individual predictions.
-However, we can also compute Shapley values for more data points, ideally even for the entire (test) dataset.
-By visualizing the Shapley values over all features and multiple data points, we can discover patterns of how the model made predictions.
+We compute SHAP values to explain individual predictions.
+However, we can also compute SHAP values for more data points, ideally even for the entire (test) dataset.
+By visualizing the SHAP values over all features and multiple data points, we can discover patterns of how the model made predictions.
 This provides a global model interpretation.
 
-In the previous step, we computed the Shapley values for the test data, which are now stored in the `shap_values` variable.
+In the previous step, we computed the SHAP values for the test data, which are now stored in the `shap_values` variable.
 From this, we can create a summary plot that offers further insights into the model.
 
 ```python
 shap.summary_plot(shap_values)
 ```
 
-The plot displays Shapley values for all features and data points for which we computed the values.
+The plot displays SHAP values for all features and data points for which we computed the values.
 This plot provides a comprehensive overview of several aspects:
 
-- The importance of each feature, defined as the sum of absolute Shapley values
+- The importance of each feature, defined as the sum of absolute SHAP values.
 - The dependence of the target on each feature.
 - Some intriguing details.
 
-Each point represents the Shapley value of a feature for a specific data instance.
+Each point represents the SHAP value of a feature for a specific data instance.
 So, in total, there are a number of features multiplied by the number of instances of points in the summary plot (typically with significant overplotting).
-The x-axis represents the Shapley value, the y-axis shows the features, and the color indicates the feature's value.
+The x-axis represents the SHAP values, the y-axis shows the features, and the color indicates the feature's value.
 The features are ordered by importance: the "Relationship" feature is the most important, while "Country" is the least important.
-This order is determined by the sum of absolute Shapley values for that particular feature across the data.
+This order is determined by the sum of absolute SHAP values for that particular feature across the data.
 
 ::: {.callout-warning}
 
 Visual spread doesn't equal variance:
-While feature Capital Gain has a huge spread, there is more variance of Shapley values for the Relationship feature.
+While feature Capital Gain has a huge spread, there is more variance of SHAP values for the Relationship feature.
 
 :::
 
@@ -280,13 +280,13 @@ The plot offers numerous insights:
 
 - The most important features were Relationship, Age, and Capital Gain.
 - Country and Race were the least important features.
-- The largest Shapley values in both directions are for the Capital Gain feature, which indicates a significant variance.
-- High values of Relationship were associated with (mostly) positive Shapley values and therefore a positive contribution towards the prediction. However, there is also a small cluster of data where a high Relationship had negative SHAP values.
+- The largest SHAP values in both directions are for the Capital Gain feature, which indicates a significant variance.
+- High values of Relationship were associated with (mostly) positive SHAP values and therefore a positive contribution towards the prediction. However, there is also a small cluster of data where a high Relationship had negative SHAP values.
 - The higher the Age, the larger the SHAP values; this implies that Age is mostly positively correlated with making more than \$50k a year.
 
 Here, we also encounter a problem:
 The categorical feature "relationship" has 6 categories but was encoded as a numerical feature.
 This might already pose a problem during the model training phase because categories are arbitrarily lumped together just by being closer to each other on the continuous scale compared to categories that are further away.
 Since with XGBoost we used a tree-based model, it might not be much of a problem, but it's still not ideal.
-Let's ignore the encoding for training for now; however, it's also a problem for interpretation: we want to see the different categories and how the Shapley values look for each class.
+Let's ignore the encoding for training for now; however, it's also a problem for interpretation: we want to see the different categories and how the SHAP values look for each class.
 In the [Classification Chapter](#classification), we will dive deeper into this issue.

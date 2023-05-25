@@ -3,7 +3,7 @@
 A brief overview of the history of SHAP and Shapley values, focusing on the chronological order of inventions.
 I divide the history into 3 parts marked by a milestone each:
 
-- 1951: Game theory
+- 1951: Shapley values in game theory
 - 2012: First steps in machine learning
 - 2017: SHAP, the Cambrian explosion
 
@@ -51,6 +51,7 @@ But all these reasons are somewhat speculative.
 Let's examine the events that led to Shapley values becoming popular in machine learning.
 
 ## SHAP causes a Cambrian explosion
+
 Around 2016, another paper about LIME [@ribeiro2016should] emerged, which stands for Local Interpretable Model-Agnostic Explanations.
 I view this LIME paper as a catalyst for the field of explainable AI and interpretable machine learning.
 That's a bit subjective because it served as a catalyst for me, your humble author.
@@ -65,20 +66,20 @@ This is a major conference, and if your research is published there as a machine
 But what was the SHAP paper about?
 After all, Shapley values for machine learning were already defined in 2010/2014.
 
-Lundberg and Lee reformulated the estimation of Shapley values as a weighted linear regression using the [Kernel estimator](#estimation).
+Lundberg and Lee reformulated the estimation of SHAP values as a weighted linear regression using the [Kernel estimator](#estimation).
 Additionally, the paper showed how their proposed estimation method "unites" other explanation techniques, such as DeepLIFT [@shrikumar2017learning], LIME [@ribeiro2016should], and Layer-Wise Relevance Propagation [@bach2015pixel].
 
 Thus, the novel contributions were:
 
-1. A new estimator for Shapley values[^new-estimator].
+1. A new estimator for Shapley values[^new-estimator], which are then often referred to as SHAP values.
 2. Unification of several existing methods[^unification].
 
 [^unification]: I'm not particularly fond of the unification framing.
-Although having a framework that connects different methods is useful, SHAP itself doesn't truly unify them, as you need to modify other methods to produce Shapley values.
+Although having a framework that connects different methods is useful, SHAP itself doesn't truly unify them, as you need to modify other methods to produce SHAP values.
 But that's a separate discussion.
 
 [^new-estimator]: Using the `shap` package today means Kernel SHAP is no longer in use, making the paper somewhat historical.
-I know I may sound harsh, but in this chapter, I want to not only discuss Shapley values' milestones in machine learning but also reflect on their popularity and whether it's justified.
+I know I may sound harsh, but in this chapter, I want to not only discuss SHAP values' milestones in machine learning but also reflect on their popularity and whether it's justified.
 
 Here are my thoughts on why SHAP gained popularity:
 
@@ -88,18 +89,18 @@ Here are my thoughts on why SHAP gained popularity:
 - Continued research by the authors and others.
 - Solid, open-source Python implementation.
 
-The role of open source code shouldn't be underestimated, as it allowed people to incorporate Shapley values into their projects.
+The role of open source code shouldn't be underestimated, as it allowed people to incorporate SHAP values into their projects.
 
 Since then, SHAP has continued to grow in popularity.
 Another significant development occurred in 2020 when @lundberg2020local proposed an efficient computation method for SHAP specifically tailored to tree-based models.
-This was a significant advancement, as tree-boosting performs well in many applications, making it possible to quickly estimate Shapley values for state-of-the-art models.
+This was a significant advancement, as tree-boosting performs well in many applications, making it possible to quickly estimate SHAP values for state-of-the-art models.
 
-Lundberg's other notable achievement involved extending SHAP beyond individual predictions by stacking Shapley values, akin to assembling Legos, to create global model interpretations.
+Lundberg's other notable achievement involved extending SHAP beyond individual predictions by stacking SHAP values, akin to assembling Legos, to create global model interpretations.
 This approach was encouraged by the fast computation for tree-based models, as obtaining global explanations with Kernel SHAP would have been much slower.
 
 With the help of numerous contributors, Lundberg continued to develop the `shap` package, which has now grown into a comprehensive library with many estimators and functionalities.
 
-Since then, other researchers have built upon SHAP and Shapley values, suggesting extensions, some of which can be found in the [Extensions Chapter](#extensions).
+Since then, other researchers have built upon SHAP, suggesting extensions, some of which can be found in the [Extensions Chapter](#extensions).
 Additionally, SHAP has been implemented in other places, meaning the `shap` package isn't the only source for this method.
 
 [^fake-nobel]: In reality, it's not the Nobel prize, but the "Nobel Memorial Prize in Economic Sciences," or officially, the "Sveriges Riksbank Prize in Economic Sciences in Memory of Alfred Nobel." It's a sort of imitation Nobel prize created by economists since they weren't included in the original five Nobel Prizes.

@@ -72,7 +72,7 @@ The interactive dashboard contains several sections:
 - Top left: Displays feature importance.
 - Bottom left: Feature dependence plots. Change the feature by clicking on the importance graph.
 - Top right: Contains multiple tabs, including raw data values, filters for a subset view on the importance graph, and a true versus predicted plot.
-- Bottom right: Presents a bar plot of Shapley values. Select an instance in the top-right graph using the dataset picker or in the bottom-left feature contribution figure. There are options to customize the graph, such as displaying only the most influential features.
+- Bottom right: Presents a bar plot of SHAP values. Select an instance in the top-right graph using the dataset picker or in the bottom-left feature contribution figure. There are options to customize the graph, such as displaying only the most influential features.
 
 To stop the app, use:
 

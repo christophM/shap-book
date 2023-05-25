@@ -127,39 +127,36 @@ There are many methods that work by this principle [@molnar2022], such as:
 - Local interpretable model-agnostic explanations (LIME)[@ribeiro2016should]
 
 As you may have guessed:
-**Shapley values (or SHAP) is another model-agnostic interpretation method.**
+**SHAP is another model-agnostic interpretation method.**
 
 ::: {.callout-tip}
 
 Even if you use an interpretable model, this book can help.
-Methods like Shapley values can be applied to any model, so even with a decision tree, you can use Shapley values for additional interpretation.
+Methods like SHAP can be applied to any model, so even with a decision tree, you can use SHAP for additional interpretation.
 
 :::
 
 ## Paying for the taxi
 
-To motivate SHAP, we first have to talk about how to fairly share a taxi.
-Alice, Bob, and Charlie ride home from a dinner.
-They share a taxi which costs \$45.
-Alice and Bob are a couple and live together.
-The taxi driver first drops them off, then drives further to drop Charlie off.
-Splitting the bill by 3 wouldn't be completely fair.
-How much did each of them contribute to the costs?
-
-For that we can use a method called Shapley values.
-This requires calculating for each combination of Alice, Bob, and Charlie how much the ride would have cost.
+For now, forget about machine learning.
+To motivate SHAP, we first have to understand Shapley values and will do so with a taxi ride example:
+Alice, Bob, and Charlie had dinner together and now hail a taxi to get home.
+They discuss what would be a fair way to share these costs of \$51.
+A solution to their problem is called Shapley values [@shapley1953value].
+Shapley values are a method for fairly attributing the payout to each player in a coalition.
+This method that comes from game theory requires to calculate for  each combination of Alice, Bob, and Charlie how much the ride would have cost.
 The next table shows this:
 
 | Passengers           | Costs | Note |
 |----------------------|-------| ---- |
 | {}                   |   $0  | No taxi ride, no costs |
-| {Alice}              |   $15 | Normal ride fare |
+| {Alice}              |   $15 | Normal ride fare to Alice's & Bob's place |
 | {Bob}                |   $25 | Bob always insists of getting luxury taxis |
 | {Charlie}            |   $38 | Charlies lives a bit further away |
 | {Alice, Bob}         |   $25 | Bob always gets his way | 
 | {Alice, Charlie}     |   $41 | Alice & Bob's place requires a slight detour | 
-| {Bob, Charlie}       |   $51 | Bob requires luxury |
-| {Alice, Bob, Charlie}|   $51 | Alice and Bob live together |
+| {Bob, Charlie}       |   $51 | Bob requires luxury, even when Charlie is there |
+| {Alice, Bob, Charlie}|   $51 | The full fare with all 3 of them  |
 
 But still more work is required to find out how much each of them actually has to pay.
 To do that, starting with Alice, we have to calculate how much costs she adds when she is added to every possible passenger constellation -- in this case to {Bob}, to {Charlie}, and to the empty set. 
@@ -175,18 +172,21 @@ As a result we get the individual costs:
 - Charlie: \$30
 
 The method computing these attributions is called Shapley values and according to this method, the above would be a fair share of the costs.
-
-## Shapley Values, a solution from game theory
-
-A way to explain predictions comes from game theory and is called Shapley values[@shapley1953value], named after their inventor, Lloyd Shapley.
-Shapley values are a method for fairly attributing the payout to each player in a coalition.
-Shapley values were invented to solve the problem of fair attribution.
-To return to the taxi example: Each passenger is a player, the coalition is the ride share, the payout in this case is the cost.
-And the goal was to fairly share the costs between the passengers.
-Shapley values is a method to do this "fairly".
-Shapley values not only refer to the method but also to the resulting values, which can be confusing.
-Shapley values are motivated by axioms of what a fair attribution is.
 But more on that in the [Theory Chapter](#theory).
+
+
+Let's talk now how this concept from game theory (Shapley values) is useful to explain predictions.
+
+## SHAP is an explainable AI technique
+
+
+SHAP is the application of Shapley values in Explainable AI [@NIPS2017_7062].
+Among model-agnostic interpretation methods, SHAP has become very popular.
+SHAP originally stands for **SH**apley **A**dditive ex**P**lanations and it's actually many things.
+It's the name of a paper that introduces a new method for estimating Shapley values, the Python library `shap` that we'll use in this book, and various algorithms for computing Shapley values.
+Since then, many other algorithms have been proposed to compute Shapley values for the attributing a prediction to the features.
+SHAP has become a bit of an umbrella term that captures different estimation methods for Shapley values in machine learning.
+It's a bit like sometimes a brand name is used to describe a product category, such as Post-it, Jacuzzi, Frisbee, or Band-Aid.
 
 ::: {.callout-note}
 
@@ -198,31 +198,16 @@ So I'll just use the following conventions:
 
 - Shapley values: the original method from game theory
 - SHAP: the application of Shapley values to explain machine learning predictions
+- SHAP values: the resulting values from SHAP for the features
 - `shap`: the library that implements SHAP
-- Attributions: the resulting values from Shapley values / SHAP
 
 :::
 
-
-Let's talk now how this concept from game theory (Shapley values) is useful to explain predictions.
-
-## SHAP is an explainable AI technique
-
-
-SHAP is the application of Shapley values in Explainable AI [@NIPS2017_7062].
-Among model-agnostic interpretation methods, SHAP has become very popular.
-SHAP originally stands for **SH**apley **A**dditive ex**P**lanations and it's actually many things.
-It's the name of a paper that introduces a new method for estimating Shapley values, the Python library "shap" that we'll use in this book, and various algorithms for computing Shapley values.
-Since then, many other algorithms have been proposed to compute Shapley values for the attributing a prediction to the features.
-SHAP has become a bit of an umbrella term that captures different estimation methods for Shapley values in machine learning.
-It's a bit like sometimes a brand name is used to describe a product category, such as Post-it, Jacuzzi, Frisbee, or Band-Aid.
-
-
 In the [Getting Started Chapter](#getting-started), you will see an example of using SHAP to explain the predictions of a regression model.
 
-The rough idea behind Shapley values:
+The rough idea behind SHAP explanations:
 
-- A prediction is like a game, and the payout is the prediction itself, minus the average prediction of all (test) data[^naive-model] .
+- A prediction is like a game, and the payout is the prediction itself, minus the average prediction[^naive-model].
 - By explaining this difference, Shapley values can be interpreted as an explanation of why the prediction differs from what we'd expect without knowing anything about the data point.
 - The difference between the prediction and the average prediction is attributed across the feature values for the data point being considered.
 - The feature values are like a team working together to achieve the particular prediction.
@@ -231,7 +216,7 @@ The rough idea behind Shapley values:
 
 ## Why a separate book for SHAP? 
 
-I, the author of this book, have also written another book about Interpretable Machine Learning.
+I have also written another book about Interpretable Machine Learning.
 Interpretable Machine Learning covers a wide range of XAI techniques, from counterfactual explanations, ICE curves, and PDPs to Accumulated Local Effect Plots, Permutation Feature Importance, and LIME.
 Shapley values and SHAP are also covered in this book.
 
@@ -264,7 +249,7 @@ SHAP values are used in various areas and predictive models:
 - NO2 forecasting [@garcia2020shapley].
 - Molecular design [@rodriguez2020interpretation].
 
-Now it's time to see Shapley values in action, starting with a getting-started example before diving into the intuition and theory of SHAP.
+Now it's time to see SHAP in action, starting with a getting-started example before diving into the intuition and theory of SHAP.
 
 [^keywords]: I use "Explainable AI" and "interpretable machine learning" interchangeably. Some use XAI more for post-hoc explanations of predictions and interpretable ML for inherently interpretable models. But in many cases they are used interchangeably and, for example, if searching for a particular method it's best to search with both terms.
 

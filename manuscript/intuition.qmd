@@ -1,7 +1,7 @@
-# Intuition Behind Shapley Values
+# Intuition Behind SHAP
 
-Shapley values have their origins in game theory.
-However, before diving into the theory behind them and their estimations, let's first discuss the intuition of how Shapley values operate based on game theory.
+SHAP is based on Shapley values which are originally from game theory.
+However, before diving into the theory and estimation of SHAP, let's first discuss the intuition of how Shapley values in general work.
 
 ## Origins in game theory
 
@@ -24,7 +24,8 @@ For now, let's focus on connecting these concepts to predictions.
 ## The prediction attribution game
 
 A prediction can be explained by assuming that each feature value of the instance is a "player" in a game where the prediction is the payout.
-Shapley values, a method from coalitional game theory, tell us how to fairly distribute the "payout" among the features.
+SHAP adapts Shapley values from coalitional game theory to tell us how to fairly distribute the "payout" among the features.
+SHAP values are Shapley values, but for a very specific type of "game": attributing the prediction to the input features.
 
 Let's consider the following scenario:
 
@@ -57,10 +58,9 @@ The answer could be as follows:
 `park-nearby` contributed €30,000; `area-50` contributed €10,000; `floor-2nd` contributed €0; and `cat-banned` contributed -€50,000.
 The contributions add up to -€10,000, which is the final prediction minus the average predicted apartment price.
 
-## How to calculate the Shapley value for one feature
+## How to calculate the SHAP for one feature
 
-
-The Shapley value represents the average marginal contribution of a feature value across all possible coalitions.
+The SHAP values represents the average marginal contribution of a feature value across all possible coalitions.
 A coalition is, in this case, any subset of feature values, including the empty set and the set containing all feature values of the instance.
 In the following figure, we evaluate the contribution of the `cat-banned` feature value when added to a coalition of `park-nearby` and `area-50`.
 We simulate a coalition consisting of only `park-nearby`, `cat-banned`, and `area-50` by randomly drawing another apartment from the data and using its value for the floor feature.
@@ -92,11 +92,11 @@ We can obtain better estimates by repeating this sampling step and averaging the
 ![One sample repetition to estimate the contribution of `cat-banned` to the prediction when added to the coalition of `park-nearby` and `area-50`.](images/shapley-instance-intervention.jpg)
 
 We repeat this computation for all possible coalitions.
-The Shapley value is the average of all the marginal contributions to all possible coalitions.
+The SHAP value is the average of all the marginal contributions to all possible coalitions.
 The computation time increases exponentially with the number of features, because there are $2^p$ possible coalitions, where $p$ is the number of features.
 One solution to keep the computation time manageable is to compute contributions for only a few samples of the possible coalitions.
 
-The following figure shows all coalitions of feature values that are needed to determine the Shapley value for `cat-banned`.
+The following figure shows all coalitions of feature values that are needed to determine the exact SHAP value for `cat-banned`.
 The first row shows the coalition without any feature values.
 The second, third, and fourth rows show different coalitions with increasing coalition size, separated by "|".
 In total, the following coalitions are possible:
@@ -111,15 +111,15 @@ In total, the following coalitions are possible:
 - `park-nearby`+`area-50`+`floor-2nd`.
 
 For each of these coalitions, we compute the predicted apartment price with and without the feature value `cat-banned` and take the difference to obtain the marginal contribution.
-The Shapley value is the (weighted) average of these marginal contributions.
+The exact SHAP value is the (weighted) average of these marginal contributions.
 To get a prediction from the machine learning model, we replace the feature values of features not in a coalition with random feature values from the apartment dataset.
 
-![All 8 coalitions needed for computing the exact Shapley value of the `cat-banned` feature value.](images/shapley-coalitions.jpg)
+![All 8 coalitions needed for computing the exact SHAp value of the `cat-banned` feature value.](images/shapley-coalitions.jpg)
 
-By estimating the Shapley values for all feature values, we obtain the complete distribution of the prediction (minus the average) among the feature values.
-That's not the only way to estimate Shapley values, nor is it explained in detail here.
-In fact, there are various ways to estimate Shapley values as you can see in the [Estimation Chapter](#estimation).
-This is because, especially for specific models like linear regression and tree-based models, there are more efficient ways to estimate the Shapley values.
+By estimating the SHAP values for all feature values, we obtain the complete distribution of the prediction (minus the average) among the feature values.
+That's not the only way to estimate SHAP values, nor is it explained in detail here.
+In fact, there are various ways to estimate SHAP values as you can see in the [Estimation Chapter](#estimation).
+This is because, especially for specific models like linear regression and tree-based models, there are more efficient ways to estimate the SHAP values.
 
 ## What about images and texts?
 
@@ -131,7 +131,7 @@ Each input dimension represents a feature – pixels for images and tokens for t
 We will explore this further in the respective chapters on [image](#image) and [text](#text) data.
 But here's some intuition:
 For images, it's possible to define super-pixels, which are groups of connected pixels.
-These super-pixels are treated as a "feature" for Shapley values.
+These super-pixels are treated as a "feature" for SHAP values.
 When a particular super-pixel is part of the team, it's visible, and when it's not, it's removed.
 There are different options for removing super-pixels, such as blurring or graying them out.
 For text, it's a bit simpler; we can remove words or replace them with other tokens when necessary.

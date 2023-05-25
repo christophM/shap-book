@@ -1,6 +1,6 @@
-# Estimating Shapley Values - An Overview {#estimation-overview}
+# Estimating SHAP Values - An Overview {#estimation-overview}
 
-There is more than one way to estimate Shapley values.
+There is more than one way to estimate SHAP values.
 This chapter gives an overview of the estimation methods, for a deeper dive go to the [Appendix](#estimation).
 
 The estimation methods differ in:
@@ -10,7 +10,7 @@ The estimation methods differ in:
 - Applicability for different models
 
 ::: {.callout-note}
-No matter which estimation method you choose, you'll get the same Shapley values, at least in expectation.
+No matter which estimation method you choose, you'll get the same SHAP values, at least in expectation.
 Exceptions: Linear SHAP with `feature_perturbation='correlation_dependent'` and Tree Explainer with `feature_perturbation='tree_path_dependent'`.
 :::
 
@@ -30,7 +30,7 @@ Here is an overview of the explainers, for your convenience:
 | Tree (path dependent) | Recursively iterates hybrid paths. | Tree-based | Yes | - |
 | Gradient | Explains models by computing the gradient of the output with respect to the inputs. | Gradient-based | Yes | Input Gradient |
 | Deep | Explains deep learning models by attributing the output to input features using the gradient of the output with respect to the inputs. | Neural Networks | Yes | DeepLIFT |
-| Partition | Calculates Shapley values for a hierarchy of features. | Agnostic | Yes | Owen values |
+| Partition | Calculates SHAP values for a hierarchy of features. | Agnostic | Yes | Owen values |
 
 ## When to use which estimator
 

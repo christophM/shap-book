@@ -5,7 +5,7 @@ In the previous chapter, we explored the Partition explainer, where larger image
 In this chapter, we will explain image classifier classifications using a different approach, more akin to tabular data.
 This entails two key aspects:
 
-- Assigning one Shapley value for each input pixel.
+- Assigning one SHAP value for each input pixel.
 - Simulating feature absence (pixel absence) by replacing it with a pixel from a background dataset.
 
 Although the network receives individual pixels as input, we don't need to use the same granularity for explanations.
@@ -13,7 +13,7 @@ Although the network receives individual pixels as input, we don't need to use t
 As we are working with a neural network, two model-specific tools are available:
 
 - The gradient explainer, since neural networks often rely on gradients.
-- The deep explainer, which utilizes neural network layers to backpropagate Shapley values.
+- The deep explainer, which utilizes neural network layers to backpropagate SHAP values.
 
 Both methods are discussed in greater detail in the [Estimation Chapter](#estimation).
 For this example, we will use the MNIST dataset.
@@ -100,7 +100,7 @@ print('Test loss:', score[0])
 print('Test accuracy:', score[1])
 ```
 
-## Computing Shapley values with the Gradient Explainer
+## Computing SHAP values with the Gradient Explainer
 
 Next, explain the model classification with SHAP:
 
@@ -127,23 +127,23 @@ There are 10 classes, from "0" to "9", resulting in a list of length 10:
 print(len(shap_values))
 ```
 
-For each model output, we obtain the Shapley values:
+For each model output, we obtain the SHAP values:
 
 ```{python}
 print(shap_values[0].shape)
 ```
 
-The first dimension represents the number of images for which we computed the Shapley values.
-The second, third, and fourth dimensions contain the Shapley values in the form of an image since the input data was an image.
+The first dimension represents the number of images for which we computed the SHAP values.
+The second, third, and fourth dimensions contain the SHAP values in the form of an image since the input data was an image.
 
-Let's plot the Shapley values:
+Let's plot the SHAP values:
 
 ```{python}
 shap.image_plot(shap_values, x_test[:3])
 ```
 
 All the red pixels contributed positively to the respective class and blue ones negatively.
-Grey pixels have a near zero Shapley value.
+Grey pixels have a near zero SHAP value.
 For example, for the "2", the class output "1" has blue pixels at the left and right beginning/ending of the "2" image.
 This makes sense, since these are the pixels that make it a "2" and not a "1".
 
@@ -165,8 +165,8 @@ Then, plot the results again:
 shap.image_plot(shap_values, x_test[:3])
 ```
 
-The Shapley values are very similar to the Gradient Explainer.
-This makes sense, since in both cases the result should be the same Shapley values and the difference is only due to the fact that both are approximated.
+The SHAP values are very similar to the Gradient Explainer.
+This makes sense, since in both cases the result should be the same SHAP values and the difference is only due to the fact that both are approximated.
 
 ## Time comparison between Deep Explainer
 

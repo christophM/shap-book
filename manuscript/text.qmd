@@ -123,7 +123,7 @@ shap.plots.bar(shap_values[0, :, 'NEGATIVE'])
 
 Now it's clear that "scam" is the word of interest.
 The tokenizer is highly flexible.
-To demonstrate this, let's consider another example using Shapley values based on sentences.
+To demonstrate this, let's consider another example using SHAP values based on sentences.
 In this case, the tokenizer is quite simple and tokenizes the input at periods ".".
 We'll try a longer input text and see the contribution of each sentence.
 
@@ -256,11 +256,11 @@ An example:
 Input text: "Is this the Krusty Krab?"
 Output text: "No! This is Patrick!"
 
-For text-to-text models, each output token is treated as an individual prediction, similar to multi-class classification, and we can compute Shapley values for each.
+For text-to-text models, each output token is treated as an individual prediction, similar to multi-class classification, and we can compute SHAP values for each.
 
-So, if the tokenized input has length $n$ and the tokenized output has length $m$, we get $n \cdot m$ Shapley values.
+So, if the tokenized input has length $n$ and the tokenized output has length $m$, we get $n \cdot m$ SHAP values.
 Remember that the tokenization level of input can be controlled by the user.
-For the example above, if the user chooses word-level tokenization for the input, the first token of the output, e.g., "No", gets $n$ Shapley values; then, the next token "!" gets $n$ Shapley values, and so on.
+For the example above, if the user chooses word-level tokenization for the input, the first token of the output, e.g., "No", gets $n$ SHAP values; then, the next token "!" gets $n$ Shapley values, and so on.
 
 However, there's still one issue:
 Transformers not only consider the input but also the output generated **so far** when producing the next token.
@@ -275,7 +275,7 @@ Once again, this is implemented in the Hugging Face transformers package.
 It is a large language model, similar to those powering GPT-3 and GPT-4.
 However, to provide an example that runs locally without needing an account, we will use a "weaker" model.
 Nonetheless, this does not affect the general interface of text input and output.
-The significant difference is that we receive not only the words but also the scores for the words, which are essential for computing Shapley values.
+The significant difference is that we receive not only the words but also the scores for the words, which are essential for computing SHAP values.
 For this example, we will use GPT-2, which is automatically chosen by the transformers library for the "text-generation" task at the time of writing.
 
 ```{python}

@@ -62,7 +62,7 @@ Once again, this model performs slightly better than the GAM, justifying the inc
 Notably, the GAM was also tree-based but without modeling interactions.
 
 
-## Computing Shapley values
+## Computing SHAP values
 
 Now let's interpret the model:
 
@@ -83,7 +83,7 @@ shap.plots.waterfall(shap_values[0])
 ```
 
 The results differ from both the linear and the GAM models, but the interpretation process remains similar.
-We still need to interpret the Shapley values, but now we also consider interactions between feature values that have been fairly split among them.
+We still need to interpret the SHAP values, but now we also consider interactions between feature values that have been fairly split among them.
 These interactions are not visible in this plot.
 
 ## Global model interpretation
@@ -113,7 +113,7 @@ shap.dependence_plot(
 )
 ```
 
-The shap package automatically selects the `volatile acidity` feature for interaction detection, coloring the Shapley values accordingly.
+The shap package automatically selects the `volatile acidity` feature for interaction detection, coloring the SHAP values accordingly.
 The feature `volatile acidity` was picked because it had the highest estimated interaction with `alcohol`.
 
 ::: {.callout-note}
@@ -130,8 +130,8 @@ You can also pick a feature by hand.
 
 Some key observations:
 
-- Generally, an increase in alcohol level raises the Shapley value, which in turn increases the predicted values.
-- Examining cases with low volatile acidity reveals an interesting interaction with wines that have a low alcohol level. While wines with low alcohol (around 9%) typically have a negative Shapley value, low volatile acidity seems to have a slightly positive impact.
+- Generally, an increase in alcohol level raises the SHAP value, which in turn increases the predicted values.
+- Examining cases with low volatile acidity reveals an interesting interaction with wines that have a low alcohol level. While wines with low alcohol (around 9%) typically have a negative SHAP value, low volatile acidity seems to have a slightly positive impact.
 - When alcohol levels are high (11 - 14%), having a higher volatile acidity appears to be slightly beneficial, though the effect is quite subtle.
 
 ::: {.callout-note}
@@ -139,7 +139,7 @@ General advice on reading the interaction part of the dependence plot:
 
 - Choose one of the two variables.
 - For this variable, select two ranges or categories.
-- Compare the Shapley values within these ranges.
+- Compare the SHAP values within these ranges.
 - Observe if any differences are associated with changes in the other feature.
 
 :::
@@ -157,7 +157,7 @@ shap.dependence_plot(
 
 Observations:
 
-- Higher residual sugar corresponds to higher Shapley values.
+- Higher residual sugar corresponds to higher SHAP values.
 - The `shap` package identifies the highest interaction with density.
 - Density and residual sugar are correlated (not independent); for instance, high sugar levels result in high density values. Physics.
 - Comparing curves for low density (around 0.99) and high density (around 0.998):

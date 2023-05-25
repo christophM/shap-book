@@ -1,14 +1,14 @@
 # The Role of Maskers and Background Data
 
 ::: {.callout-note}
-Maskers are the technical solution for "removing" feature values to compute marginal contributions and Shapley values.
+Maskers are the technical solution for "removing" feature values to compute marginal contributions and SHAP values.
 :::
 
 This chapter explains the role of maskers.
-To apply Shapley values from game theory to machine learning interpretability, we need to frame the prediction as a game, with feature values of a data point being the players.
+To apply SHAP values from game theory to machine learning interpretability, we need to frame the prediction as a game, with feature values of a data point being the players.
 The definition of feature values can be flexible, but we'll discuss that later.
 
-Shapley values are computed by considering many possible contributions.
+SHAP values are computed by considering many possible contributions.
 Forming a coalition of features means some features are absent.
 In games, playing with fewer players is often straightforward, but for machine learning, simulating the absence of feature values requires more effort.
 
@@ -43,7 +43,7 @@ There are two choices for maskers: Independent masker and Partition masker.
 
 ### Independent masker
 
-Depending on the Explainer, this can involve sampling from the background data or iterating through all background data for each instance and feature value to compute the Shapley values.
+Depending on the Explainer, this can involve sampling from the background data or iterating through all background data for each instance and feature value to compute the SHAP values.
 
 But which data should you choose as background data?
 In theory, any data matching the number of features could be background data.
@@ -51,12 +51,12 @@ In theory, any data matching the number of features could be background data.
 A common choice is the training dataset or a specific subset of it.
 In theory, it could also be just one particular data instance.
 
-The choice of background data influences the interpretation of Shapley values.
+The choice of background data influences the interpretation of SHAP values.
 
 Some examples of what you can do by leveraging the background data:
 
-- Simulate a distribution shift and obtain Shapley values under the shifted data.
-- Analyze how Shapley values differ in different data groups.
+- Simulate a distribution shift and obtain SHAP values under the shifted data.
+- Analyze how SHAP values differ in different data groups.
 - Explore counterfactual scenarios by setting the background data to a specific scenario.
 - Evaluate the stability of model predictions: By using more extreme background data values, you can study the model's robustness.
 
@@ -114,7 +114,7 @@ These vectors indicate which feature (based on column index) to mask.
 
 ### Partition Masker
 Alternatively, the Partition masker takes not only the background dataset but also a hierarchical structure of the data.
-The partition masker is used in combination with the [Partition explainer](#estimation) and includes a max_samples argument controlling the number of data points sampled from the background data to compute Shapley values.
+The partition masker is used in combination with the [Partition explainer](#estimation) and includes a max_samples argument controlling the number of data points sampled from the background data to compute SHAP values.
 The clustering type argument specifies the partitioning method, which is a distance metric for clustering feature values.
 This can either be a string representing the correlation metric, with the default being "correlation" which is generally recommended by the SHAP developers.
 Any distance function found in the `scipy.spatial.distance.pdist` module can be used, such as "cosine", "euclidean", or "chebyshev".
@@ -130,7 +130,7 @@ Maskers for text replace tokens with a user-defined token.
 
 For text data, the input is text, which is often represented as tokens within models, particularly neural networks.
 These tokens can be represented by (learned) embeddings, a vectorized representation of a token, or other internal representations such as bag-of-words counts or hand-written rules flagging specific words.
-However, when computing Shapley values, the internal representation is not our concern.
+However, when computing SHAP values, the internal representation is not our concern.
 The "team" consists of the text fed into the model, and the payout is the model output, whether it's a sentiment score or a probability for the next word in a translation task.
 The individual players, which can be characters, tokens, or words, are determined by the user.
 The granularity at which text is divided into smaller units is called tokenization, and the individual units are known as tokens.

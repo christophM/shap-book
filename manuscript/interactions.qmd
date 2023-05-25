@@ -94,9 +94,9 @@ plt.show()
 
 Seems like the random forest approximates the function quite well.
 
-## Computing Shapley values
+## Computing SHAP values
 
-Alright, for this random forest, we will now get us some Shapley values:
+Alright, for this random forest, we will now get us some SHAP values:
 
 
 ```{python}
@@ -114,10 +114,10 @@ shap.summary_plot(shap_values, X_test)
 
 The summary plot already shows us the general relationships:
 
-- The further away from the stage ($x_2$), the smaller the Shapley values.
-- The taller the fan ($x_1$), the smaller the Shapley values.
+- The further away from the stage ($x_2$), the smaller the SHAP values.
+- The taller the fan ($x_1$), the smaller the SHAP values.
 
-But there are also some breaks in the patterns: There are small fans that receive a large Shapley value. This is due to the interaction (sitting on shoulders).
+But there are also some breaks in the patterns: There are small fans that receive a large SHAP value. This is due to the interaction (sitting on shoulders).
 To investigate deeper, let's look into the dependence plot.
 
 ```python
@@ -138,9 +138,9 @@ Part 3 becomes clearer because the curves are colored by the feature value $x_2$
 - One line is for people that are >7 away from the stage ($x_2$). Here we see the large jump, which makes sense since at >160cm, these fans have no chance of getting on someone's shoulders.
 - The other line is for values of $x_2$ below 7. It has a smaller jump. But why does it have a jump at all? People in this "cluster" don't get to sit on someone's shoulders when below <160cm.
 
-The reason why the interaction also "bleeds" into the cluster where we wouldn't expect it has to do with how Shapley values work.
+The reason why the interaction also "bleeds" into the cluster where we wouldn't expect it has to do with how SHAP values work.
 
-## Shapley values have a "global" component
+## SHAP values have a "global" component
 
 Let's investigate the two fans:
 
@@ -156,19 +156,19 @@ print(rf_model.predict(Xnew.values))
 ```
 They have a rather similar predicted joy for the concert, with Mia having a slightly worse prediction -- makes sense given she is slightly smaller and neither of them qualify for shoulders.
 
-Let's have a look at their Shapley values.
+Let's have a look at their SHAP values.
 
 ```{python}
 shap_values = explainer.shap_values(Xnew)
 print(shap_values)
 ```
 
-The Shapley values differ quite substantially.
+The SHAP values differ quite substantially.
 
 - Mia has a slightly negative value for the height. Makes sense because she is rather small, compared to the majority of the simulated heights.
-- Mia has a positive Shapley value for the distance, which also makes sense because she stands rather close to the front.
+- Mia has a positive SHAP value for the distance, which also makes sense because she stands rather close to the front.
 - For Tom, the directions are similar, which makes sense since they have the same distance and are almost the same height.
-- But Tom's Shapley values are more extreme.
+- But Tom's SHAP values are more extreme.
 
 So even though Tom is actually taller than Mia, his height has a more negative impact on the prediction.
 Neither have a chance to get on someone's shoulders since they are both already in the front.
@@ -176,9 +176,9 @@ Neither have a chance to get on someone's shoulders since they are both already 
 Even though Mia is smaller, her height has less of a negative impact compared to Tom.
 And we also can't explain it with the interaction since Mia is too close to the band that she doesn't profit from the shoulder bonus.
 
-But the surprising answer is that Mia's Shapley value actually is influenced by the interaction, even though she isn't directly affected by it. And this is because of how Shapley values are computed.
+But the surprising answer is that Mia's SHAP value actually is influenced by the interaction, even though she isn't directly affected by it. And this is because of how Shapley values are computed.
 
-When we compute the Shapley value for Mia's height, her height value is either added to an empty coalition ($\emptyset$) or to a coalition where her stage distance is already present ($\{x_2=2\}$).
+When we compute the SHAP value for Mia's height, her height value is either added to an empty coalition ($\emptyset$) or to a coalition where her stage distance is already present ($\{x_2=2\}$).
 The same happens for Tom.
 Adding to a coalition where stage distance is already present returns roughly the same marginal contribution for both Mia and Tom.
 
@@ -187,17 +187,17 @@ Because for the empty coalition, we sample the distance to the stage from the da
 
 So sometimes we sample stage distances that are far away and then the interaction comes into play (shoulder bonus).
 But only for Mia and not for Tom.
-And since the shoulder bonus increases the concert joy, the Shapley value for Mia's height is increased compared to Tom's.
+And since the shoulder bonus increases the concert joy, the SHAP value for Mia's height is increased compared to Tom's.
 
-So even though Mia's closeness to the stage means that she wouldn't profit from the shoulder bonus, the Shapley value for her height still reflects the existence of that bonus.
+So even though Mia's closeness to the stage means that she wouldn't profit from the shoulder bonus, the SHAP value for her height still reflects the existence of that bonus.
 
-That's why I would refer to Shapley values as having a global component: The interactions also influence data points further away.
+That's why I would refer to SHAP values as having a global component: The interactions also influence data points further away.
 
-Also, that makes Shapley values different from a "what-if" analysis.
+Also, that makes SHAP values different from a "what-if" analysis.
 The what-if analysis of the height is:
 How would the prediction change if we change the height of Mia or Tom?
 The answer would be that the effect would be quite similar for both Mia and Tom if we, for example, increase their height by 10cm.
-But Shapley values don't work that way.
+But SHAP values don't work that way.
 The values reflect interactions with other features, even if we have to change multiple feature values of a data instance.
 
 Because in a what-if analysis, we would only evaluate how the prediction changes when the height changes, which should be rather similar for Tom and Mia.
@@ -211,9 +211,9 @@ Only potentially with more features, and the interactions won't be as blunt but 
 
 ## Takeaways
 
-- Shapley values are not to be interpreted as a what-if analysis.
-- Feature interactions are split across the Shapley values.
-- A Shapley value must be interpreted in the context of background data and the full prediction function.
+- SHAP values are not to be interpreted as a what-if analysis.
+- Feature interactions are split across the SHAP values.
+- A SHAP value must be interpreted in the context of background data and the full prediction function.
 
 :::
 

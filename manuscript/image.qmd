@@ -1,6 +1,5 @@
 ## Image Classification with Partition Explainer {#image}
 
-
 So far, we've only explored tabular data.
 Now, let's work with image data.
 
@@ -85,7 +84,7 @@ masker = shap.maskers.Image(
 For now, the only thing to know about the masker is that it "removes" the pixels not in the coalition.
 From the parameters, we can guess that it blurs the absent image parts.
 Later, I'll show you how this actually looks like.
-First, we'll compute Shapley values for two images: a cheeseburger and a pocket watch.
+First, we'll compute SHAP values for two images: a cheeseburger and a pocket watch.
 As this is a classification task, we need to choose the classes for which we want explanations.
 It's common to select the top classes, particularly the one with the highest probability, as it often holds significance in subsequent stages when using the model.
 
@@ -109,10 +108,10 @@ shap_values = explainer(
 )
 ```
 
-The code above calculates all Shapley values.
+The code above calculates all SHAP values.
 However, for image Shap, we can't do much with the raw values, so we'll visualize them.
 
-The Shapley values are best displayed by overlaying them on the original image.
+The SHAP values are best displayed by overlaying them on the original image.
 Now you can finally see the chosen images:
 
 ```{python}
@@ -122,7 +121,7 @@ shap.image_plot(shap_values, pixel_values=X[index]/255)
 Let's interpret those SHAP values:
 
 Starting with the burger, it's misclassified as the top class is "bottlecap".
-Examining the Shapley values, the burger's top part mainly influenced the classification towards bottlecap.
+Examining the SHAP values, the burger's top part mainly influenced the classification towards bottlecap.
 Some middle sections of the burger had a negative impact, but the top part appeared too similar to a bottlecap for the Resnet model.
 However, the second class is cheeseburger, which is correct.
 In this case, the middle parts primarily contributed to the classification.
@@ -131,15 +130,15 @@ However, there is no pocket watch class in the 1000 classes of ImageNet.
 So, chain might be an okayish classification.
 We can see that the chain was identified for the right reasons, namely the chain part of the watch.
 
-A disadvantage of computing the Shapley values for multiple images here is that the color scale for the Shapley values, seen at the bottom, is for all images.
+A disadvantage of computing the SHAP values for multiple images here is that the color scale for the Shapley values, seen at the bottom, is for all images.
 As the watch has larger values, the values for the cheeseburger are scaled closer to white.
 
 Let's dive into the different maskers, because they are more than just a "set-and-forget" parameter.
 
 ## Effect of different maskers
 
-Recall the theory about how Shapley values work:
-Shapley values are about how much features (or groups of features) contribute to coalitions of features.
+Recall the theory about how SHAP values work:
+SHAP values are about how much features (or groups of features) contribute to coalitions of features.
 This means some feature values are present while others are absent.
 The big question is always how to simulate the absence of features.
 
@@ -191,13 +190,13 @@ plt.show()
 ```
 
 In the image, the upper half is "present" and the lower half is "absent".
-This resembles the Shapley values concept, where there are only two "players" made up of the lower and upper parts of the images.
+This resembles the SHAP values concept, where there are only two "players" made up of the lower and upper parts of the images.
 It's also similar to the Partition explainer, which further splits along the x-axis and y-axis.
 
 Returning to maskers, these strategies have the commonality of not fully changing the image, unlike replacing all missing values with grey pixels.
 Blurring even retains the original data, only smoothing it out, resulting in a loss of some information.
 The blur(16, 16) kernel, for example, doesn't change the image too much or at least to me the burger bottom is still pretty recognizable.
-Let's see how the masks impact the Shapley values.
+Let's see how the masks impact the SHAP values.
 
 ```{python}
 topk = 3
@@ -253,8 +252,8 @@ for ev in evals:
 
 Upon increasing the number of evaluations, we observe:
 
-- We obtain more fine-grained superpixels, which relates to the Partition explainer. With only 10 evaluations, we get 4 leaves, necessitating a tree depth of 2, resulting in 2 + 2 * 2 = 6 Shapley values.
-- The Shapley values decrease as the partitions and the number of pixels become smaller. It makes sense that masking fewer pixels has less influence on the prediction.
+- We obtain more fine-grained superpixels, which relates to the Partition explainer. With only 10 evaluations, we get 4 leaves, necessitating a tree depth of 2, resulting in 2 + 2 * 2 = 6 SHAP values.
+- The SHAP values decrease as the partitions and the number of pixels become smaller. It makes sense that masking fewer pixels has less influence on the prediction.
 - Computation time scales linearly with the number of evaluations.
 
 However, the Partition explainer is not our only option for image classifiers.

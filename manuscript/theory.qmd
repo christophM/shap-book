@@ -1,6 +1,6 @@
-# Theory of Shapley Values
+# Theory of SHAP
 
-Keep in mind, you don't need to read this chapter if you only want to use Shapley values.
+Keep in mind, you don't need to read this chapter if you only want to use SHAP values.
 It's intended for those who want to explore the mathematics behind them.
 
 ## Mathematical terms used
@@ -20,9 +20,9 @@ But before we begin, here is an overview of the terms so you can come back here 
 
 Let's begin with a linear prediction model, as it's easier to comprehend.
 
-## Shapley values for linear models
+## SHAP for linear models
 
-Our goal in this section is to define Shapley values when the underlying model is a linear regression model.
+Our goal in this section is to define SHAP values when the underlying model is a linear regression model.
 We want to understand how each feature affects the prediction of a data point.
 In a linear model, calculating the individual effects is straightforward.
 Here's what a linear model prediction looks like for one data instance:
@@ -47,17 +47,18 @@ If we sum all the feature contributions for one instance, the result is the foll
 This is the predicted value for the data point x minus the average predicted value.
 Feature contributions can be negative.
 
-Until now, you had to believe me that for a linear model, the formula above indeed are related to Shapley values.
+Until now, you had to believe me that for a linear model, the formula above indeed are related to SHAP values.
 Let's actually see the definition of Shapley values for the general case.
 
 ## How Shapley values are defined
 
+To understand SHAP we have to go back to game theory and see how Shapley values are originally defined. 
 The Shapley values require a value function $val$ which determines a payout and which takes a set of players $S$ (in our case feature values of a data point) as input.
-The Shapley value of a feature value is then defined as its contribution to the payout, calculated as a weighted sum over all possible feature value combinations:
+The SHAP value of a feature value is then defined as its contribution to the payout, calculated as a weighted sum over all possible feature value combinations:
 
 $$\phi_j(val)=\sum_{S\subseteq\{1,\ldots,p\} \backslash \{j\}}\frac{|S|!\left(p-|S|-1\right)!}{p!}\left(val\left(S\cup\{j\}\right)-val_{hat{f},x}(S)\right)$$
 
-Here, S represents a subset of the features used in the model, j is the index of the feature for which we compute the Shapley value, $S$ a coalition of some features (without $j$), and $p$ is the number of features in the model.
+Here, S represents a subset of the features used in the model, j is the index of the feature for which we compute the SHAP value, $S$ a coalition of some features (without $j$), and $p$ is the number of features in the model.
 $val_{hat{f},x}(S)$ is the prediction for feature values in set S, marginalized over features not included in set S:
 
 $$val_{hat{f},x}(S)=\int\hat{f}(x_{1},\ldots,x_{p})d\mathbb{P}_{X_{\bar{S}}}-E_X(\hat{f}(X))$$
@@ -73,7 +74,8 @@ This is similar to the feature contributions in a linear model.
 
 Don't be confused by the different uses of the word "value":
 The feature value refers to the numerical or categorical value of a feature and instance;
-the Shapley value represents the feature's contribution to the prediction;
+the Shapley value represents a players contribution to the payout;
+the SHAP value represents the feature's contribution to the prediction;
 the value function is the payout function for coalitions of players (feature values).
 
 :::
@@ -87,8 +89,8 @@ He postulated some axioms that he said must be fulfilled for the resulting attri
 
 The Shapley value is the only attribution method that satisfies the properties **Efficiency**, **Symmetry**, **Dummy**, and **Additivity**, which together can be considered a definition of a fair payout.
 We won't derive why and how Shapley values are the solution to these axioms.
-But we will walk through the axioms, as they have implications for the interpretation of Shapley values.
-And they also justify the use of Shapley values (or why, in some cases, you might not be interested in them).
+But we will walk through the axioms, as they have implications for the interpretation of SHAP values as they are Shapley values as well.
+And they also justify the use of SHAP values (or why, in some cases, you might not be interested in them).
 
 ### Efficiency
 
@@ -97,7 +99,7 @@ The feature contributions must add up to the difference between the prediction f
 $$\sum_{j=1}^p\phi_j = \hat{f}(x) - E_X(\hat{f}(X))$$
 
 Implications: 
-The efficiency axiom is quite common in explainable AI, and it's also followed by methods like LIME. 
+The efficiency axiom is quite common in explainable AI, and it's also followed by methods like LIME.
 The efficiency axiom provides an anchoring effect, ensuring that the attributions are on the same scale as the output. 
 An example of interpretation without this anchoring effect of efficiency would be examining only the gradients of the predicted score concerning the inputs. 
 These gradients would be on a different scale and would not add up to the prediction.
@@ -120,13 +122,13 @@ $$\phi_j = \phi_{k}$$
 
 Implications: 
 The symmetry axiom implies that, for example, the order of features should not matter.
-If they contribute equally, they should receive the same Shapley value.
+If they contribute equally, they should receive the same SHAP value.
 Other methods, such as the breakdown method [@staniak2018explanations] or counterfactual explanations, violate this axiom, and two features could have the same impact on the prediction without receiving the same attribution.
-This axiom is a requirement for us to accurately interpret the ordering of the Shapley values.
+This axiom is a requirement for us to accurately interpret the ordering of the SHAP values.
 
 ### Dummy
 
-A feature j that does not change the predicted value – regardless of which coalition of feature values it's added to – should have a Shapley value of 0.
+A feature j that does not change the predicted value – regardless of which coalition of feature values it's added to – should have a SHAP value of 0.
 
 If
 
@@ -143,9 +145,9 @@ $$\phi_j = 0$$
 Implications: 
 The dummy axiom ensures that features not used by the model receive an attribution of zero. 
 This is a straightforward implication.
-For example, if a LASSO model was trained, we can be certain that a feature with a $\beta_j = 0$ will have a Shapley value of zero for this feature for all possible data points.
+For example, if a LASSO model was trained, we can be certain that a feature with a $\beta_j = 0$ will have a SHAP value of zero for this feature for all possible data points.
 
-For a game with combined payouts val+val^+^, the respective Shapley values are as follows:
+For a game with combined payouts val+val^+^, the respective SHAP values are as follows:
 
 $$\phi_j+\phi_j^{+}$$
 
@@ -153,24 +155,24 @@ $$\phi_j + \phi_j^+$$
 
 Implications:
 Suppose you trained a random forest, which means that the prediction is an average of many decision trees. 
-The Additivity property guarantees that for a feature value, you can calculate the Shapley value for each tree individually, average them, and obtain the Shapley value for the feature value for the random forest. 
-For an additive ensemble of models, the Shapley value is the sum of individual Shapley values.
+The Additivity property guarantees that for a feature value, you can calculate the SHAP value for each tree individually, average them, and obtain the SHAP value for the feature value for the random forest. 
+For an additive ensemble of models, the SHAP value is the sum of individual SHAP values.
 
 ::: {.callout-note}
 
-There exists an alternative formulation of Shapley values in which the Dummy and Additivity axioms are replaced with a Linearity axiom; however, both formulations ultimately lead to the Shapley values.
+There exists an alternative formulation of SHAP values in which the Dummy and Additivity axioms are replaced with a Linearity axiom; however, both formulations ultimately lead to the SHAP values.
 
 :::
 
 
 ## Interaction Index
 
-Each feature gets assigned one Shapley value and the sum of Shapley values yields the prediction.
+Each feature gets assigned one SHAP value and the sum of SHAP values yields the prediction.
 Any interactions between feature values are fairly shared between them.
 But sometimes it can be interesting to not fairly share them, but instead attribute the prediction also to two-way interactions between features.
 For interactions there is also a solution called interaction index.
 
-The Shapley interaction index, derived from game theory, is defined as:
+The SHAP interaction index, derived from game theory, is defined as:
 
 $$\phi_{i,j}=\sum_{S\subseteq\backslash\{i,j\}}\frac{|S|!(M-|S|-2)!}{2(M-1)!}\delta_{ij}(S)$$
 when $i\neq{}j$ and:
@@ -178,8 +180,8 @@ when $i\neq{}j$ and:
 $$\delta_{ij}(S)=\hat{f}_x(S\cup\{i,j\})-\hat{f}_x(S\cup\{i\})-\hat{f}_x(S\cup\{j\})+\hat{f}_x(S)$$
 
 This formula removes the main effects of the features, resulting in the pure interaction effect after accounting for individual effects.
-We then average the values over all possible feature coalitions $S$, similar to the Shapley value computation.
+We then average the values over all possible feature coalitions $S$, similar to the SHAP value computation.
 By calculating the SHAP interaction values for all features, we obtain one matrix per instance with dimensions M x M, where M represents the number of features.
 
 
-The next chapter will delve deeper into the theoretical side of things, focusing on how to estimate Shapley values, because having just one method would be too simplistic.
+The next chapter will delve deeper into the theoretical side of things, focusing on how to estimate SHAP values, because having just one method would be too simplistic.

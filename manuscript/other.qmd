@@ -20,7 +20,7 @@ Shapley values can be applied to the modeling process, as suggested by @guyon200
 By repeatedly training the model with different features, the importance of each feature for performance can be estimated.
 However, @fryer2021shapley argue that Shapley values may not be ideal for this task, as they are better suited for attribution rather than selection.
 Despite this limitation, each feature is treated as a player, with model performance as the payoff.
-Unlike Shapley values for prediction, the contribution of each feature is evaluated globally for the model.
+Unlike SHAP values for prediction, the contribution of each feature is evaluated globally for the model.
 The ultimate goal is to determine how much each feature contributes to model performance.
 
 ## Data valuation

@@ -12,8 +12,8 @@ At the time of writing, there are over 2000 commits.
 
 The SHAP package is open source and hosted on Github, making it public and allowing everyone to track its progress.
 The repository has been starred over 19k times and forked nearly 3k times.
-Feature-wise, it's the most comprehensive library available for Shapley values.
-I believe the `shap` library is the most widely-used implementation of Shapley values in machine learning.
+Feature-wise, it's the most comprehensive library available for SHAP values.
+I believe the `shap` library is the most widely-used implementation of SHAP values in machine learning.
 
 ## The SHAP library has many issues
 
@@ -54,7 +54,7 @@ In fact, I'm grateful for what he has accomplished with the package so far.
 Assuming Scott Lundberg doesn't return to work on `shap`, the situation may evolve in several ways.
 Ideally, the maintenance of the `shap` package would be transferred to someone with the necessary skills and time.
 As the package is open source, another individual could theoretically fork the library and maintain the fork, allowing it to become the de facto successor of `shap`.
-Other packages might also create their own implementations of Shapley values.
+Other packages might also create their own implementations of SHAP.
 This uncertainty surrounding the package nearly prevented me from writing this book.
 However, given the widespread reliance on `shap`, it's likely that the package or at least some of its functionality will endure in some form.
 As is often the case in open source development, the outcome may depend on a single individual, leading to either a clean situation (a capable person maintains the project) or a messy one (multiple implementations of `shap` emerge).
@@ -62,15 +62,15 @@ As is often the case in open source development, the outcome may depend on a sin
 ## How to handle the situation individually
 
 The `shap` package is stable enough for use, and being open source, anyone can contribute to its development.
-Ultimately, it's up to you to decide whether to use the original `shap` package, opt for another package implementing Shapley values, or even create your own implementation.
+Ultimately, it's up to you to decide whether to use the original `shap` package, opt for another package implementing SHAP, or even create your own implementation.
 
-A significant advantage of Shapley values is their clear definition, enabling consistent explanations even when switching implementations.
+A significant advantage of SHAP values is their clear definition, enabling consistent explanations even when switching implementations.
 Differences in implementation should only affect speed and result variance if different estimation algorithms are employed.
 While this may impact your application, it hopefully won't be too significant.
 
 ## Alternatives to the `shap` library
 
-There are alternative implementations of `shap` and Shapley values available.
+There are alternative implementations of `shap` and SHAP values available.
 
 In Python:
 

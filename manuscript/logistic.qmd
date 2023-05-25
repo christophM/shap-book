@@ -28,7 +28,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 ```
 
-In the next step, we train the model and compute the Shapley values.
+In the next step, we train the model and compute the SHAP values.
 If you have followed the previous chapters, you will notice something new here:
 
 ```{python}
@@ -70,7 +70,7 @@ shap_values = ex(X_test.iloc[0:100])
 ```
 
 The novelties: 
-- We only use a subset of the training data as background dataset. This can help with computation speed at the cost of less accurate Shapley value estimates.
+- We only use a subset of the training data as background dataset. This can help with computation speed at the cost of less accurate SHAP value estimates.
 - Also, we apply SHAP not only to the model, but the entire pipeline. This is because we don't want the inputs to the model as basis for interpretation, because these are one-hot encoded and scaled features. Instead, we want the more interpretable "raw" features as basis of interpretation.
 
 The adult dataset contains both categorical and numerical features.
@@ -84,7 +84,7 @@ The numerical features, such as age, are no longer on an easily interpretable sc
 
 However, the logistic regression model now works with these inputs.
 This means that the coefficients are based on this transformed dataset.
-If we were to use Shapley values directly on the logistic regression model, we would get 470 Shapley values.
+If we were to use SHAP values directly on the logistic regression model, we would get 470 Shapley values.
 
 Fortunately, there's a more clever approach:
 We can combine the preprocessing and logistic regression into a pipeline and treat it as our model.
@@ -92,22 +92,22 @@ This is similar to functions:
 
 - Our model is $Y = f(\tilde{X})$, where $\tilde{X}$ is the preprocessed data.
 - We have our preprocessing steps, which we'll call $g$, and we can express the preprocessed data as $\tilde{X} = g(X)$.
-- The less desirable option would be to use Shapley values on $f$.
+- The less desirable option would be to use SHAP values on $f$.
 - The better option is to define a new function $\tilde{f}(X) = f(g(X))$, where the input is $X$ and not $\tilde{X}$.
-- We use Shapley values applied to $\tilde{f}$ instead of $f$.
+- We use SHAP values applied to $\tilde{f}$ instead of $f$.
 
 This allows us to interpret the features in their original form.
 
 ::: {.callout-warning}
 
-When preprocessing your data, consider which preprocessing steps you want to include as part of your model when calculating Shapley values.
+When preprocessing your data, consider which preprocessing steps you want to include as part of your model when calculating SHAP values.
 In some cases, like standardization, it makes sense to include them in the model, while in other cases, like transformations that increase interpretability, it makes sense to exclude them.
 
 :::
 
 Another notable aspect is that the model's output is 2-dimensional instead of 1-dimensional.
 This is reflected in the resulting `shap_values` variable, which gain another dimension.
-Therefore we have to also indicate the class for which we want to access the Shapley values.
+Therefore we have to also indicate the class for which we want to access the SHAP values.
 
 ```{python}
 class_index = 0
@@ -124,9 +124,9 @@ shap.waterfall_plot(sv)
 
 For this individual, the predicted likelihood of earning more than \$50k was 99.9% which is more than the expected 79%.
 This plot reveals that the most influential feature was Marital Status (4 = married), which contributed 0.06.
-The interpretation is mostly the same as for regression, only that the outcome is on the probability level and that we have to decide for which class we want to interpret the Shapley values.
+The interpretation is mostly the same as for regression, only that the outcome is on the probability level and that we have to decide for which class we want to interpret the SHAP values.
 
-Let's examine the Shapley values for the alternative class.
+Let's examine the SHAP values for the alternative class.
 
 ```{python}
 class_index = 1
@@ -140,7 +140,7 @@ sv = shap.Explanation(
 shap.waterfall_plot(sv)
 ```
 
-This plot is identical to the previous one, except all Shapley values are multiplied by -1.
+This plot is identical to the previous one, except all SHAP values are multiplied by -1.
 This makes sense since the probabilities for both classes must sum to 1.
 Thus, a factor that increases the classification by 0.11 for class >50k decreases the classification by 0.11 for class <=50k.
 We only need to choose one of the two classes.
@@ -174,7 +174,7 @@ Interpretation:
 A marital status of 0 (married) contributes +1.36 to the log odds of >50k versus <=50k compared to the average prediction.
 The advantage of log odds is that the model is linear at this level, allowing for simpler solutions.
 
-However, one of Shapley values' strengths is its applicability at the probability level.
+However, one of SHAP values' strengths is its applicability at the probability level.
 Log odds can be difficult to interpret.
 
 ::: {.callout-note}
@@ -217,7 +217,7 @@ shap.summary_plot(
 ```
 
 We can observe that Marital Status and Capital Gain are the two most important features (on the log odds scale).
-For some individuals, Capital Gain has very large effects, indicating that high values of capital gain lead to high Shapley values and, consequently, a high probability of earning more than 50k.
+For some individuals, Capital Gain has very large effects, indicating that high values of capital gain lead to high SHAP values and, consequently, a high probability of earning more than 50k.
 
 <!--
 

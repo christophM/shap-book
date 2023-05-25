@@ -1,7 +1,7 @@
 # SHAP Plots {#plots}
 
-This chapter provides an overview of the plots available for aggregated Shapley values.
-Aggregated refers to computing Shapley values for all features and data points in a dataset.
+This chapter provides an overview of the plots available for aggregated SHAP values.
+Aggregated refers to computing SHAP values for all features and data points in a dataset.
 Thus, you will only find plots for tabular data, as there is no meaningful aggregation across images or texts.
 
 This chapter covers:
@@ -24,8 +24,8 @@ The `shap.plots.waterfall` reveals various insights:
 
 - The y-axis displays the individual features, including the values for selected data instance.
 - The x-axis is on the scale of the output.
-- Each bar represents the Shapley value for that specific feature value.
-- Positive Shapley values point to the right.
+- Each bar represents the SHAP value for that specific feature value.
+- Positive SHAP values point to the right.
 - The x-axis also indicates the overall expected prediction $E[f(X)]$ and the actual prediction of the instance $f(x)$.
 - The bars start at the bottom from the expected prediction and add up to the actual prediction.
 
@@ -38,14 +38,14 @@ Requires javascript, meaning you can embed it, e.g., into a Jupyter notebook, bu
 
 ## Bar Plot
 
-The `shap.plots.bar` is yet another visualization of the Shapley values for individual predictions.
-Rearranges the Shapley values into a bar plot, but I would rather use the waterfall plot.
+The `shap.plots.bar` is yet another visualization of the SHAP values for individual predictions.
+Rearranges the SHAP values into a bar plot, but I would rather use the waterfall plot.
 
 ## Feature Importance Plot
 
 The concept behind SHAP feature importance is straightforward:
-Features with large absolute Shapley values are important.
-To determine global importance, we average the **absolute** Shapley values per feature across the data:
+Features with large absolute SHAP values are important.
+To determine global importance, we average the **absolute** SHAP values per feature across the data:
 
 $$I_j=\frac{1}{n}\sum_{i=1}^n{}|\phi_j^{(i)}|$$
 
@@ -71,10 +71,10 @@ For a more informative plot, we will examine the summary plot next.
 ## Summary or Bee Swarm Plot
 
 The summary plot combines feature importance and feature effects.
-Each point on the plot represents a Shapley value for a feature and an instance.
-The y-axis position is determined by the feature, and the x-axis position by the Shapley value.
+Each point on the plot represents a SHAP value for a feature and an instance.
+The y-axis position is determined by the feature, and the x-axis position by the SHAP value.
 Color indicates the feature value, ranging from low to high.
-Overlapping points are jittered in the y-axis direction to show the distribution of Shapley values per feature.
+Overlapping points are jittered in the y-axis direction to show the distribution of SHAP values per feature.
 Features are ordered by their importance.
 
 ![Summary Plot](images/summary-plot.jpg)
@@ -96,7 +96,7 @@ What to look for in the plot:
 
 SHAP feature dependence is perhaps the simplest global interpretation plot:
 1) Select a feature.
-2) For each data instance, plot a point with the feature value on the x-axis and the corresponding Shapley value on the y-axis.
+2) For each data instance, plot a point with the feature value on the x-axis and the corresponding SHAP value on the y-axis.
 3) Done.
 
 Mathematically, the plot contains the following points: $\{(x_j^{(i)},\phi_j^{(i)})\}_{i=1}^n$
@@ -128,13 +128,13 @@ One example is to automatically color the SHAP feature dependence plot according
 
 ## Clustering Plot
 
-You can cluster your data using Shapley values.
+You can cluster your data using SHAP values.
 The goal of clustering is to find groups of similar instances.
 Typically, clustering is based on features, which are often on different scales.
 For example, height might be measured in meters, color intensity from 0 to 100, and some sensor output between -1 and 1.
 The challenge is to compute distances between instances with such diverse, non-comparable features.
 
-SHAP clustering works by clustering the Shapley values of each instance, meaning that you cluster instances by explanation similarity.
+SHAP clustering works by clustering the SHAP values of each instance, meaning that you cluster instances by explanation similarity.
 All SHAP values have the same unit -- the unit of the prediction space.
 You can use any clustering method.
 The following example uses hierarchical agglomerative clustering to order the instances.

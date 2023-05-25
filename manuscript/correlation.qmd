@@ -1,6 +1,6 @@
 # The Correlation Problem {#correlation}
 
-Shapley values have a subtle but significant issue when dealing with correlated features:
+SHAP values have a subtle but significant issue when dealing with correlated features:
 simulating feature absence by replacing them with sampled values from the background data can produce unrealistic data points.
 These unrealistic data points are then used to generate explanations, which is problematic for several reasons:
 
@@ -33,8 +33,8 @@ Next, let's create a data point for which we will simulate drawing from the back
 point = (-1.7, -1.7)
 ```
 
-I'm interested in the Shapley value for feature $X_1$.
-I will demonstrate both what Shapley values do and how background data sampling should appear when respecting the conditional distribution of the data.
+I'm interested in the SHAP value for feature $X_1$.
+I will demonstrate both what SHAP values do and how background data sampling should appear when respecting the conditional distribution of the data.
 ```{python}
 #| label: fig-sampling
 #| fig-cap: "Marginal and conditional sampling"
@@ -64,7 +64,7 @@ plt.show()
 ```
 
 The plot above illustrates that when we ignore the correlation between $X_1$ and $X_2$ and sample $X_2$ independently from $X_1$, we create new data points outside of the distribution.
-This is what occurs with Shapley values.
+This is what occurs with SHAP values.
 On the left, we can see what sampling from $P(X_2 | X_1)$ instead of $P(X_2)$ would look like.
 This conditional sampling will also be part of one of the solutions.
 
@@ -102,11 +102,11 @@ Instead of using the `Independent` explainer, opt for the `Partition` explainer.
 By default, the `Partition` explainer groups features based on correlation, but you can also define your own feature groupings.
 
 The Partition explainer generates a feature hierarchy based on a provided distance matrix or custom groupings.
-Within this hierarchy, Shapley values are calculated recursively.
+Within this hierarchy, SHAP values are calculated recursively.
 This alters the complexity from $\mathcal{O}(2^p)$ to $\mathcal{O}(p^2)$ (when the clustering tree is balanced), where $p$ is the number of input features for the model.
 
 This specific type of game is called the Owen game.
-The benefit is that for groups of correlated features, we obtain a single Shapley value for interpretation.
+The benefit is that for groups of correlated features, we obtain a single SHAP value for interpretation.
 
 ## Solution: Conditional sampling
 
@@ -115,7 +115,7 @@ As hinted in @fig-sampling, it's also possible to use conditional sampling.
 A brief example:
 
 - We have four features $X_1$ to $X_4$.
-- Compute the Shapley value for $X_1$.
+- Compute the SHAP value for $X_1$.
 - During sampling, one of the coalitions we add $X_1$ to is $\{X_2\}$.
 - Compute the predictions for the teams $\{X_2\}$ and $\{X_1, X_2\}$.
 - The absent features are $\{X_1, X_3, X_4\}$ and $\{X_3, X_4\}$, which are sampled from the background data.
@@ -137,14 +137,14 @@ The paper proposed more techniques, but these are the key ones.
 ::: {.callout-warning}
 
 Switching the sampling from marginal to conditional alters the game payout.
-For instance, the resulting Shapley values may appear to no longer adhere to the Dummy axiom, as unused features like $\beta_j=0$ in a linear model can suddenly have non-zero Shapley values.
-However, this doesn't actually violate the Dummy axiom, since based on the new payout using conditional distributions, they still qualify as Shapley values.
+For instance, the resulting SHAP values may appear to no longer adhere to the Dummy axiom, as unused features like $\beta_j=0$ in a linear model can suddenly have non-zero SHAP values.
+However, this doesn't actually violate the Dummy axiom, since based on the new payout using conditional distributions, they still qualify as SHAP values.
 And it only happens if features are correlated.
 Without correlation, marginal and conditional sampling work the same, because then $P(X_1) = P(X_1|X_2)$.
 
 :::
 
-As mentioned above, the Shapley game changes and features not utilized by the model can have non-zero Shapley values.
+As mentioned above, the game changes and features not utilized by the model can have non-zero SHAP values.
 
 Whether this is desirable depends on your interpretation goals.
 If your objective is to audit the model, marginal sampling might be more appropriate.
