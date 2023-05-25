@@ -184,4 +184,4 @@ We then average the values over all possible feature coalitions $S$, similar to 
 By calculating the SHAP interaction values for all features, we obtain one matrix per instance with dimensions M x M, where M represents the number of features.
 
 
-The next chapter will delve deeper into the theoretical side of things, focusing on how to estimate SHAP values, because having just one method would be too simplistic.
+The next chapter will dive deeper into the theoretical side of things, focusing on how to estimate SHAP values, because having just one method would be too simplistic.

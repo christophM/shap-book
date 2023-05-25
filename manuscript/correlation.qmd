@@ -8,7 +8,7 @@ These unrealistic data points are then used to generate explanations, which is p
 - There could be a conceptual issue with physically impossible data points (e.g., a 2-meter tall person weighing 10 kg).
 - The model may not have been trained on data in these areas and might produce unexpected results.
 
-In this chapter, we will first delve into the problem in more detail using a small simulation, followed by discussing possible solutions.
+In this chapter, we will first dive into the problem in more detail using a small simulation, followed by discussing possible solutions.
 
 ## Correlated features cause extrapolation
 

@@ -8,7 +8,7 @@ However, before diving into the theory and estimation of SHAP, let's first discu
 What does a prediction have to do with games? 
 The connection between these may not be immediately apparent.
 It certainly wasn't for me.
-When we delve into the origins of Shapley values, they were initially devised to address the issue of fair attribution in cooperative games.
+When we dive into the origins of Shapley values, they were initially devised to address the issue of fair attribution in cooperative games.
 Imagine a group of players who collaborate, and once the game concludes, they receive payouts based on their performance.
 However, the payout is designated for the entire team, requiring them to divide it amongst themselves.
 Players may have contributed differently to the game.
