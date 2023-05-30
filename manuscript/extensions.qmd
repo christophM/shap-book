@@ -1,4 +1,4 @@
-# Extensions of SHAP Values {#extensions}
+# Extensions of SHAP {#extensions}
 
 This chapter highlights some extensions for SHAP values, focusing on adaptations for specific models or data structures while still maintaining their purpose in explaining predictions.
 
@@ -42,6 +42,24 @@ As discussed in the [Limitations Chapter](#limitations), SHAP values are not nec
 A counterfactual explanation is a contrastive explanation, explaining why the current prediction was made instead of a counterfactual outcome.
 This is important, for example, in recourse situations when someone affected by a decision wants to challenge a prediction, such as a creditworthiness classifier.
 Counterfactual SHAP (or CF-SHAP) [@albini2022counterfactual] brings this approach to SHAP values through careful background data selection.
+
+
+## Explanation Shifts
+
+Explanation shifts [@mougan2022explanation] refer to differences in how predictions are explained by machine learning models on training data compared to new data.
+By analyzing variations in SHAP values, we get insights into how the relation models and features evolved.
+Explanation shifts offer advantages over traditional methods that focus only on distribution shifts (like monitoring performance), as explanations provide a deeper understanding of changes in the model behavior.
+Changes that might otherwise be overlooked.
+Explanation shifts is implemented within the [skshift](https://skshift.readthedocs.io/en/latest/) Python package which also includes tutorials.
+
+## Fairness Measures via Explanations Distributions: Equal Treatment
+
+[@mougan2023demographic] proposed a new fairness metric based on liberalism-oriented philosophical principles: “Equal Treatment”.
+This measure considers the influence of feature values on predictions, defines distributions of explanations, and compares explanation distributions between populations with different protected characteristics.
+While related work focused on model predictions to measure demographic parity measure of equal treatment is more fine-grained, accounting for the usage of attributes by the model via explanation distributions.
+Consequently, equal treatment implies equal outcomes, but the converse is not necessarily true.
+Equal treatment is implemented within the [explanationspace](https://explanationspace.readthedocs.io/en/latest/Python) package, including tutorials.
+
 
 ## And many more
 
