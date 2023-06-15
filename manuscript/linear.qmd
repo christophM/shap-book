@@ -1,4 +1,4 @@
-# SHAP for Linear Models
+# SHAP for Linear Models {#linear}
 
 Let's begin with a simple model.
 Simple because it is already interpretable, allowing us to compare SHAP values with our intuitive understanding of the model: a linear regression model.

@@ -1,10 +1,10 @@
-# Limitations of SHAP
+# Limitations of SHAP {#limitations}
 
 As a statistician with both Bachelors and Masters degrees, I feel obliged to critically examine methods and resist hype.
 In this chapter, I will scrutinize SHAP.
 
 While SHAP is popular, it has shortcomings.
-We've already discussed issues such as the [correlation problem](#correlation) and the complexity of [interpreting interactions](#interactions).
+We've already discussed issues such as the [correlation problem](#correlation) and the complexity of [interpreting interactions](#interaction).
 Let's dive further into these limitations.
 
 ## Computation time can be excessive

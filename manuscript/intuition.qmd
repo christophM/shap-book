@@ -118,7 +118,7 @@ To get a prediction from the machine learning model, we replace the feature valu
 
 By estimating the SHAP values for all feature values, we obtain the complete distribution of the prediction (minus the average) among the feature values.
 That's not the only way to estimate SHAP values, nor is it explained in detail here.
-In fact, there are various ways to estimate SHAP values as you can see in the [Estimation Chapter](#estimation).
+In fact, there are various ways to estimate SHAP values as you can see in the [Estimation Chapter](#estimation-overview) and in more detail [in the appendix](#estimation).
 This is because, especially for specific models like linear regression and tree-based models, there are more efficient ways to estimate the SHAP values.
 
 ## What about images and texts?

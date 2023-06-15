@@ -1,4 +1,4 @@
-# Theory of SHAP
+# Theory of SHAP {#theory}
 
 Keep in mind, you don't need to read this chapter if you only want to use SHAP values.
 It's intended for those who want to explore the mathematics behind them.

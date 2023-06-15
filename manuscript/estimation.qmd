@@ -1,4 +1,4 @@
-# SHAP Explainers
+# SHAP Explainers {#estimation}
 
 In each of the explainers covered in this chapter, I have attempted to distinguish between the theory and their implementation in SHAP.
 Admittedly, this distinction is not perfect, and I apologize for any confusion.

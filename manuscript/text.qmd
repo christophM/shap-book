@@ -80,7 +80,7 @@ We'll use Hugging Face transformers, which makes implementation incredibly easy:
 ```{python}
 from transformers import pipeline
 model = pipeline('sentiment-analysis', return_all_scores=True)
-s = ['IBM Watson was a scam']
+s = ['This product was a scam']
 print(model(s)[0])
 ```
 
@@ -99,7 +99,7 @@ shap.plots.bar(shap_values[0, :, 'NEGATIVE'])
 
 That was quite simple, right?
 
-We see that "IBM" and "sc" contributed the most to the negative sentiment, especially "sc".
+TODO CHECK AGAIN: We see that "IBM" and "sc" contributed the most to the negative sentiment, especially "sc".
 
 However, "scam" is oddly split into "sc" and "am," which isn't ideal for interpretation.
 This issue arises from how we mask the input.
@@ -128,7 +128,7 @@ In this case, the tokenizer is quite simple and tokenizes the input at periods "
 We'll try a longer input text and see the contribution of each sentence.
 
 ```{python}
-s2 = "IBM Watson was a scam." + \
+s2 = "This product was a scam." + \
      "It was more about marketing than technology." + \
      "But that's why I loved it." + \
      "Learned a bunch about marketing that way."
@@ -146,7 +146,7 @@ To demonstrate "extreme" masking, we'll replace a removed sentence with a specif
 The argument `collapse_mask_token=True` ensures that if two tokens in a row are replaced by the mask_token, the token is only added once.
 In the following example, sentences are replaced with "I love it", but only once in a row.
 
-Input: "IBM Watson was a scam.
+Input: "This product was a scam.
 It was more about marketing than technology.
 But that's why I loved it.
 Learned a bunch about marketing that way."

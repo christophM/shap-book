@@ -1,4 +1,4 @@
-# SHAP Values for Additive Models
+# SHAP Values for Additive Models {#additive}
 
 In this next step, we allow the relationship between a feature and the target to be non-linear.
 However, we do not allow interactions between the features.

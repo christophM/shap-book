@@ -1,4 +1,4 @@
-# Classification with Logistic Regression
+# Classification with Logistic Regression {#classification}
 
 This chapter shows how to use and interpret SHAP with logistic regression.
 

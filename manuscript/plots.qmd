@@ -55,7 +55,7 @@ The following figure displays the SHAP feature importance for the random forest 
 ![Importance plot](images/shap-importance.jpg)
 
 
-SHAP feature importance offers an alternative to [permutation feature importance](#feature-importance).
+SHAP feature importance offers an alternative to [permutation feature importance](https://christophm.github.io/interpretable-ml-book/feature-importance.html).
 A significant difference exists between these importance measures:
 
 ::: {.callout-note}
@@ -105,7 +105,7 @@ The following figure displays the SHAP feature dependence for years on hormonal 
 
 ![Dependence Plot](images/dependence.jpg)
 
-SHAP dependence plots offer an alternative to [partial dependence plots](#pdp) and [accumulated local effects](#ale).
+SHAP dependence plots offer an alternative to [partial dependence plots](https://christophm.github.io/interpretable-ml-book/pdp.html) and [accumulated local effects](https://christophm.github.io/interpretable-ml-book/ale.html).
 While PDP and ALE plots display average effects, SHAP dependence plots also reveal variance on the y-axis.
 This is particularly noticeable in cases of interactions, where the SHAP dependence plot exhibits greater dispersion on the y-axis.
 Enhancing the dependence plot by highlighting feature interactions can improve its effectiveness.
