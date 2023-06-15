@@ -20,7 +20,7 @@ The indirect reason was that these patients received "aggressive care," such as 
 Consequently, they were less likely to develop pneumonia.
 A typical case of "correlation does not imply causation" as you can see in @fig-asthma.
 
-![In reality, asthma increases the likelihood of pneumonia. However, in the study, asthma also increased the (preemptive) use of antibiotics which protects against pneumonia.](images/asthma-dag.jpg){#fig-asthma}
+![In reality, asthma increases the likelihood of pneumonia. However, in the study, asthma also increased the (preemptive) use of antibiotics which protects against pneumonia.](images/asthma-dag.jpg){#fig-asthma out.width="50%"}
 
 That the model relied on the asthma feature in this way was only discovered because the model was interpretable.
 Imagine repeating this scenario with a neural network.

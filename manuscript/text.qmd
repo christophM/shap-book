@@ -277,6 +277,7 @@ However, to provide an example that runs locally without needing an account, we 
 Nonetheless, this does not affect the general interface of text input and output.
 The significant difference is that we receive not only the words but also the scores for the words, which are essential for computing SHAP values.
 For this example, we will use GPT-2, which is automatically chosen by the transformers library for the "text-generation" task at the time of writing.
+The following code is partially based on [this shap notebook](https://shap.readthedocs.io/en/latest/example_notebooks/text_examples/text_generation/Open%20Ended%20GPT2%20Text%20Generation%20Explanations.html).
 
 ```{python}
 from transformers import AutoTokenizer, AutoModelForCausalLM

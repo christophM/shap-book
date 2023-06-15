@@ -11,7 +11,7 @@ Instead of training our own image classifier, we'll load a pre-trained ResNet mo
 ImageNet is a large-scale image classification challenge requiring models to categorize objects within digital images.
 It features a dataset of over 1 million images from 1000 different categories, and the goal is to develop a model that accurately classifies each image.
 
-Code based on [a notebook from the shap library](https://github.com/slundberg/shap/blob/master/notebooks/image_examples/image_classification/Explain%20ResNet50%20using%20the%20Partition%20explainer.ipynb)
+The code for this example is based on [a notebook from the shap library](https://github.com/slundberg/shap/blob/master/notebooks/image_examples/image_classification/Explain%20ResNet50%20using%20the%20Partition%20explainer.ipynb)
 
 ## Get the pretrained network
 

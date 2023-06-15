@@ -36,7 +36,8 @@ I acknowledge that this is a somewhat vague argument, but generally, explanation
 
 ## Training the neural network
 
-Now, let's begin by training a neural network from scratch using TensorFlow:
+Now, let's begin by training a neural network from scratch using TensorFlow.
+The code is partially based on [this shap notebook](https://shap.readthedocs.io/en/latest/example_notebooks/image_examples/image_classification/Multi-input%20Gradient%20Explainer%20MNIST%20Example.html).
 
 ```{python}
 #| output: false
