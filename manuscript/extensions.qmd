@@ -44,7 +44,7 @@ This is important, for example, in recourse situations when someone affected by 
 Counterfactual SHAP (or CF-SHAP) [@albini2022counterfactual] brings this approach to SHAP values through careful background data selection.
 
 
-## Explanation Shifts
+## Explanation Shifts[^carlos]
 
 Explanation shifts [@mougan2022explanation] refer to differences in how predictions are explained by machine learning models on training data compared to new data.
 By analyzing variations in SHAP values, we get insights into how the relation models and features evolved.
@@ -54,7 +54,7 @@ Explanation shifts is implemented within the [skshift](https://skshift.readthedo
 
 ## Fairness Measures via Explanations Distributions: Equal Treatment
 
-[@mougan2023demographic] proposed a new fairness metric based on liberalism-oriented philosophical principles: “Equal Treatment”.
+@mougan2023demographic proposed a new fairness metric based on liberalism-oriented philosophical principles: “Equal Treatment”.
 This measure considers the influence of feature values on predictions, defines distributions of explanations, and compares explanation distributions between populations with different protected characteristics.
 While related work focused on model predictions to measure demographic parity measure of equal treatment is more fine-grained, accounting for the usage of attributes by the model via explanation distributions.
 Consequently, equal treatment implies equal outcomes, but the converse is not necessarily true.
@@ -67,3 +67,6 @@ This overview is not exhaustive.
 At the time of writing, there were approximately 12k papers citing the original SHAP paper [@lundberg2017unified].
 Among those, around 10k also had "shap" or "shapley" in their title or abstract.
 While many of these are review or application papers, a significant portion are extensions of SHAP values, making it impossible to cover them all here.
+
+
+[^carlos]: This paragraph and the following one about fairness were written by Carlos Mougan, the researcher behind these extended uses of SHAP (and slightly edited by me).

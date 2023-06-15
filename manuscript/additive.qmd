@@ -49,6 +49,7 @@ This is the model we train:
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from interpret.glassbox import ExplainableBoostingRegressor
+
 wine = pd.read_csv("wine.csv")
 y = wine["quality"]
 X = wine.drop("quality", axis=1)
@@ -96,7 +97,7 @@ shap.waterfall_plot(shap_values[0], max_display=10)
 ```
 
 ::: {.callout-note}
-A SHAP-specific note here: since the explainer is a Permutation explainer, we can directly use the shap_values as input to the waterfall plot, which we couldn't do with the Linear explainer.
+A SHAP-specific note here: since the explainer is a Permutation explainer, we can directly use the `shap_values` as input to the waterfall plot, which we couldn't do with the Linear explainer.
 :::
 This waterfall plot presents a different picture of what's happening, compared to the purely linear model.
 
