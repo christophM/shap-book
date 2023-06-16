@@ -215,6 +215,7 @@ shap.plots.bar(shap_values[:,:,'POSITIVE'])
 Although the overall attribution doesn't change significantly (except for the sign change in the "marketing" sentence, which was close to zero anyway), the base value does change considerably.
 
 Experiment with it, generate some text, and make a qualitative judgment about whether it makes sense.
+To learn about maskers, read the [maskers chapter in the Appendix](#maskers).
 
 ## Using logits instead of probabilities
 

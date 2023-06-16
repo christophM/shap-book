@@ -1,4 +1,4 @@
-# The Role of Maskers and Background Data
+# The Role of Maskers and Background Data {#maskers}
 
 ::: {.callout-note}
 Maskers are the technical solution for "removing" feature values to compute marginal contributions and SHAP values.

@@ -164,3 +164,6 @@ Observations:
   - When density is low, increasing residual sugar has a significant increasing effect.
   - If density is high, increasing residual sugar doesn't have as strong an effect.
 
+
+
+

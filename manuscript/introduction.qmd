@@ -20,9 +20,9 @@ The indirect reason was that these patients received "aggressive care," such as 
 Consequently, they were less likely to develop pneumonia.
 A typical case of "correlation does not imply causation" as you can see in @fig-asthma.
 
-![In reality, asthma increases the likelihood of pneumonia. However, in the study, asthma also increased the (preemptive) use of antibiotics which protects against pneumonia.](images/asthma-dag.jpg){#fig-asthma out.width="50%"}
+![In reality, asthma increases the likelihood of pneumonia. However, in the study, asthma also increased the (preemptive) use of antibiotics which protects against pneumonia.](images/asthma-dag.jpg){#fig-asthma}
 
-That the model relied on the asthma feature in this way was only discovered because the model was interpretable.
+This pathological dependence on the asthma feature was only discovered because the model was interpretable.
 Imagine repeating this scenario with a neural network.
 No rule would jump out, saying "asthma $\Rightarrow$ lower risk."
 Instead, the network would learn this rule but keep it hidden, potentially causing harm if deployed in the real world.
@@ -36,7 +36,7 @@ Black box machine learning models create a distance between the data and the mod
 This is a story of how the lack of interpretability made the users come up with their own (wrong) explanations.
 The story starts with sepsis, a life-threatening medical condition in which the body responds in extreme ways to an infection.
 It's one of the most common causes of death in hospitals.
-Diagnosing it consistently is notoriously difficult, making it an ideal candidate for AI-based intervention.
+Diagnosing it consistently is notoriously difficult, sepsis expensive to treat and extremely harmful to the patients, making early detection systems desirable.
 
 Duke University and Duke Health Systems developed Sepsis Watch, which uses deep learning [@elish2020repairing].
 Sepsis Watch is not just a deep learning model; it also includes a protocol for its use within the clinic.
@@ -94,7 +94,7 @@ In machine learning, you usually optimize a metric.
 Boosted trees often seem to be the best option in many cases [@grinsztajn2022tree].
 Most people wouldn't consider them interpretable, at least not in their raw form.
 The same applies to transformers, standard for text (GPT, anyone?), and convolutional neural networks for image classification.
-Ensembles of models often produce the best esolutions.
+Ensembles of models often produce the best solutions.
 So limiting model selection to inherently interpretable models may lead to sub-optimal performance.
 
 So, what to do?

@@ -219,6 +219,7 @@ All maskers agreed that the most responsible pixels were at the top, except for 
 However, the blur(16, 16) masker seems a bit unreliable, as it doesn't obscure much.
 Even as a human, I can recognize the lower part as a burger, meaning the features aren't significantly removed.
 In all cases, the pixels at the bottom of the burger appeared to argue against a bottlecap classification.
+To learn about maskers, jump into [maskers chapter in the Appendix](#maskers).
 
 Another interesting hyperparameter is the number of evaluation steps.
 

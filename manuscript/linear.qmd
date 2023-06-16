@@ -1,20 +1,28 @@
 # SHAP for Linear Models {#linear}
 
-Let's begin with a simple model.
-Simple because it is already interpretable, allowing us to compare SHAP values with our intuitive understanding of the model: a linear regression model.
+Let's begin with a simple example.
+"Simple", because we'll start with a linear regression model which is already interpretable, allowing us to compare SHAP values with our intuitive understanding of the model.
 
 ## What about coefficients?
 
 But why do we need SHAP values for linear regression anyway?
-Couldn't we just look at the coefficients?
+Couldn't we just look at the coefficients?[^global-and-local]
 
 We could, but that would only tell half of the story.
-The coefficient is always the same, regardless of the data point we want to explain.
-So, surely, it isn't the best explanation for how a feature affected the prediction.
-Imagine a feature with a value of zero; its contribution would also be zero.
-Or, consider a positive coefficient: for a data point with a positive feature, when multiplied with the coefficient, the result will be positive, but if the feature value is negative, the result will be negative.
-Thus, the coefficient only reveals half of the story; to provide an explanation of how this affects a specific prediction, we also need to know the feature values of an instance.
-The SHAP value in the linear case is:
+The coefficient for a feature is the same for all data points, which means you can see the coefficient as a "global" model interpretation.
+
+But for a specific data point (= local explanation), we can also make use of the information of the feature value.
+Imagine we have coefficient $\beta_j=0.5$.
+It matters whether the feature value is, for example, 0, 0.008, or -4, because multiplication will produce different results (0, 0.004, -2).
+A more meaningful way to present a feature effect would be the coefficient multiplied with the feature value: $\beta_j \cdot x_{ij}$.
+
+However, this formula is also "incomplete" as it leaves us without any sense of whether the contribution is large or small.
+Let's say that the contribution is $\beta_j \cdot x_{ij} = 2$, again with $\beta_j=0.5$ and $x_{ij}=4$.
+Is that a lot?
+That depends on the range of $x_j$.
+If 4 is the lowest possible value of $x_{j}$, then 2 is actually the smallest possible contribution, but if $x_j$ follows a Normal distribution centered at 0, then a contribution of 4 is more than expected.
+An easy fix is to center the effect $\beta_j x_{ij}$ around the expected effect $E(\beta_j X_j)$.
+It's not coincidence that the result is also the SHAP value $\phi_j$ for a feature in a linear model:
 
 $\phi_{ji}(\hat{f}) = \beta_j x_{ij} - E(\beta_jX_j) = \beta_{j} (x_{ij} - E(X_j))$.
 
@@ -253,3 +261,4 @@ Eye-balling the dependence plot confirms the same slope, since the plot goes fro
 In a way, linear regression is always an easy example.
 The assumption that everything is linear makes interpretation so easy.
 So in the next chapter, we will juice it up a little and allow non-linear functions.
+

@@ -92,13 +92,13 @@ We can obtain better estimates by repeating this sampling step and averaging the
 ![One sample repetition to estimate the contribution of `cat-banned` to the prediction when added to the coalition of `park-nearby` and `area-50`.](images/shapley-instance-intervention.jpg)
 
 We repeat this computation for all possible coalitions.
-The SHAP value is the average of all the marginal contributions to all possible coalitions.
+The SHAP value is a weighted average of all the marginal contributions to all possible coalitions.
 The computation time increases exponentially with the number of features, because there are $2^p$ possible coalitions, where $p$ is the number of features.
 One solution to keep the computation time manageable is to compute contributions for only a few samples of the possible coalitions.
 
 The following figure shows all coalitions of feature values that are needed to determine the exact SHAP value for `cat-banned`.
 The first row shows the coalition without any feature values.
-The second, third, and fourth rows show different coalitions with increasing coalition size, separated by "|".
+The second, third, and fourth rows show different coalitions with increasing coalition size, separated by "|" in @fig-coalitions.
 In total, the following coalitions are possible:
 
 - No feature values
@@ -114,7 +114,7 @@ For each of these coalitions, we compute the predicted apartment price with and 
 The exact SHAP value is the (weighted) average of these marginal contributions.
 To get a prediction from the machine learning model, we replace the feature values of features not in a coalition with random feature values from the apartment dataset.
 
-![All 8 coalitions needed for computing the exact SHAp value of the `cat-banned` feature value.](images/shapley-coalitions.jpg)
+![All 8 coalitions needed for computing the exact SHAp value of the `cat-banned` feature value.](images/shapley-coalitions.jpg){#fig-coalitions}
 
 By estimating the SHAP values for all feature values, we obtain the complete distribution of the prediction (minus the average) among the feature values.
 That's not the only way to estimate SHAP values, nor is it explained in detail here.

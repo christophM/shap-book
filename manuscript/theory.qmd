@@ -147,6 +147,8 @@ The dummy axiom ensures that features not used by the model receive an attributi
 This is a straightforward implication.
 For example, if a LASSO model was trained, we can be certain that a feature with a $\beta_j = 0$ will have a SHAP value of zero for this feature for all possible data points.
 
+### Additivity
+
 For a game with combined payouts val+val^+^, the respective SHAP values are as follows:
 
 $$\phi_j+\phi_j^{+}$$
@@ -160,7 +162,7 @@ For an additive ensemble of models, the SHAP value is the sum of individual SHAP
 
 ::: {.callout-note}
 
-There exists an alternative formulation of SHAP values in which the Dummy and Additivity axioms are replaced with a Linearity axiom; however, both formulations ultimately lead to the SHAP values.
+There exists an alternative formulation of the Shapley axioms in which the Dummy and Additivity axioms are replaced with a Linearity axiom; however, both formulations ultimately lead to the Shapley values.
 
 :::
 

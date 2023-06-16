@@ -81,7 +81,7 @@ For example, let's say we have two strongly correlated features: rainfall yester
 If it rained yesterday, we know it must have been cloudy - this is correlation.
 How can we isolate the effect of rain while ignoring the cloudiness?
 
-# Solution: Reduce correlation in the model
+## Solution: Reduce correlation in the model
 
 While it may seem overly simplistic, avoiding the correlation problem can be achieved by eliminating correlated features.
 This solution requires flexibility in training the model with a different set of features.
