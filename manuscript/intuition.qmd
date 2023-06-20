@@ -5,6 +5,8 @@ However, before diving into the theory and estimation of SHAP, let's first discu
 
 ## Origins in game theory
 
+TODO: Rewrite this section so it makes sense that first the taxi example is here, then the move towards  
+
 What does a prediction have to do with games? 
 The connection between these may not be immediately apparent.
 It certainly wasn't for me.
@@ -20,6 +22,11 @@ To solve this attribution problem, we must first establish a set of axioms defin
 We'll discuss that in more detail later.
 
 For now, let's focus on connecting these concepts to predictions.
+
+## Taxi payout
+
+TODO: Move taxi example here
+
 
 ## The prediction attribution game
 

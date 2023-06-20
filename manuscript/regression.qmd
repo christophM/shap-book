@@ -83,8 +83,9 @@ shap.plots.waterfall(shap_values[0])
 ```
 
 The results differ from both the linear and the GAM models, but the interpretation process remains similar.
-We still need to interpret the SHAP values, but now we also consider interactions between feature values that have been fairly split among them.
-These interactions are not visible in this plot.
+However there is on big difference:
+The LightGBM model contains interactions between the features.
+But since there's only one SHAP value per feature value (and not one for every interaction), it means that interactions between feature values are split between the SHAP values.
 
 ## Global model interpretation
 

@@ -24,7 +24,7 @@ Even if an interaction exists in your data, if you use a purely linear model the
 You are at a concert and you love when you can actually see the band.
 Now, it depends on your size how much you'll be able to actually see.
 And it depends on who is in front of you, but we'll ignore that for now.
-We simulate a score of much a fan will enjoy the concert based on two features:
+We simulate a score of how much a fan will enjoy the concert based on two features:
 
 - $x_1$: Height in cm
 - $x_2$: Distance to the stage (from 0 to 10)
@@ -32,14 +32,14 @@ We simulate a score of much a fan will enjoy the concert based on two features:
 
 We simulate the target as:
 
-$$y = 0.1 \cdot x_1 - 1 \cdot x_2 + 10 \cdot \mathbb{1}_{x_1 < 160 \text{ and } x_2 < 7}$$
+$$y = 0.1 \cdot x_1 - 1 \cdot x_2 + 10 \cdot \mathbb{1}_{x_1 < 160 \text{ and } x_2 > 7}$$
 
 - The taller the fan, the better
 - The smaller the distance to the stage, the better
 - These are both linear relations to the concert joy
 - Additional interaction: Fans that are small and far away from the stage, can sit on the shoulders of their friends, which adds to the concert experience.
 
-We simulate some this data and fit a random forest on the relation.
+We simulate some of this data and fit a random forest on the relation.
 Then we also visualize the modeled relation which makes it easier to understand.
 
 ```{python}
@@ -151,8 +151,8 @@ The model predicts the following for how much they will enjoy the concert:
 
 ```{python}
 # Creating data for Mia and Tom
-Xnew = pd.DataFrame({'X1': [159, 161], 'X2': [2,2]})
-print(rf_model.predict(Xnew.values))
+Xnew = pd.DataFrame({'x1': [159, 161], 'x2': [2,2]})
+print(rf_model.predict(Xnew))
 ```
 They have a rather similar predicted joy for the concert, with Mia having a slightly worse prediction -- makes sense given she is slightly smaller and neither of them qualify for shoulders.
 
@@ -174,7 +174,7 @@ So even though Tom is actually taller than Mia, his height has a more negative i
 Neither have a chance to get on someone's shoulders since they are both already in the front.
 
 Even though Mia is smaller, her height has less of a negative impact compared to Tom.
-And we also can't explain it with the interaction since Mia is too close to the band that she doesn't profit from the shoulder bonus.
+And we also can't explain it with the interaction since Mia is too close to the band so that she doesn't profit from the shoulder bonus.
 
 But the surprising answer is that Mia's SHAP value actually is influenced by the interaction, even though she isn't directly affected by it. And this is because of how Shapley values are computed.
 

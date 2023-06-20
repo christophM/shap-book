@@ -38,9 +38,9 @@ The story starts with sepsis, a life-threatening medical condition in which the 
 It's one of the most common causes of death in hospitals.
 Diagnosing it consistently is notoriously difficult, sepsis expensive to treat and extremely harmful to the patients, making early detection systems desirable.
 
-Duke University and Duke Health Systems developed Sepsis Watch, which uses deep learning [@elish2020repairing].
-Sepsis Watch is not just a deep learning model; it also includes a protocol for its use within the clinic.
-The model processes patient data to detect sepsis and raises an alarm if the patient is at risk of developing sepsis.
+Duke University and Duke Health Systems developed Sepsis Watch, an early warning system for sepsis in hospitals.
+It's a software system that has a sepsis prediction model at it's core, based on deep neural networks [@elish2020repairing].
+The model takes as input patient data and predicts whether this patient is likely to develop sepsis.
 When the model detects a potential case of sepsis, it triggers an alert that initiates a new hospital protocol for diagnosis and treatment.
 This protocol involves a rapid response team (RRT) nurse who monitors the alarms and informs the doctors, who then treat the patient.
 
@@ -96,6 +96,7 @@ Most people wouldn't consider them interpretable, at least not in their raw form
 The same applies to transformers, standard for text (GPT, anyone?), and convolutional neural networks for image classification.
 Ensembles of models often produce the best solutions.
 So limiting model selection to inherently interpretable models may lead to sub-optimal performance.
+Sub-optimal performance might directly translate into fewer sales, more churn or more false negative sepsis predictions. 
 
 So, what to do?
 
@@ -136,49 +137,19 @@ Methods like SHAP can be applied to any model, so even with a decision tree, you
 
 :::
 
-## Paying for the taxi
-
-For now, forget about machine learning.
-To motivate SHAP, we first have to understand Shapley values and will do so with a taxi ride example:
-Alice, Bob, and Charlie had dinner together and now hail a taxi to get home.
-They discuss what would be a fair way to share these costs of \$51.
-A solution to their problem is called Shapley values [@shapley1953value].
-Shapley values are a method for fairly attributing the payout to each player in a coalition.
-This method that comes from game theory requires to calculate for each combination of Alice, Bob, and Charlie how much the ride would have cost.
-The next table shows this:
-
-| Passengers           | Costs | Note                                  |
-|----------------------|-------|--------------------------------------|
-| {}                   |   $0  | No taxi ride, no costs               |
-| {Alice}              |   $15 | Normal ride fare to Alice's & Bob's place |
-| {Bob}                |   $25 | Bob always insists on getting luxury taxis |
-| {Charlie}            |   $38 | Charlie lives a bit further away      |
-| {Alice, Bob}         |   $25 | Bob always gets his way               |
-| {Alice, Charlie}     |   $41 | Alice & Bob's place requires a slight detour |
-| {Bob, Charlie}       |   $51 | Bob requires luxury, even when Charlie is there |
-| {Alice, Bob, Charlie}|   $51 | The full fare with all 3 of them      |
-
-But still more work is required to find out how much each of them actually has to pay.
-To do that, starting with Alice, we have to calculate how much costs she adds when she is added to every possible passenger constellation -- in this case to {Bob}, to {Charlie}, and to the empty set. 
-
-Adding Alice to an empty taxi raises the costs from \$0 to \$15, adding her to a taxi with Bob already in it doesn't change the price of \$25, and the same is true if both Bob and Charlie are already in it (\$45).
-
-We also do these calculations for Bob and Charlie and do some calculations (more in the [Theory Chapter](#theory).
-
-As a result, we get the individual costs:
-
-- Alice: \$5.5
-- Bob: \$15.5
-- Charlie: \$30
-
-The method computing these attributions is called Shapley values, and according to this method, the above would be a fair share of the costs.
-But more on that in the [Theory Chapter](#theory).
-
-Let's talk now about how this concept from game theory (Shapley values) is useful to explain predictions.
 
 ## SHAP is an explainable AI technique
 
-SHAP is the application of Shapley values in Explainable AI [@NIPS2017_7062].
+SHAP[@NIPS2017_7062] is a method that can be used to explain individual predictions of machine learning models.
+
+TODO: 
+- Figure here
+- explain the figure a bit
+- explain idea of attributions
+- mention theory
+
+<!--
+SHAP is the application of Shapley values in Explainable AI .
 Among model-agnostic interpretation methods, SHAP has become very popular.
 SHAP originally stands for **SH**apley **A**dditive ex**P**lanations, and it's actually many things.
 It's the name of a paper that introduces a new method for estimating Shapley values, the Python library `shap` that we'll use in this book, and various algorithms for computing Shapley values.
@@ -210,6 +181,8 @@ The rough idea behind SHAP explanations:
 - The difference between the prediction and the average prediction is attributed across the feature values for the data point being considered.
 - The feature values are like a team working together to achieve the particular prediction.
 - Shapley values define what a "fair" attribution looks like, which we'll discuss in detail in the [Theory Chapter](#theory).
+
+-->
 
 ## Why a separate book for SHAP?
 

@@ -51,7 +51,7 @@ try:
     wine = pd.read_csv(file_name)
 except FileNotFoundError:
     print(f'Downloading {file_name} from {url}...')
-    wine = pd.read_csv(url, header=None, sep=";")
+    wine = pd.read_csv(url,  sep=";")
     wine.to_csv(file_name, index=False)
     print('Download complete!')
 ```
@@ -139,6 +139,7 @@ print(coefs.to_markdown(index=False))
 Interpretation:
 
 - For example, increasing the fixed acidity of a wine by 1 unit increases the predicted quality by 0.046.
+- An increase of density by 1 unit decreases the predicted quality by -124.264.
 - Volatile acidity, citric acid, chlorides, total sulfur dioxide, and density have a negative effect.
 
 However, this information alone does not help us understand the effect of these factors on a single prediction, as it also depends on the specific value of the feature for that data instance.

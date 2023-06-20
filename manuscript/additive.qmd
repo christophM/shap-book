@@ -142,7 +142,6 @@ x_range = np.linspace(
 first_row.loc[:, feature_name] = x_range
 preds = model.predict(first_row)
 
-Xpred = model.predict(X_test).mean()
 sv_values = shap_values.values[:, feature_idx]
 plt.scatter(
   X_test[feature_name], sv_values - np.mean(sv_values), alpha=0.2
