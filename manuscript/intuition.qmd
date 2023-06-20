@@ -23,10 +23,6 @@ We'll discuss that in more detail later.
 
 For now, let's focus on connecting these concepts to predictions.
 
-## Taxi payout
-
-TODO: Move taxi example here
-
 
 ## The prediction attribution game
 

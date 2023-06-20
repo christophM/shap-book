@@ -23,7 +23,7 @@ book:
     - history.qmd
     - image.qmd
     - image-deepexplainer.qmd
-    - text.qmd
+      #    - text.qmd
     - extensions.qmd
     - other.qmd
     - dashboard.qmd  

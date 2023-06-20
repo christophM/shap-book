@@ -1,7 +1,122 @@
 # Theory of SHAP {#theory}
 
+TODO: Find a way to separate SHAP and Shapley
+
 Keep in mind, you don't need to read this chapter if you only want to use SHAP values.
 It's intended for those who want to explore the mathematics behind them.
+
+
+## Who's Gonna Pay For That Taxi?
+
+For now, forget about machine learning.
+To motivate SHAP, we first have to understand Shapley values and will do so with a taxi ride example:
+Alice, Bob, and Charlie had dinner together and now hail a taxi to get home.
+They discuss what would be a fair way to share these costs of \$51.
+
+Imagine we could know the cost of that ride for all possible combinations of Alice, Bob, and Charlie.
+Only Alice takes the ride? That would be \$15.
+Even though Alice and Charlie live together, adding Bob to the ride bumps the cost to \$25, because he insists of getting the luxury taxi.
+Adding Bob to the Alice and Charlie makes the cost go up to \$51 since the Bob lives a bit further away. 
+We can do this for all possible combinations and end up with the following table:
+
+
+| Passengers           | Costs | Note                                  |
+|----------------------|-------|--------------------------------------|
+| {}                   |   $0  | No taxi ride, no costs               |
+| {Alice}              |   $15 | Normal ride fare to Alice's & Bob's place |
+| {Bob}                |   $25 | Bob always insists on getting luxury taxis |
+| {Charlie}            |   $38 | Charlie lives a bit further away      |
+| {Alice, Bob}         |   $25 | Bob always gets his way               |
+| {Alice, Charlie}     |   $41 | Alice & Bob's place requires a slight detour |
+| {Bob, Charlie}       |   $51 | Bob requires luxury, even when Charlie is there |
+| {Alice, Bob, Charlie}|   $51 | The full fare with all 3 of them      |
+
+This seems like a step in the right direction: With this table we get a first idea how much each person contributes to the cost of the ride.
+
+## Calculating Marginal Contributions For The Taxi Costs
+
+::: {.callout-note}
+
+## Marginal Contribution
+
+The marginal contribution of a player to a coalition is the value of the coalition *with* the player minus the value of the coalition *without* the player.
+
+For the taxi ride example, the marginal contribution of a passenger to a set of other passengers is the cost included this passenger minus the cost excluding this passenger.
+
+:::
+
+But we have to get one step further by calculating the so-called marginal contributions of each person to each combination.
+For example, how much additional cost does Alice contribute in the taxi ride together with Bob?
+
+With the help of the table, we can calculate marginal contributions.
+We can compare the cost between {Alice,Bob} and {Bob}, which gives us how much Alice contributed to the {Alice,Bob}  taxi ride.
+In this case, it's \$25 - \$25 = \$0, since the taxi ride doesn't get more expensive. 
+If we calculate the marginal contribution for Bob to {Alice,Bob}, we get \$25 - \$15 = \$10, or in other words, adding Bob to a taxi ride with Alice adds \$10.
+See where this is going?
+We are going to do this for all possible marginal contributions:
+
+| Adding              | To Coalition     | Cost Before | Cost After | Marginal Contribution |
+|---------------------|------------------|-------------|------------|-----------------------|
+| Alice             | {}               | $0          | $15        | $15                   |
+| Alice             | {Bob}            | $25         | $25        | $0                    |
+| Alice             | {Charlie}        | $38         | $41        | $3                    |
+| Alice             | {Bob, Charlie}   | $51         | $51        | $0                    |
+| Bob               | {}               | $0          | $25        | $25                   |
+| Bob               | {Alice}          | $15         | $25        | $10                   |
+| Bob               | {Charlie}        | $38         | $51        | $13                   |
+| Bob               | {Alice, Charlie} | $41         | $51        | $10                   |
+| Charlie           | {}               | $0          | $38        | $38                   |
+| Charlie           | {Alice}          | $15         | $41        | $26                   |
+| Charlie           | {Bob}            | $25         | $51        | $26                   |
+| Charlie           | {Alice, Bob}     | $25         | $51        | $26                   |
+
+Again, feels like one step closer to a possible fair share of the ride costs.
+Can we just average those marginal contributions per passenger?
+We could, but that would make every marginal contribution get equal weight.
+You can however, make the argument that adding, for example, Alice to an empty taxi is more informative than adding Alice to a taxi with Bob.
+And this argument is about the order in which we can arrange the passengers.
+There are 3!=6 possibilities of ordering the passengers:
+
+- Alice, Bob, Charlie
+- Alice, Charlie, Bob
+- Bob, Alice, Charlie
+- Bob, Charlie, Alice
+- Charlie, Alice, Bob
+- Charlie, Bob, Alice
+
+## Averaging Marginal Contributions
+
+In two of these cases, Alice was added to an empty taxi, but only in one case to a taxi with only Bob in it.
+If we weight the marginal contributions accordingly, we get the following weighted average marginal contribution for Alice.
+Taking the liberty to shorten Alice, Bob, and Charlie to A,B and C.
+
+$$\frac{1}{6}(\underbrace{2 \cdot \$15}_{\text{A to }\emptyset} + \underbrace{ 1 \cdot \$0}_{\text{A to B}} + \underbrace{1 \cdot \$3}_{\text{A to C}} + \underbrace{2 \cdot \$0}_{\text{A to B,C}})  = \$5.5$$
+
+We divide by $\frac{1}{6}$ because 6 is the sum of the weights (2 + 1 + 1 + 2).
+And that's our final answer for how much Alice should pay to the ride: \$5.5.
+
+Likewise we can calculate the contribution for Bob:
+
+$$\frac{1}{6}(\underbrace{2 \cdot \$25}_{\text{B to }\emptyset} + \underbrace{ 1 \cdot \$10}_{\text{B to A}} + \underbrace{1 \cdot \$13}_{\text{B to C}} + \underbrace{2 \cdot \$10}_{\text{B to A,C}})  = \$15.5$$
+
+And for Charlie:
+
+$$\frac{1}{6}(\underbrace{2 \cdot \$38}_{\text{C to }\emptyset} + \underbrace{ 1 \cdot \$26}_{\text{C to A}} + \underbrace{1 \cdot \$26}_{\text{C to B}} + \underbrace{2 \cdot \$26}_{\text{C to A,B}})  = \$30$$
+
+The individual contributions add up to the total cost: \$5.5 + \$15.5 + \$30 = \$51. Neat.
+As you might have guessed, this is the same result as we would get with the approach that is called the Shapley values [@shapley1953value].
+The method computing these attributions is called Shapley values, and according to this method, the above would be a fair share of the costs.
+
+We could have made different decision in how we "fairly" attribute the costs to the passengers.
+For example, we could have weighted the marginal contributions differently.
+We could have just divided the costs by 3.
+Or we could use solutions that relies on the order of passengers: Alice alone would pay \$15, when we add Bob it's +\$10, so that's his share and Charlie pays the rest.
+A solution which has the problem that would we order the passengers differently, we would get a different share of the costs.
+
+Shapley values are a specific way to attribute the payout to the individual players.
+Next chapter, we will explore where Shapley values come from and how exactly they are defined.
+
+TODO: CONTINUE HERE
 
 ## Mathematical terms used
 
