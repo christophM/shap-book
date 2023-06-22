@@ -1,12 +1,21 @@
 # SHAP for Linear Models {#linear}
 
+In this chapter you will learn
+
+- How to install the `shap` Python library.
+- How to apply SHAP on a machine learning model.
+- Interpretation of SHAP values for linear models using the waterfall plot.
+- Interpreting the global model importances and dependencies with the summary and dependence plots.
+
 Let's begin with a simple example.
 "Simple", because we'll start with a linear regression model which is already interpretable, allowing us to compare SHAP values with our intuitive understanding of the model.
 
 ## What about coefficients?
 
+TODO: Rethink this chapter again, maybe delete it or move it down.
+
 But why do we need SHAP values for linear regression anyway?
-Couldn't we just look at the coefficients?[^global-and-local]
+Couldn't we just look at the coefficients?
 
 We could, but that would only tell half of the story.
 The coefficient for a feature is the same for all data points, which means you can see the coefficient as a "global" model interpretation.
@@ -144,6 +153,99 @@ Interpretation:
 
 However, this information alone does not help us understand the effect of these factors on a single prediction, as it also depends on the specific value of the feature for that data instance.
 
+
+TODO: Maybe move coefficient interpretation here
+
+
+
+## Installing `shap`
+
+To use the dataset and apply SHAP to the model, we need to install the `shap` library.
+As with most Python packages, you can install it using `pip`.
+
+```{sh}
+pip install shap
+```
+
+All examples in this book use `shap` version 0.41.0.
+To install this exact version, use the following command:
+
+```{sh}
+pip install shap==0.41.0
+```
+
+
+### If you use virtualenv
+
+If you're using virtualenv or venv, activate the environment first.
+Assuming the environment is called venv:
+
+```{sh}
+source venv/bin/activate
+pip install shap
+```
+
+### If you use conda
+
+If you're using conda, use these commands to install `shap`:
+
+```{sh}
+conda install -c conda-forge shap
+```
+
+For the version used in this book:
+
+```{sh}
+conda install -c conda-forge shap=0.41.0
+```
+
+The installation process is straightforward.
+
+# Installing `shap`
+
+To use the dataset and apply SHAP to the model, we need to install the `shap` library.
+As with most Python packages, you can install it using `pip`.
+
+```{sh}
+pip install shap
+```
+
+All examples in this book use `shap` version 0.41.0.
+To install this exact version, use the following command:
+
+```{sh}
+pip install shap==0.41.0
+```
+
+
+### If you use virtualenv
+
+If you're using virtualenv or venv, activate the environment first.
+Assuming the environment is called venv:
+
+```{sh}
+source venv/bin/activate
+pip install shap
+```
+
+### If you use conda
+
+If you're using conda, use these commands to install `shap`:
+
+```{sh}
+conda install -c conda-forge shap
+```
+
+For the version used in this book:
+
+```{sh}
+conda install -c conda-forge shap=0.41.0
+```
+
+The installation process is straightforward.
+
+
+
 ## Computing SHAP values
 
 To better understand the feature effects, we can compute SHAP values for one of the data instances.
@@ -175,6 +277,32 @@ And to finally compute SHAP values we call the `.shap_values` method from the ex
 shap_values = explainer.shap_values(X_test)
 ```
 
+::: {.callout-note}
+
+<!-- TODO: Reread -->
+
+When building a prediction model, you separate training and testing data to avoid overfitting and getting a fair evaluation.
+While the same risk doesn't exist in the same way for SHAP, it's considered best practice to use the training data for the Explainer (= for the background data) and compute the explanations for new data.
+Separation avoids "replacing" feature values for a data point with its own value, because it both appears in background data and data points to be explained.
+Separation also means that we compute explanations for fresh data that the model hasn't seen yet.
+But, full disclosure: I haven't seen much research on that, so take it with a grain of salt.
+
+:::
+
+Now, let's examine the SHAP values.
+It's gonna look a bit ugly but it's informative to inspect the `Explanation` object.
+
+```{python}
+print(shap_values)
+```
+
+This Explanation object contains `.values`, `.base_values`, and `.data` fields.
+The `.values` represent the feature SHAP values, `.base_values` is the average prediction (the same for each data point), and `.data` contains the feature values.
+Each element in these arrays corresponds to one data point in `X_test`, which we submitted to compute the SHAP values.
+However, having only the raw SHAP values isn't very helpful.
+The true power of the shap library lies in the various visualizations it offers.
+
+
 ## Interpreting SHAP values
 
 We still haven't seen the SHAP values.
@@ -191,6 +319,52 @@ exp = shap.Explanation(
 shap.waterfall_plot(exp)
 ```
 
+
+The plot above is called a waterfall plot.
+It's named "waterfall" because each step resembles flowing water.
+However, sometimes the water can flow in both directions, as SHAP values can be either negative or positive.
+The feature values are ordered by the magnitudes of their SHAP values.
+The x-axis represents the scale of the predictions, while the y-axis shows the different feature values.
+
+```{python}
+#| echo: false
+from IPython.display import display, Markdown
+
+i = 0
+y = model.predict(X_test)[i]
+bv = exp.base_values
+diff = y - bv
+
+feature1 = "density"
+ind = X_test.columns.get_loc(feature1)
+fv1 = X_test.iloc[i, ind]
+sv1 = exp.values[ind]
+
+feature2 = "residual sugar"
+ind = X_test.columns.get_loc(feature2)
+fv2 = X_test.iloc[i, ind]
+sv2 = exp.values[ind]
+
+feature3 = "alcohol"
+ind = X_test.columns.get_loc(feature3)
+fv3 = X_test.iloc[i, ind]
+sv3 = exp.values[ind]
+
+display(Markdown("""
+Interpretation: The predicted value of {y} for instance {i} differs from the expected average prediction of {base_value} by {diff}.
+
+- {feature1} equals {fv1}, contributed {sv1}
+- {feature2} equals {fv2}, contributed {sv2}
+- {feature3} equals {fv3}, contributed {sv3}
+- ...
+
+The sum of all SHAP values equals the difference between the prediction ({y}) and expected value ({base_value}).
+""".format(base_value=round(bv, 2), y=np.round(y, 2), i=i, diff=np.round(diff, 2),
+           feature1=feature1, fv1=round(fv1, 2), sv1=round(sv1, 2),
+           feature2=feature2, fv2=round(fv2, 2), sv2=round(sv2, 2),
+           feature3=feature3, fv3=round(fv3, 2), sv3=round(sv3, 2))))
+```
+
 Observations:
 
 - The most crucial feature was residual sugar (=10.8), with a SHAP value of 0.27, signifying it had an increasing effect on the quality.
@@ -201,7 +375,42 @@ This plot provides a nice overview, but it somewhat omits crucial information th
 For instance, in the case of residual sugar, we know it increased the prediction, but we cannot determine from the waterfall plot alone what happens to the prediction if the value of residual sugar (10.8) increased or decreased.
 We could infer this from the coefficient, but this will change in the next chapter when we discuss additive models.
 
+:::{.callout-tip}
+
+## Interpretation Template *(replace [] with your data)*
+
+Prediction [$f(x)$] for instance [$i$] differs from the average prediction [$E[f(X)]$] by [$f(xi) − E[f(X)]$] and [feature name = feature value] contributed [$\phi_j$] towards that difference.
+
+:::
+
+Let's check out another data point:
+
+
+```{python}
+exp = shap.Explanation(
+  values=shap_values[0],
+  base_values=explainer.expected_value,
+  data=X_test.values[0],
+  feature_names=wine.columns
+)
+shap.waterfall_plot(exp)
+```
+
+
+TODO: Short interpretation or call to interpret for the reader.
+
+There are alternative visualizations to this plot, which we will explore in the later [Plots Chapter](#plots).
+This plot only explains a single instance.
+But how can we understand the model's overall behavior?
+
+
 ## Global model understanding
+
+We compute SHAP values to explain individual predictions.
+However, we can also compute SHAP values for more data points, ideally even for the entire (test) dataset.
+By visualizing the SHAP values over all features and multiple data points, we can discover patterns of how the model made predictions.
+This provides a global model interpretation.
+
 
 ::: {.callout-note}
 
@@ -210,16 +419,39 @@ We could infer this from the coefficient, but this will change in the next chapt
 SHAP values allows a local interpretation -- how features affected a prediction.
 Global interpretations are about how the model behaves *on average*.
 This includes how features affect the prediction, how important each feature was for the prediction and how features interact.
+Importance is determined by the averaged absolute SHAP values for a feature.
+
+There's a third option: explain the model behavior for a subset or group of data.
+We will explore this option in the [Regression Chapter](#regression).
 
 :::
 
 
-Additionally, we lack a global understanding of the most important features.
-To address this, we can use the summary plot:
+In the previous step, we computed the SHAP values for the test data, which are now stored in the `shap_values` variable.
+From this, we can create a summary plot that offers further insights into the model.
 
 ```{python}
 shap.summary_plot(shap_values, X_test, feature_names=wine.columns)
 ```
+
+The plot displays SHAP values for all features and data points for which we computed the values.
+This plot provides a comprehensive overview of several aspects:
+
+- The importance of each feature, defined as the sum of absolute SHAP values.
+- The dependence of the target on each feature.
+- Some intriguing details.
+
+Each point represents the SHAP value of a feature for a specific data instance.
+So, in total, there are a number of features multiplied by the number of instances of points in the summary plot (typically with significant overplotting).
+The x-axis represents the SHAP values, the y-axis shows the features, and the color indicates the feature's value.
+
+::: {.callout-warning}
+
+Visual spread doesn't equal importance.
+
+:::
+
+
 This plot automatically ranks the features by importance.
 Density, residual sugar, and alcohol are the most important features for predicting wine quality, according to SHAP values.
 The importance ordering is determined by the average absolute SHAP values across the test data (in this case).
@@ -227,6 +459,7 @@ The importance ordering is determined by the average absolute SHAP values across
 The coloring also shows us that the relationships are monotonic for all features:
 Increasing (or decreasing) a feature always increases the prediction, and only in one direction.
 Since we know that the model is a linear regression model, we also know that this relationship must be linear.
+
 
 ## Comparing coefficients and SHAP values
 

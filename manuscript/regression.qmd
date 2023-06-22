@@ -167,4 +167,39 @@ Observations:
 
 
 
+## Model-understanding for data subsets
+
+Since the global interpretation relies on aggregating SHAP values, we can do the same for any arbitrary group of data.
+So instead of plotting the summary for all data points, we can subset our dataset and plot the summary for the subset's SHAP values instead.
+
+```{python}
+subset = X_test["alcohol"].values > 12
+shap.summary_plot(shap_values[subset], X_test[subset], feature_names=wine.columns)
+```
+
+This summary plot is the summary plot from before, but only with the wines that have an alcohol level above 12.
+We observe that:
+
+- The alcohol cut-off is immediately visible in the plot, since we now only observe high alcohol levels.
+- The importance ranking of the features changed, but so did the interpretation: Conditional on alcohol>12, the most important features were alcohol, free sulfur dioxide, and residual sugar.
+- Volatile acidity become much less important.
+
+And this is of course possible for all the plots. 
+
+```{python}
+shap.dependence_plot(
+  'residual sugar', shap_values.values[subset], X_test[subset],
+  feature_names=wine.columns
+)
+```
+::: {.callout-tip}
+
+By analyzing subsets of the data with "global" tools, we can smoothly transition between local and global explanations.
+Use
+
+:::
+
+
+Be creative: Any feature can be used to create subsets. If you have additional data, you may also analyze subsets based on variables that weren't used in the model.
+For example you might want to study how the explanations differ for protected attributes such as race or gender, which are variables that you wouldn't use as features.
 

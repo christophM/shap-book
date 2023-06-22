@@ -1,6 +1,12 @@
 # Classification with Logistic Regression {#classification}
 
 This chapter shows how to use and interpret SHAP with logistic regression.
+In this chapter you will learn:
+
+- How to apply SHAP for classification.
+- How to handle categorical features (also relevant for regression of course).
+- That SHAP puts out one SHAP value not only for each instance and feature, but also for each class.
+
 
 Differences from linear regression include:
 

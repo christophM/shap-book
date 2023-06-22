@@ -9,7 +9,6 @@ book:
   chapters:
     - index.qmd
     - introduction.qmd
-    - getting-started.qmd
     - intuition.qmd
     - theory.qmd
     - estimation-overview.qmd
