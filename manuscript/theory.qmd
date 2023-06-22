@@ -124,6 +124,7 @@ But before we begin, here is an overview of the terms so you can come back here 
 
 | Symbol | Description |
 |--------|-------------|
+| $x$ | Feature values of the data point to be explained. |
 | $\hat{f}(x)$ | The prediction for the instance $x$ using the model $\hat{f}$. |
 | $\beta_0, \beta_1, \ldots , \beta_p$ | The coefficients or weights of the linear model. They quantify the impact of each feature on the prediction.|
 | $x_1, \ldots, x_p$ | These represent the feature values of the instance $x$. Each feature is indexed by a subscript number.|
@@ -136,6 +137,8 @@ But before we begin, here is an overview of the terms so you can come back here 
 Let's begin with a linear prediction model, as it's easier to comprehend.
 
 ## SHAP for linear models
+
+TODO: Move this section to the linear chapter
 
 Our goal in this section is to define SHAP values when the underlying model is a linear regression model.
 We want to understand how each feature affects the prediction of a data point.
@@ -225,7 +228,7 @@ The contributions of two feature values j and k should be the same if they contr
 
 If
 
-$$val_{\hat{f},x}(S \cup \{j\}) = val_{hat{f},x}(S \cup \{k\})$$
+$$val_{\hat{f},x}(S \cup \{j\}) = val_{\hat{f},x}(S \cup \{k\})$$
 
 for all
 

@@ -120,7 +120,7 @@ The summary plot already shows us the general relationships:
 But there are also some breaks in the patterns: There are small fans that receive a large SHAP value. This is due to the interaction (sitting on shoulders).
 To investigate deeper, let's look into the dependence plot.
 
-```python
+```{python}
 shap.dependence_plot("x1", shap_values, X_test)
 ```
 
@@ -174,9 +174,10 @@ So even though Tom is actually taller than Mia, his height has a more negative i
 Neither have a chance to get on someone's shoulders since they are both already in the front.
 
 Even though Mia is smaller, her height has less of a negative impact compared to Tom.
-And we also can't explain it with the interaction since Mia is too close to the band so that she doesn't profit from the shoulder bonus.
+And we also can't explain it with the interaction since Mia is too close to the band and therefore doesn't profit from the shoulder bonus.
 
-But the surprising answer is that Mia's SHAP value actually is influenced by the interaction, even though she isn't directly affected by it. And this is because of how Shapley values are computed.
+But the surprising answer is that Mia's SHAP value actually is influenced by the interaction, even though she isn't directly affected by it.
+And this is because of how Shapley values are computed.
 
 When we compute the SHAP value for Mia's height, her height value is either added to an empty coalition ($\emptyset$) or to a coalition where her stage distance is already present ($\{x_2=2\}$).
 The same happens for Tom.

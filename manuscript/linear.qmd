@@ -473,13 +473,22 @@ shap.dependence_plot(
   interaction_index=None
 )
 ```
+
 This plot illustrates the global dependence modeled by the linear regression between alcohol and the predicted wine quality.
 It's evident that as alcohol content increases, so does the predicted quality of the wine.
 
 Here are a few more explanations about the dependence plot:
 
-- I set the interaction index argument to avoid attempting to detect interactions with other features, as it's a linear model and detecting interactions wouldn't make sense.
+- I set the interaction index argument to avoid attempting to detect interactions with other features, as it's a linear model without any interaction terms and detecting interactions wouldn't make sense.
 - If we don't provide the feature names, we need to use an index in the first position of the features we're interested in.
+
+```{python}
+shap.dependence_plot(
+  'alcohol', shap_values, X_test,
+  feature_names=wine.columns
+)
+```
+
 
 We can observe that the SHAP value increases linearly with each increment in the feature.
 This increase corresponds to the slope in:
@@ -492,7 +501,7 @@ coefs.coefficient[ind]
 
 Eye-balling the dependence plot confirms the same slope, since the plot goes from (8, -0.6) to (14, 0.8), which is a slope of $(0.8 - (-0.6))/(14 - 8) \approx 0.23$
 
-In a way, linear regression is always an easy example.
+In a way, linear regression is always an easy example, at least when you don't explicitly add interaction terms.
 The assumption that everything is linear makes interpretation so easy.
 So in the next chapter, we will juice it up a little and allow non-linear functions.
 

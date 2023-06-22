@@ -16,7 +16,8 @@ Exceptions: Linear SHAP with `feature_perturbation='correlation_dependent'` and 
 
 ## Overview of the many estimators
 
-Here is an overview of the explainers, for your convenience:
+Here is an overview of the explainers, for your convenience.
+The "Background Data" column refers to whether or not the estimation requires data to be estimated.
 
 | Explainer | How it works | Model | Background Data | Inspiration |
 | --- | --- | --- | --- | --- |
@@ -26,8 +27,8 @@ Here is an overview of the explainers, for your convenience:
 | Linear | Explains linear models by multiplying feature values by their weights. | Linear | Yes | - |
 | Additive | Explains additive models. | GAMs | Yes | - |
 | Kernel | Uses a locally weighted linear regression to explain the output of any function. | Agnostic | Yes | LIME |
-| Tree (interventional) | Recursively iterates tree paths. | Tree-based | No | - |
-| Tree (path dependent) | Recursively iterates hybrid paths. | Tree-based | Yes | - |
+| Tree (interventional) | Recursively iterates tree paths. | Tree-based | Yes | - |
+| Tree (path dependent) | Recursively iterates hybrid paths. | Tree-based | No | - |
 | Gradient | Explains models by computing the gradient of the output with respect to the inputs. | Gradient-based | Yes | Input Gradient |
 | Deep | Explains deep learning models by attributing the output to input features using the gradient of the output with respect to the inputs. | Neural Networks | Yes | DeepLIFT |
 | Partition | Calculates SHAP values for a hierarchy of features. | Agnostic | Yes | Owen values |
