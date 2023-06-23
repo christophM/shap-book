@@ -1,9 +1,17 @@
 # A Short History of SHAP and Shapley Values {#history}
 
-A brief overview of the history of SHAP and Shapley values, focusing on the chronological order of inventions.
+In this chapter, you will learn:
+
+- The historic milestones of SHAP values
+- Understand how SHAP and Shapley values are kind of the same thing
+- Get a bird's eye view on the development which also serves as a frame for learning the theory
+
+This chapter gives  brief overview of the history of SHAP and Shapley values, focusing on the chronological order of inventions.
+If you don't care about the history but only about the application of SHAP, there is no harm in skipping this history chapter.
+
 I divide the history into 3 parts marked by a milestone each:
 
-- 1951: Shapley values in game theory
+- 1953: Shapley values in game theory
 - 2012: First steps in machine learning
 - 2017: SHAP, the Cambrian explosion
 
@@ -34,7 +42,7 @@ Machine learning, on the other hand, had made enormous progress in those years.
 In 2012, the ImageNet competition [@deng2009imagenet], led by Fei-Fei Li, was won for the first time by a deep neural network (AlexNet) with a significant margin over the next best (non-neural network) algorithm.
 In many other ways, machine learning continued to improve and attract more research.
 
-In 2010, researchers Erik \v{S}trumbelj and Igor Kononenko published a paper titled "An efficient explanation of individual classifications using game theory" [@strumbelj2010efficient].
+In 2010, researchers Erik Štrumbelj and Igor Kononenko published a paper titled "An efficient explanation of individual classifications using game theory" [@strumbelj2010efficient].
 They proposed using Shapley values to explain predictions of machine learning models.
 Four years later, in 2014, they published another paper with an improved method for computing Shapley values [@strumbelj2014explaining], where they essentially suggested the sampling estimator (see [Estimation Chapter](#estimation)).
 
@@ -100,8 +108,11 @@ This approach was encouraged by the fast computation for tree-based models, as o
 
 With the help of numerous contributors, Lundberg continued to develop the `shap` package, which has now grown into a comprehensive library with many estimators and functionalities.
 
-Since then, other researchers have built upon SHAP, suggesting extensions, some of which can be found in the [Extensions Chapter](#extensions).
+Since then, other researchers have built upon SHAP, suggesting [extensions](#extensions).
 Additionally, SHAP has been implemented in other places, meaning the `shap` package isn't the only source for this method.
+
+Keeping this historic outline in mind, we start from the beginning with game theory in the next chapter.
+
 
 [^fake-nobel]: In reality, it's not the Nobel prize, but the "Nobel Memorial Prize in Economic Sciences," or officially, the "Sveriges Riksbank Prize in Economic Sciences in Memory of Alfred Nobel." It's a sort of imitation Nobel prize created by economists since they weren't included in the original five Nobel Prizes.
 

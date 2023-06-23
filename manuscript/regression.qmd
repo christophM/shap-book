@@ -165,6 +165,27 @@ Observations:
   - When density is low, increasing residual sugar has a significant increasing effect.
   - If density is high, increasing residual sugar doesn't have as strong an effect.
 
+## Interaction Index
+
+TODO: Check this section again
+
+Each feature gets assigned one SHAP value and the sum of SHAP values yields the prediction.
+Any interactions between feature values are fairly shared between them.
+But sometimes it can be interesting to not fairly share them, but instead attribute the prediction also to two-way interactions between features.
+For interactions there is also a solution called interaction index.
+
+The SHAP interaction index, derived from game theory, is defined as:
+
+$$\phi_{i,j}=\sum_{S\subseteq\backslash\{i,j\}}\frac{|S|!(M-|S|-2)!}{2(M-1)!}\delta_{ij}(S)$$
+when $i\neq{}j$ and:
+
+$$\delta_{ij}(S)=\hat{f}_x(S\cup\{i,j\})-\hat{f}_x(S\cup\{i\})-\hat{f}_x(S\cup\{j\})+\hat{f}_x(S)$$
+
+This formula removes the main effects of the features, resulting in the pure interaction effect after accounting for individual effects.
+We then average the values over all possible feature coalitions $S$, similar to the SHAP value computation.
+By calculating the SHAP interaction values for all features, we obtain one matrix per instance with dimensions M x M, where M represents the number of features.
+
+TODO: Add example of interaction plot
 
 
 ## Model-understanding for data subsets

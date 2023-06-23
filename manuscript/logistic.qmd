@@ -21,6 +21,16 @@ Nonetheless, having two classes is a special case of having $k$ classes.
 
 From the SHAP perspective, this is similar to regression, except the scale is the score output, not regression.
 
+## The adult dataset
+
+For the classification task, we will use the Adult dataset.
+The UCI Adult dataset is widely used in machine learning tasks.
+It contains demographic and socioeconomic data of individuals from the 1994 U.S. Census Bureau database, aiming to predict whether an individual's income is greater than or equal to \$50,000 per year.
+The dataset includes features such as age, education level, work class, occupation, marital status, and more.
+With approximately 32,000 observations, it contains both categorical and numerical features.
+Fortunately, the `shap` package includes the adult dataset, simplifying its use in our example.
+
+
 ## Training the model
 
 ```{python}

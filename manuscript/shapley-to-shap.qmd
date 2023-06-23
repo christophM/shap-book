@@ -1,0 +1,246 @@
+# Going from Shapley values to SHAP
+
+
+TODO: Learning goals
+
+TODO: Use machine learning example throughout the chapter
+
+
+We went into a deep dive into Shapley values from coalitional game theory.
+What does a prediction have to do with games? 
+The connection between these may not be immediately apparent.
+It certainly wasn't for me.
+Now it's time to transfer this approach from game theory to the task of explaining machine learning predictions.
+
+## A machine learning example
+
+Let's consider the following scenario:
+
+You have trained a machine learning model $\hat{f}$ to predict apartment prices.
+For a specific apartment $x^{(i)}$, it predicts €300,000 and you need to explain this prediction.
+The apartment $x^{(i)}$ has an area of 50 m^2^ (538 square feet), is located on the 2nd floor, has a park nearby, and cats are banned:
+
+![The predicted price for a 50 $m^2$ 2nd floor apartment with a nearby park and cat ban is €300,000. Our goal is to explain how each of these feature values contributed to the prediction.](images/shapley-instance.jpg)
+The average prediction for all apartments in the test data is €310,000.
+How much has each feature value contributed to the prediction compared to the average prediction?
+
+
+In the apartment example, the feature values `park-nearby`, `cat-banned`, `area-50`, and `floor-2nd` worked together to achieve the prediction of €300,000.
+In the data, the row would look like this:
+
+<!-- TODO: Check markdown tables again if correct values -->
+
+| Park| Cat | Area | Floor | Predicted Price   |
+|-------------|------------|------|-------|---------|
+| Nearby | Banned | 50   | 2nd   | €300,000|
+
+Our goal is to explain the difference between the actual prediction (€300,000) and the average prediction (€310,000), which amounts to a difference of -€10,000.
+
+To give you an idea of what an answer could look like:
+`park-nearby` contributed €30,000; `area-50` contributed €10,000; `floor-2nd` contributed €0; and `cat-banned` contributed -€50,000.
+The contributions add up to -€10,000, which is the final prediction minus the average predicted apartment price.
+And we want to solve this with Shapley values, so first we have to translate the prediction in terms of a game.
+
+## Translating a prediction to a coalitional game
+
+A prediction can be explained by assuming that each feature value of the instance is a "player" in a game where the prediction is the payout.
+SHAP adapts Shapley values from coalitional game theory to tell us how to fairly distribute the "payout" among the features.
+SHAP values are Shapley values, but for a very specific type of "game": attributing the prediction to the input features.
+
+But let's be more thorough an translate the terms one by one, including the mathematical terms.
+Don't worry, it's just an overview and this chapter will explain the more complex terms right after the table.
+
+
+| Concept | Machine Learning | Math terms |
+|--------|-------------------|------------|------|
+| Player | Feature value  | $j$|
+| Game | Model prediction for a data point | $\hat{f}(x^{(i)}_j)$|
+| Coalition | Set of feature values | $S \subseteq \{1, \ldots, p\}$ |
+| Not in coalition | Features not in coalition $S$ | $C: C = \{1, \ldots, p\} \setminus S$ |
+| Coalition size | Number of feature values | $|S|$| 
+| Total number of players | Number of features | $p$| 
+| Total payout | Prediction for $x^{(i)}$ minus average prediction | $\hat{f}(x^{(i)}) - \mathbb{E}(\hat{f})$ |
+| Value function| Prediction for feature values in coalition S minus expected | $v_{\hat{f},x^{(i)}}(S) = \int \hat{f}(x^{(i)})dX_{C} - \mathbb{E}[\hat{f}(X)]$|
+| SHAP value | Contribution of feature $j$ towards payout |  $\phi_j$ |
+
+
+## How to get predictions when features are absent?
+
+TODO: Edit this section
+
+::: {.callout-note}
+
+The value function depends on a certain model $\hat{f}$ and a certain data point to be explained $x^{(i)}$ and maps a coalition $S$ to it's value.
+The correct way to write it therefore would be as $v_{\hat{f}, x^{(i)}}(S)$, but for shortness I will use $v(S)$.
+
+:::
+
+The value function $v$ determines a payout and which takes a set of features $S$ of a data point as input.
+This value function ultimately determines the interpretation for the attributions we get out for the features.
+
+Let's think back to the apartment example with the four features park, cat, area, and floor and the goal of attributing the prediction to the individual features for one data point.
+Without just looking at the table, let's think about this step by step.
+Since we want to explain the prediction somehow, the model prediction has to be part of the value function.
+The first intuition is that $v(S)$ should somehow depend on $\hat{f}(x)$.
+It's a value function, so it has to work for arbitrary subsets of features.
+That's when we run into the first trouble, because translated to terms of prediction, we need way to express "what does this prediction look like with only the features $S$?".
+The problem is that most prediction functions don't work if you only put in parts of the feature values, but not all of them.
+
+Probability theory to the rescue: There is a concept called marginalization.
+
+And for that we have to think about the features not just as numbers, but as statistical random variables.
+The feature "area" is of course for this one data point that we have just a single number, which we would call an observation of the random variable "area".
+By the way, we will use $x^{(i)}_j$ to represent a concrete observation of a random variable and that's what we feed into the models.
+Upper case $X_j$ is the corresponding random variable, $X_S$ is a bunch of random variables, namely the ones in coalition $S$, $X_C$ the compliment and $X$ is all of them.
+
+And there is one interesting operation that we can do with random variables:
+We can "marginalize" over them, which in mathematical terms is an integration over the entire space of the variable.
+And we can also marginalize terms that are based on random variables, just like our prediction function $\hat{f}$.
+See where this is going?
+
+Now it becomes clearer where the value function comes from, at least the first part:
+
+$$v(S)=\int\hat{f}(x_{1},\ldots,x_{p})d\mathbb{P}_{X_{C}}-E_X(\hat{f}(X))$$
+
+$\int\hat{f}(x_{1},\ldots,x_{p})d\mathbb{P}_{X_{C}}$ is just the prediction function $\hat{f}$, and for features in coalition S, we simply fill in the values $x^{(i)}_j$, and for the feature not in S, but in C, we integrate over those.
+The integration is a theoretical construct, but in reality we don't know what this integral looks like and we can't solve it analytically.
+But consider these separate steps: First define something that we want to have in theory and then think about how to estimate this.
+Her we can already see a big difference to how we talked about Shapley values: There was no need to integrate over any variables, but we could just iterate the player coalitions.
+
+
+But what about the second term, $E_X(\hat{f}(X))$, what is this all about?
+Value functions are typically defined so that the value of the empty set is zero.
+And by subtracting $E_X(\hat{f}(X))$, it's ensured that the coalition with no features at all get's a value of zero.
+Because:
+
+\begin{align}
+v(\emptyset) &=& \int\hat{f}(x_{1},\ldots,x_{p})d\mathbb{P}_{X}-E_X(\hat{f}(X)) \\
+             &=& E_X(\hat{f}(X)) - E_X(\hat{f}(X)) \\
+             &=& 0 \\
+\end{align}
+
+That's because when we integrate the prediction function over all features, that's the very definition of the expected prediction $E_X(\hat{f}(X))$.
+
+## Now the marginal contribution
+
+We are slowly working our way up to the Shapley value.
+We just had a look at the value function and now we look at the marginal contribution:
+How much does a feature $j$ contribute to a coalition of features $S$?
+
+The marginal contribution of $j$ to $S$ is:
+
+\begin{align}
+v(S \cup \{j\}) - v(S) &=& \int\hat{f}(x^{(i)}_S, X_C)d\mathbb{P}_{X_{C}} - E_X(\hat{f}(X))\\
+                       &&  - \left(\int\hat{f}(x^{(i)}_{S \cup \{j\}}, X_{C \backslash \{j\}})d\mathbb{P}_{X_{C \backslash \{j\}}}-E_X(\hat{f}(X))\right) \\
+                       &=& \int\hat{f}(X|X_S = x^{(i)}_S)d\mathbb{P}_{X_{C}}- \int\hat{f}(X | X_{S \cup \{j\}} = x^{(i)}_{S \cup\{j\}})d\mathbb{P}_{X_{C \backslash \{j\}}} \\
+\end{align}
+
+
+## Piecing it all together
+
+Putting all these terms together and putting them into the Shapley value equation, we get the following:
+
+$$
+\phi_j =  \sum_{S\subseteq\{1,\ldots,p\} \backslash \{j\}}\frac{|S|!\left(p-|S|-1\right)!}{p!}\left(\int\hat{f}(X|X_S = x^{(i)}_S)d\mathbb{P}_{X_{C}}- \int\hat{f}(X | X_{S \cup \{j\}} = x^{(i)}_{S \cup\{j\}})d\mathbb{P}_{X_{C \backslash \{j\}}} \right) \\
+$$
+
+The SHAP value $\phi_j$ of a feature value is then defined as its contribution to the payout, calculated as a weighted sum over all possible feature value combinations.
+
+:::{.callout-note}
+
+Don't be confused by the different uses of the word "value":
+The feature value refers to the numerical or categorical value of a feature and instance;
+the Shapley value represents a players contribution to the payout;
+the SHAP value represents the feature's contribution to the prediction;
+the value function is the payout function for coalitions of players (feature values).
+
+:::
+
+
+And that's it.
+That's the theoretical thing that we are interested in when we aim for SHAP values to explain machine learning predictions.
+There is one such (theoretic) SHAP value for each feature x data point, so a dataset with 10 features and 100 data points, there are 1000 SHAP values in total. 
+
+And since SHAP values are defined just like Shapley values -- just with a very specific value function -- they also fulfil the axioms.
+
+## The axioms revisited to understand SHAP values
+
+The axioms formed the basis for defining Shapley values.
+And since SHAP values are Shapley values with a specific value function and game definition, we know that they fulfill the axioms, e.g. @strumbelj2010efficient, @strumbelj2014explaining and @lundberg2017unified showed this.
+The axioms are also interesting in the other direction: By knowing that an explanation based on SHAP will follow the standard Shapley axioms, we can already extract how these theoretic constructs may be interpreted.
+Let's go through the axioms one by one and identify what the mean for the theoretic SHAP values.
+
+### Efficiency: SHAP values adds up to the (centered) prediction
+
+The feature contributions must add up to the difference between the prediction for x and the average.
+
+$$\sum_{j=1}^p\phi_j = \hat{f}(x) - E_X(\hat{f}(X))$$
+
+Implications: 
+The efficiency axiom is quite common in explainable AI, and it's also followed by methods like LIME.
+The efficiency axiom provides an anchoring effect, ensuring that the attributions are on the same scale as the output. 
+An example of interpretation without this anchoring effect of efficiency would be examining only the gradients of the predicted score concerning the inputs. 
+These gradients would be on a different scale and would not add up to the prediction.
+
+### Symmetry: The order of features doesn't matter
+
+The contributions of two feature values j and k should be the same if they contribute equally to all possible coalitions.
+
+If
+
+$$v_{\hat{f},x}(S \cup \{j\}) = val_{\hat{f},x}(S \cup \{k\})$$
+
+for all
+
+$$S \subseteq \{1, \ldots, p\} \backslash \{j, k\}$$
+
+then
+
+$$\phi_j = \phi_{k}$$
+
+Implications: 
+The symmetry axiom implies that, for example, the order of features should not matter.
+If they contribute equally, they should receive the same SHAP value.
+Other methods, such as the breakdown method [@staniak2018explanations] or counterfactual explanations, violate this axiom, and two features could have the same impact on the prediction without receiving the same attribution.
+This axiom is a requirement for us to accurately interpret the ordering of the SHAP values.
+
+### Dummy: Features that don't change the prediction get a SHAP value of 0 
+
+A feature j that does not change the predicted value – regardless of which coalition of feature values it's added to – should have a SHAP value of 0.
+
+If
+
+$$v_{\hat{f},x}(S \cup \{j\}) = v_{\hat{f},x}(S)$$
+
+for all
+
+$$S \subseteq \{1, \ldots, p\}$$
+
+then
+
+$$\phi_j = 0$$
+
+Implications: 
+The dummy axiom ensures that features not used by the model receive an attribution of zero. 
+This is a straightforward implication.
+For example, if a LASSO model was trained, we can be certain that a feature with a $\beta_j = 0$ will have a SHAP value of zero for this feature for all possible data points.
+
+### Additivity: Additive predictions are also additive in their SHAP values
+
+For a game with combined payouts $v_1+v_2$, the respective SHAP values are as follows:
+
+$$\phi_{j}(v_1)+\phi_j(v_2)$$
+
+Implications:
+Suppose you trained a random forest, which means that the prediction is an average of many decision trees. 
+The Additivity property guarantees that for a feature value, you can calculate the SHAP value for each tree individually, average them, and obtain the SHAP value for the feature value for the random forest. 
+For an additive ensemble of models, the SHAP value is the sum of individual SHAP values.
+
+::: {.callout-note}
+
+There exists an alternative formulation of the Shapley axioms in which the Dummy and Additivity axioms are replaced with a Linearity axiom; however, both formulations ultimately lead to the Shapley values.
+
+:::
+
+
+

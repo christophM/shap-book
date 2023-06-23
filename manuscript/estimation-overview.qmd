@@ -1,5 +1,7 @@
 # Estimating SHAP Values - An Overview {#estimation-overview}
 
+TODO: REthink this chapter
+
 There is more than one way to estimate SHAP values.
 This chapter gives an overview of the estimation methods, for a deeper dive go to the [Appendix](#estimation).
 
@@ -13,6 +15,73 @@ The estimation methods differ in:
 No matter which estimation method you choose, you'll get the same SHAP values, at least in expectation.
 Exceptions: Linear SHAP with `feature_perturbation='correlation_dependent'` and Tree Explainer with `feature_perturbation='tree_path_dependent'`.
 :::
+
+
+## How to calculate the SHAP for one feature: The exact way
+
+The SHAP values represents the average marginal contribution of a feature value across all possible coalitions.
+A coalition is, in this case, any subset of feature values, including the empty set and the set containing all feature values of the instance.
+In the following figure, we evaluate the contribution of the `cat-banned` feature value when added to a coalition of `park-nearby` and `area-50`.
+We simulate a coalition consisting of only `park-nearby`, `cat-banned`, and `area-50` by randomly drawing another apartment from the data and using its value for the floor feature.
+The other apartment might look like this:
+
+| Park | Cat | Area | Floor | Predicted Price   |
+|-------------|------------|------|-------|---------|
+| Nearby | Allowed    | 100   | 1st  | €504,000|
+
+Then we replace the value `floor-2nd` of the original apartment by the randomly drawn `floor-1st`.
+We then predict the price of the apartment with this combination (€310,000).
+
+
+| Park        | Cat        | Area | Floor | Predicted Price   |
+|-------------|------------|------|-------|---------|
+| Nearby      | Banned     | 50   | 1st   | €310,000|
+
+Next, we remove `cat-banned` from the coalition by replacing it with a random value of the cat allowed/banned feature from the randomly drawn apartment.
+
+| Park        | Cat        | Area | Floor | Predicted Price   |
+|-------------|------------|------|-------|---------|
+| Nearby      | Allowed    | 50   | 1st   | €320,000|
+
+In this example, it is `cat-allowed`, but it could have been `cat-banned` again.
+We predict the apartment price for the coalition of `park-nearby` and `area-50` (€320,000).
+The contribution of `cat-banned` is €310,000 - €320,000 = -€10,000.
+This estimate depends on the values of the randomly drawn apartment that served as a "donor" for the cat and floor feature values.
+We can obtain better estimates by repeating this sampling step and averaging the contributions.
+![One sample repetition to estimate the contribution of `cat-banned` to the prediction when added to the coalition of `park-nearby` and `area-50`.](images/shapley-instance-intervention.jpg)
+
+We repeat this computation for all possible coalitions.
+The SHAP value is a weighted average of all the marginal contributions to all possible coalitions.
+The computation time increases exponentially with the number of features, because there are $2^p$ possible coalitions, where $p$ is the number of features.
+One solution to keep the computation time manageable is to compute contributions for only a few samples of the possible coalitions.
+
+The following figure shows all coalitions of feature values that are needed to determine the exact SHAP value for `cat-banned`.
+The first row shows the coalition without any feature values.
+The second, third, and fourth rows show different coalitions with increasing coalition size, separated by "|" in @fig-coalitions.
+In total, the following coalitions are possible:
+
+- No feature values
+- `park-nearby`
+- `area-50`
+- `floor-2nd`
+- `park-nearby`+`area-50`
+- `park-nearby`+`floor-2nd`
+- `area-50`+`floor-2nd`
+- `park-nearby`+`area-50`+`floor-2nd`.
+
+For each of these coalitions, we compute the predicted apartment price with and without the feature value `cat-banned` and take the difference to obtain the marginal contribution.
+The exact SHAP value is the (weighted) average of these marginal contributions.
+To get a prediction from the machine learning model, we replace the feature values of features not in a coalition with random feature values from the apartment dataset.
+
+![All 8 coalitions needed for computing the exact SHAp value of the `cat-banned` feature value.](images/shapley-coalitions.jpg){#fig-coalitions}
+
+By estimating the SHAP values for all feature values, we obtain the complete distribution of the prediction (minus the average) among the feature values.
+That's not the only way to estimate SHAP values, nor is it explained in detail here.
+In fact, there are various ways to estimate SHAP values as you can see in the [Estimation Chapter](#estimation-overview) and in more detail [in the appendix](#estimation).
+This is because, especially for specific models like linear regression and tree-based models, there are more efficient ways to estimate the SHAP values.
+
+
+
 
 ## Overview of the many estimators
 

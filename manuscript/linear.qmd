@@ -1,5 +1,7 @@
 # SHAP for Linear Models {#linear}
 
+TODO: Reread and check flow of chapter
+
 In this chapter you will learn
 
 - How to install the `shap` Python library.
@@ -10,32 +12,36 @@ In this chapter you will learn
 Let's begin with a simple example.
 "Simple", because we'll start with a linear regression model which is already interpretable, allowing us to compare SHAP values with our intuitive understanding of the model.
 
-## What about coefficients?
+## SHAP for linear models
 
-TODO: Rethink this chapter again, maybe delete it or move it down.
+TODO: Maybe move to estimation chapter?
+TODO: Or merge with the coefficients chapter further down
 
-But why do we need SHAP values for linear regression anyway?
-Couldn't we just look at the coefficients?
+Our goal in this section is to define SHAP values when the underlying model is a linear regression model.
+We want to understand how each feature affects the prediction of a data point.
+In a linear model, calculating the individual effects is straightforward.
+Here's what a linear model prediction looks like for one data instance:
 
-We could, but that would only tell half of the story.
-The coefficient for a feature is the same for all data points, which means you can see the coefficient as a "global" model interpretation.
+$$\hat{f}(x)=\beta_0+\beta_{1}x_{1}+\ldots+\beta_{p}x_{p}$$
 
-But for a specific data point (= local explanation), we can also make use of the information of the feature value.
-Imagine we have coefficient $\beta_j=0.5$.
-It matters whether the feature value is, for example, 0, 0.008, or -4, because multiplication will produce different results (0, 0.004, -2).
-A more meaningful way to present a feature effect would be the coefficient multiplied with the feature value: $\beta_j \cdot x_{ij}$.
+where x is the instance for which we want to compute the contributions.
+Each $x_j$ is a feature value, with j = 1,...,p.
+The $\beta_j$ is the weight corresponding to feature j.
 
-However, this formula is also "incomplete" as it leaves us without any sense of whether the contribution is large or small.
-Let's say that the contribution is $\beta_j \cdot x_{ij} = 2$, again with $\beta_j=0.5$ and $x_{ij}=4$.
-Is that a lot?
-That depends on the range of $x_j$.
-If 4 is the lowest possible value of $x_{j}$, then 2 is actually the smallest possible contribution, but if $x_j$ follows a Normal distribution centered at 0, then a contribution of 4 is more than expected.
-An easy fix is to center the effect $\beta_j x_{ij}$ around the expected effect $E(\beta_j X_j)$.
-It's not coincidence that the result is also the SHAP value $\phi_j$ for a feature in a linear model:
+The contribution $\phi_j$ of the j-th feature on the prediction $\hat{f}(x)$ is:
 
-$\phi_{ji}(\hat{f}) = \beta_j x_{ij} - E(\beta_jX_j) = \beta_{j} (x_{ij} - E(X_j))$.
+$$\phi_j(\hat{f})=\beta_{j}x_j-E(\beta_{j}X_{j})=\beta_{j}(x_j - E(X_{j}))$$
 
-Let's see how this works in the wine data.
+Where $E(\beta_jX_{j})$ is the mean effect estimate for feature j, the contribution is the difference between the feature effect and the average effect.
+Nice!
+Now we know how much each feature contributed to the prediction.
+If we sum all the feature contributions for one instance, the result is the following:
+
+\begin{align*}\sum_{j=1}^{p}\phi_j(\hat{f})=&\sum_{j=1}^p(\beta_{j}x_j-E(\beta_{j}X_{j}))\\=&(\beta_0+\sum_{j=1}^p\beta_{j}x_j)-(\beta_0+\sum_{j=1}^{p}E(\beta_{j}X_{j}))\\=&\hat{f}(x)-E(\hat{f}(X))\end{align*}
+
+This is the predicted value for the data point x minus the average predicted value.
+Feature contributions can be negative.
+Alright, let's see these in action with a wine quality prediction.
 
 ## The wine data
 
@@ -153,55 +159,27 @@ Interpretation:
 
 However, this information alone does not help us understand the effect of these factors on a single prediction, as it also depends on the specific value of the feature for that data instance.
 
+## Model coefficients offer a global perspective
 
-TODO: Maybe move coefficient interpretation here
+The coefficient for a feature is the same for all data points, which means you can see the coefficient as a "global" model interpretation.
 
+But for a specific data point (= local explanation), we can also make use of the information of the feature value.
+Imagine we have coefficient $\beta_j=0.5$.
+It matters whether the feature value is, for example, 0, 0.008, or -4, because multiplication will produce different results (0, 0.004, -2).
+A more meaningful way to present a feature effect would be the coefficient multiplied with the feature value: $\beta_j \cdot x_{ij}$.
+
+However, this formula is also "incomplete" as it leaves us without any sense of whether the contribution is large or small.
+Let's say that the contribution is $\beta_j \cdot x_{ij} = 2$, again with $\beta_j=0.5$ and $x_{ij}=4$.
+Is that a lot?
+That depends on the range of $x_j$.
+If 4 is the lowest possible value of $x_{j}$, then 2 is actually the smallest possible contribution, but if $x_j$ follows a Normal distribution centered at 0, then a contribution of 4 is more than expected.
+An easy fix is to center the effect $\beta_j x_{ij}$ around the expected effect $E(\beta_j X_j)$.
+It's not coincidence that the result is also the SHAP value $\phi_j$ for a feature in a linear model:
+
+$\phi_{ji}(\hat{f}) = \beta_j x_{ij} - E(\beta_jX_j) = \beta_{j} (x_{ij} - E(X_j))$.
 
 
 ## Installing `shap`
-
-To use the dataset and apply SHAP to the model, we need to install the `shap` library.
-As with most Python packages, you can install it using `pip`.
-
-```{sh}
-pip install shap
-```
-
-All examples in this book use `shap` version 0.41.0.
-To install this exact version, use the following command:
-
-```{sh}
-pip install shap==0.41.0
-```
-
-
-### If you use virtualenv
-
-If you're using virtualenv or venv, activate the environment first.
-Assuming the environment is called venv:
-
-```{sh}
-source venv/bin/activate
-pip install shap
-```
-
-### If you use conda
-
-If you're using conda, use these commands to install `shap`:
-
-```{sh}
-conda install -c conda-forge shap
-```
-
-For the version used in this book:
-
-```{sh}
-conda install -c conda-forge shap=0.41.0
-```
-
-The installation process is straightforward.
-
-# Installing `shap`
 
 To use the dataset and apply SHAP to the model, we need to install the `shap` library.
 As with most Python packages, you can install it using `pip`.
@@ -255,6 +233,7 @@ To do this, we create a `LinearExplainer` object.
 import shap
 explainer = shap.LinearExplainer(model, X_train)
 ```
+
 Alternatively, one could use the `Explainer` like this:
 
 ```{python}
@@ -388,9 +367,9 @@ Let's check out another data point:
 
 ```{python}
 exp = shap.Explanation(
-  values=shap_values[0],
+  values=shap_values[1],
   base_values=explainer.expected_value,
-  data=X_test.values[0],
+  data=X_test.values[1],
   feature_names=wine.columns
 )
 shap.waterfall_plot(exp)

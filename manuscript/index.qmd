@@ -14,7 +14,7 @@ This advice was misguided, as that's not how science works, but it does speak to
 
 SHAP has also received its fair share of criticism: expensive to compute, difficult to interpret, and overhyped.
 I agree with some of this criticism.
-In the world of interpretable machine learning, there is no perfect method, we have to learn to work with the limitations.
+In the world of interpretable machine learning, there is no perfect method, we have to learn to work with the limitations, which are covered in this book as well.
 SHAP also does many things well: flexibility to work with any model, modularity in constructing global interpretations, and a vast ecosystem of SHAP adaptations.
 
 As you can see, I have a love-hate relationship with SHAP -- which is maybe a healthy position for writing about SHAP.

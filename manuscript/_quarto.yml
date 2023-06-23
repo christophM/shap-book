@@ -9,8 +9,9 @@ book:
   chapters:
     - index.qmd
     - introduction.qmd
-    - intuition.qmd
-    - theory.qmd
+    - history.qmd
+    - theory-shapley.qmd
+    - shapley-to-shap.qmd
     - estimation-overview.qmd
     - linear.qmd
     - additive.qmd
@@ -19,7 +20,6 @@ book:
     - correlation.qmd
     - plots.qmd
     - logistic.qmd
-    - history.qmd
     - image.qmd
     - image-deepexplainer.qmd
       #    - text.qmd

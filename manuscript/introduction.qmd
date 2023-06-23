@@ -95,7 +95,7 @@ Boosted trees often seem to be the best option in many cases [@grinsztajn2022tre
 Most people wouldn't consider them interpretable, at least not in their raw form.
 The same applies to transformers, standard for text (GPT, anyone?), and convolutional neural networks for image classification.
 Ensembles of models often produce the best solutions.
-So limiting model selection to inherently interpretable models may lead to sub-optimal performance.
+Therefore, limiting model selection to inherently interpretable models may lead to sub-optimal performance.
 Sub-optimal performance might directly translate into fewer sales, more churn or more false negative sepsis predictions. 
 
 So, what to do?
@@ -111,15 +111,14 @@ No, because model-agnostic methods *don't care* about the model's inner workings
 Think of playing fighting games on a console, pushing inputs (the controller) and observing what happens (the character fights).
 Model-agnostic interpretable machine learning may be more sophisticated than playing Tekken, but the principle is the same:
 Treat the model as a box with inputs and output, manipulate the inputs, observe how the outputs change, and draw conclusions.
-
-More formally, this can be described by SIPA [@scholbeck2020sampling]:
+More formally, most model-agnostic interpretation methods can be described by the SIPA framework [@scholbeck2020sampling]:
 
 - **S**ampling data
 - **I**ntervention on the data
 - **P**rediction step
 - **A**ggregating the results
 
-There are many methods that work by this principle [@molnar2022], such as:
+There are many methods that work by the SIPA framework [@molnar2022], such as:
 
 - Partial dependence plots show how changing one (or two) of the features changes the prediction on average.
 - Individual conditional expectation curves do the same for a single data point.
@@ -128,7 +127,7 @@ There are many methods that work by this principle [@molnar2022], such as:
 - Local interpretable model-agnostic explanations (LIME)[@ribeiro2016should].
 
 As you may have guessed:
-**SHAP is another model-agnostic interpretation method.**
+**SHAP is another model-agnostic interpretation method**, which works by sampling data, intervening on them, getting predictions and then aggregating the results. 
 
 ::: {.callout-tip}
 
@@ -147,6 +146,9 @@ TODO:
 - explain the figure a bit
 - explain idea of attributions
 - mention theory
+
+
+
 
 <!--
 SHAP is the application of Shapley values in Explainable AI .
@@ -205,7 +207,7 @@ You'll learn about limitations in the appropriate places throughout this book.
 Now, it's time to be positive.
 There are good reasons why SHAP has become popular and why it's worth learning: it's model-agnostic, has a solid theoretic foundation, and it's very flexible, as we will discover throughout the book.
 
-SHAP values are used in various areas and predictive models:
+SHAP values are used in various areas to explain predictive models:
 
 - Forecasting gold price [@jabeur2021forecasting].
 - Identifying mortality factors for COVID-19 [@smith2021identifying].
@@ -217,6 +219,11 @@ SHAP values are used in various areas and predictive models:
 - Molecular design [@rodriguez2020interpretation].
 
 Now it's time to see SHAP in action, starting with a getting-started example before diving into the intuition and theory of SHAP.
+
+## Structure of this book
+
+TODO: Write a small guide here for the book structure
+
 
 [^keywords]: I use "Explainable AI" and "interpretable machine learning" interchangeably. Some use XAI more for post-hoc explanations of predictions and interpretable ML for inherently interpretable models. But in many cases they are used interchangeably and, for example, if searching for a particular method it's best to search with both terms.
 

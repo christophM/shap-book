@@ -83,7 +83,7 @@ masker = shap.maskers.Image(
 
 For now, the only thing to know about the masker is that it "removes" the pixels not in the coalition.
 From the parameters, we can guess that it blurs the absent image parts.
-Later, I'll show you how this actually looks like.
+Later, I'll show you what this actually looks like.
 First, we'll compute SHAP values for two images: a cheeseburger and a pocket watch.
 As this is a classification task, we need to choose the classes for which we want explanations.
 It's common to select the top classes, particularly the one with the highest probability, as it often holds significance in subsequent stages when using the model.
