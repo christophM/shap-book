@@ -137,15 +137,18 @@ print(shap_values[0].shape)
 The first dimension represents the number of images for which we computed the SHAP values.
 The second, third, and fourth dimensions contain the SHAP values in the form of an image since the input data was an image.
 
-Let's plot the SHAP values:
+Let's plot the SHAP values. 
 
 ```{python}
+#| label: fig-digits
+#| fig-cap: SHAP values for the input pixels of different input images (one per row). First column shows input image, then each column shows the SHAP values for the classes from 1 to 9. 
 shap.image_plot(shap_values, x_test[:3])
 ```
 
+
 All the red pixels contributed positively to the respective class and blue ones negatively.
 Grey pixels have a near zero SHAP value.
-For example, for the "2", the class output "1" has blue pixels at the left and right beginning/ending of the "2" image.
+For example, for the digit "2" in the second, the class output "1" has blue pixels at the left and right beginning/ending of the "2" image.
 This makes sense, since these are the pixels that make it a "2" and not a "1".
 
 ## SHAP with the Deep Explainer

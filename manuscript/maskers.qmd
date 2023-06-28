@@ -113,6 +113,7 @@ Another way to define masks for tabular data is through integer vectors.
 These vectors indicate which feature (based on column index) to mask.
 
 ### Partition Masker
+
 Alternatively, the Partition masker takes not only the background dataset but also a hierarchical structure of the data.
 The partition masker is used in combination with the [Partition explainer](#estimation) and includes a max_samples argument controlling the number of data points sampled from the background data to compute SHAP values.
 The clustering type argument specifies the partitioning method, which is a distance metric for clustering feature values.

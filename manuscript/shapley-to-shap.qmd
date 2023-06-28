@@ -1,10 +1,12 @@
 # Going from Shapley values to SHAP
 
+In this chapter, you'll learn:
 
-TODO: Learning goals
+- To frame a prediction as a coalitional game
+- To transfer the concept of Shapley values to explaining ML predictions with SHAP
+- To interpret the axioms
 
 TODO: Use machine learning example throughout the chapter
-
 
 We went into a deep dive into Shapley values from coalitional game theory.
 What does a prediction have to do with games? 
@@ -85,7 +87,7 @@ The first intuition is that $v(S)$ should somehow depend on $\hat{f}(x)$.
 It's a value function, so it has to work for arbitrary subsets of features.
 That's when we run into the first trouble, because translated to terms of prediction, we need way to express "what does this prediction look like with only the features $S$?".
 The problem is that most prediction functions don't work if you only put in parts of the feature values, but not all of them.
-
+How would the model predict the value of an apartment when, for example, the area and the cat features are "absent"? 
 Probability theory to the rescue: There is a concept called marginalization.
 
 And for that we have to think about the features not just as numbers, but as statistical random variables.
@@ -96,19 +98,46 @@ Upper case $X_j$ is the corresponding random variable, $X_S$ is a bunch of rando
 And there is one interesting operation that we can do with random variables:
 We can "marginalize" over them, which in mathematical terms is an integration over the entire space of the variable.
 And we can also marginalize terms that are based on random variables, just like our prediction function $\hat{f}$.
+So when the area feature is absent, we can simulate this, in theory, by integrating the prediction function over the distribution of area values.
+
+::: {.callout-tip}
+
+While integration of a function typically involves calculating the area under the curve, integration with respect to a distribution implies weighting certain portions under the curve more heavily, based on their likelihood within the integral.
+
+:::
+
+
 See where this is going?
 
 Now it becomes clearer where the value function comes from, at least the first part:
 
 $$v(S)=\int\hat{f}(x_{1},\ldots,x_{p})d\mathbb{P}_{X_{C}}-E_X(\hat{f}(X))$$
 
-$\int\hat{f}(x_{1},\ldots,x_{p})d\mathbb{P}_{X_{C}}$ is just the prediction function $\hat{f}$, and for features in coalition S, we simply fill in the values $x^{(i)}_j$, and for the feature not in S, but in C, we integrate over those.
+$\int\hat{f}(x_{1},\ldots,x_{p})d\mathbb{P}_{X_{C}}$ is the prediction function $\hat{f}$ where, for features in coalition S, we fill in the values $x^{(i)}_j$, and for the feature not in S, but in C, we integrate over those.
 The integration is a theoretical construct, but in reality we don't know what this integral looks like and we can't solve it analytically.
 But consider these separate steps: First define something that we want to have in theory and then think about how to estimate this.
 Her we can already see a big difference to how we talked about Shapley values: There was no need to integrate over any variables, but we could just iterate the player coalitions.
 
 
+Let's go back to this example:
+
+| Park| Cat | Area | Floor | Predicted Price   |
+|-------------|------------|------|-------|---------|
+| Nearby | Banned | 50   | 2nd   | €300,000|
+
+Very informally, the value function for the coalition of park, floor would be:
+
+$$v({\text{park}, \text{floor}) = \int\hat{f}(x_{park}="nearby",X_{cat}, X_{area}, x_{floor}=2)d\mathbb{P}_{X_{cat,area}}-E_X(\hat{f}(X)) $$
+
+So the roles for this coalition and how we put them into the value function:
+
+- Park and floor, the "present" features: just put them into $\hat{f}$ with the values the data instance has for these features
+- Cat and area: treat them as random variables and integrate over them. 
+
 But what about the second term, $E_X(\hat{f}(X))$, what is this all about?
+It's the expected prediction, meaning, for a given distribution of the features what is the expected prediction?
+Coming back to the apartment example, what is the expected prediction if we know nothing about an apartment?
+That's what this number says.
 Value functions are typically defined so that the value of the empty set is zero.
 And by subtracting $E_X(\hat{f}(X))$, it's ensured that the coalition with no features at all get's a value of zero.
 Because:
@@ -132,19 +161,31 @@ The marginal contribution of $j$ to $S$ is:
 \begin{align}
 v(S \cup \{j\}) - v(S) &=& \int\hat{f}(x^{(i)}_S, X_C)d\mathbb{P}_{X_{C}} - E_X(\hat{f}(X))\\
                        &&  - \left(\int\hat{f}(x^{(i)}_{S \cup \{j\}}, X_{C \backslash \{j\}})d\mathbb{P}_{X_{C \backslash \{j\}}}-E_X(\hat{f}(X))\right) \\
-                       &=& \int\hat{f}(X|X_S = x^{(i)}_S)d\mathbb{P}_{X_{C}}- \int\hat{f}(X | X_{S \cup \{j\}} = x^{(i)}_{S \cup\{j\}})d\mathbb{P}_{X_{C \backslash \{j\}}} \\
+                       &=& \int\hat{f}(X | X_{S \cup \{j\}} = x^{(i)}_{S \cup\{j\}})d\mathbb{P}_{X_{C \backslash \{j\}}}- \int\hat{f}(X | X_{S} = x^{(i)}_{S})d\mathbb{P}_{X_{C}}\\
 \end{align}
+
+Again, for the apartment example, the contribution of the cat to a coalition of {park, floor} would be:
+
+$$v(\{\text{cat}, \text{park}, \text{floor}\}) - v(\{\text{park}, \text{floor})$$ 
+
+The result is a number that describes how much the value of the coalition increases when we "know" the cat feature for a coalition where we already know the park and the floor feature.
+Because that's what the value function expresses: Present features are known, absent feature values are unknown, so the marginal contribution just tells you how much, given that you already know some of the features, how much the prediction is pushed (either up or down) when we know, in this case, the cat feature as well.
 
 
 ## Piecing it all together
 
-Putting all these terms together and putting them into the Shapley value equation, we get the following:
+Putting all the terms together the Shapley value equation, we get:
 
 $$
-\phi_j =  \sum_{S\subseteq\{1,\ldots,p\} \backslash \{j\}}\frac{|S|!\left(p-|S|-1\right)!}{p!}\left(\int\hat{f}(X|X_S = x^{(i)}_S)d\mathbb{P}_{X_{C}}- \int\hat{f}(X | X_{S \cup \{j\}} = x^{(i)}_{S \cup\{j\}})d\mathbb{P}_{X_{C \backslash \{j\}}} \right) \\
+\phi_j =  \sum_{S\subseteq\{1,\ldots,p\} \backslash \{j\}}\frac{|S|!\left(p-|S|-1\right)!}{p!}\left(\int\hat{f}(X | X_{S \cup \{j\}} = x^{(i)}_{S \cup\{j\}})d\mathbb{P}_{X_{C \backslash \{j\}}}- \int\hat{f}(X | X_{S} = x^{(i)}_{S})d\mathbb{P}_{X_{C}} \right) \\
 $$
 
 The SHAP value $\phi_j$ of a feature value is then defined as its contribution to the payout, calculated as a weighted sum over all possible feature value combinations.
+So when we want to know how much the cat feature (equaling cat="banned") contributed to the predicted apartment price, we calculate how much it contributed to all possible coalitions.
+And then that's the Shapley value of the cat feature.
+We can do the same for all the other features.
+And then we get for all 4 features a Shapley values.
+
 
 :::{.callout-note}
 

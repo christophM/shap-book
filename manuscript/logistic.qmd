@@ -54,9 +54,6 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.linear_model import LogisticRegression
 import numpy as np
 
-# Load the Adult dataset
-X, y = shap.datasets.adult()
-
 # Define the categorical and numerical features
 cats = ['Workclass', 'Marital Status', 'Occupation',
         'Relationship', 'Race', 'Sex', 'Country']

@@ -35,8 +35,6 @@ An application of Data Shapley can be found in a paper by Bloch et al.[@bloch202
 
 In an ensemble of multiple models, the ensemble's performance should ideally surpass that of each individual model.
 Each model is considered a player, and the payout is determined by the ensemble's overall performance.
-Shapley values ensure a fair payout, as seen in cases like Numerai, where external participants train multiple models and receive a payout based on their performance.
-However, to the best of my knowledge, Shapley values are not used in Numerai's payouts.
 
 ## Federated learning
 

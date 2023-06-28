@@ -114,7 +114,8 @@ shap.dependence_plot(
 )
 ```
 
-The shap package automatically selects the `volatile acidity` feature for interaction detection, coloring the SHAP values accordingly.
+The `shap` package has an automatic interaction detection.
+In this case, `shape` selected `volatile acidity` as a feature that highly interacts with `alcohol` and colored the SHAP values according to this feature.
 The feature `volatile acidity` was picked because it had the highest estimated interaction with `alcohol`.
 
 ::: {.callout-note}
@@ -131,9 +132,9 @@ You can also pick a feature by hand.
 
 Some key observations:
 
-- Generally, an increase in alcohol level raises the SHAP value, which in turn increases the predicted values.
+- Generally, a higher alcohol level corresponds with greater corresponding SHAP value
 - Examining cases with low volatile acidity reveals an interesting interaction with wines that have a low alcohol level. While wines with low alcohol (around 9%) typically have a negative SHAP value, low volatile acidity seems to have a slightly positive impact.
-- When alcohol levels are high (11 - 14%), having a higher volatile acidity appears to be slightly beneficial, though the effect is quite subtle.
+- When alcohol levels are high (11 - 14%), having a higher volatile acidity appears to be slightly beneficial, though the effect is quite subtle. Note that this effect is not necessarily causal and ignores dependencies between the features.
 
 ::: {.callout-note}
 General advice on reading the interaction part of the dependence plot:
@@ -145,7 +146,7 @@ General advice on reading the interaction part of the dependence plot:
 
 :::
 
-Now, let's examine the partial dependence plot for residual sugar.
+Now, let's examine the dependence plot for residual sugar.
 Residual sugar indicates the remaining sugar in the wine, with higher amounts making it sweeter.
 
 ```{python}
@@ -162,30 +163,77 @@ Observations:
 - The `shap` package identifies the highest interaction with density.
 - Density and residual sugar are correlated (not independent); for instance, high sugar levels result in high density values. Physics.
 - Comparing curves for low density (around 0.99) and high density (around 0.998):
-  - When density is low, increasing residual sugar has a significant increasing effect.
+  - When density is low, increasing residual sugar has an increasing effect.
   - If density is high, increasing residual sugar doesn't have as strong an effect.
 
-## Interaction Index
 
-TODO: Check this section again
+## Analyzing interactions in more detail
 
-Each feature gets assigned one SHAP value and the sum of SHAP values yields the prediction.
-Any interactions between feature values are fairly shared between them.
-But sometimes it can be interesting to not fairly share them, but instead attribute the prediction also to two-way interactions between features.
-For interactions there is also a solution called interaction index.
+Let's use the SHAP interaction values to drill a bit deeper into the interaction between  alcohol and volatile acidity.
 
-The SHAP interaction index, derived from game theory, is defined as:
+```{python}
+shap_interaction_values = explainer.shap_interaction_values(X_test)
+```
 
-$$\phi_{i,j}=\sum_{S\subseteq\backslash\{i,j\}}\frac{|S|!(M-|S|-2)!}{2(M-1)!}\delta_{ij}(S)$$
-when $i\neq{}j$ and:
+And then we plot the dependence plot:
 
-$$\delta_{ij}(S)=\hat{f}_x(S\cup\{i,j\})-\hat{f}_x(S\cup\{i\})-\hat{f}_x(S\cup\{j\})+\hat{f}_x(S)$$
+```{python}
+#| label: fig-alcohol-acidity
+#| fig-cap: SHAP interaction dependence plot for x1 and x2
+shap.dependence_plot(("alcohol", "volatile acidity"), shap_interaction_values, X_test)
+```
 
-This formula removes the main effects of the features, resulting in the pure interaction effect after accounting for individual effects.
-We then average the values over all possible feature coalitions $S$, similar to the SHAP value computation.
-By calculating the SHAP interaction values for all features, we obtain one matrix per instance with dimensions M x M, where M represents the number of features.
+We can also flip the features.
+Again, it's the same SHAP interaction value $\phi_{alcohol, vol.ac.}$, but showing volatile acidity on the x-axis and alcohol as color:
 
-TODO: Add example of interaction plot
+This actually gives us a much clearer picture of what's going on in terms of interactions:
+We can see two clusters, one for low volatile acidity and one for high volatile acidity.
+When volatile acidity is low, the dependence of the SHAP interaction value is negative with increasing alcohol.
+But for high volatile acidity, higher alcohol levels are associated with an increasing SHAP interaction value.
+
+
+
+```{python}
+#| label: fig-acidity-alcohol
+#| fig-cap: SHAP interaction dependence plot for x1 and x2
+shap.dependence_plot(("volatile acidity", "alcohol"), shap_interaction_values, X_test)
+```
+
+Also we can look at the main effects of the features:
+
+```{python}
+#| label: fig-alcohol-alcohol
+#| fig-cap: SHAP interaction dependence plot for x1 and x2
+shap.dependence_plot(("alcohol", "alcohol"), shap_interaction_values, X_test)
+```
+
+The dependence of SHAP main effect for alcohol is almost linear in increasing alcohol levels.
+
+```{python}
+#| label: fig-acidity-acidity
+#| fig-cap: SHAP interaction dependence plot for x1 and x2
+shap.dependence_plot(("volatile acidity", "volatile acidity"), shap_interaction_values, X_test)
+```
+
+```{python}
+import matplotlib.pyplot as plt
+fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(10,20))
+shap.dependence_plot(("alcohol", "alcohol"), shap_interaction_values, X_test, ax=axes[0], show=False)
+shap.dependence_plot(("volatile acidity", "volatile acidity"), shap_interaction_values, X_test, ax=axes[1], show=False)
+plt.show()
+```
+
+Keep in mind that interaction are not necessarily split intuitively as we uncovered in the [Interaction Chapter](#interaction).
+Sorry, would love to give you more definitive answers, but SHAP just gives us a glimpse into the model.
+
+
+## Analyzing correlated features
+
+TODO: CONTINUE HERE
+
+TODO: Also add correlation plot
+
+
 
 
 ## Model-understanding for data subsets

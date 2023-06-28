@@ -1,5 +1,8 @@
 # SHAP Explainers {#estimation}
 
+TODO: Think about renaming it from Explainer to Estimation, bc. explainer is a `shap` term
+TODO: More cleanly separate between estimation method and `shap` implementation
+
 In each of the explainers covered in this chapter, I have attempted to distinguish between the theory and their implementation in SHAP.
 Admittedly, this distinction is not perfect, and I apologize for any confusion.
 
@@ -240,7 +243,7 @@ Keep in mind that this adds a bit of complexity to the interpretation.
 
 Notes on implementation:
 
-```python
+```{python}
 #| eval: false
 shap.explainers.Linear(model, background)
 ```

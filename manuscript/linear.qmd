@@ -4,6 +4,7 @@ TODO: Reread and check flow of chapter
 
 In this chapter you will learn
 
+- A simple method to estimate SHAP for linear regression models
 - How to install the `shap` Python library.
 - How to apply SHAP on a machine learning model.
 - Interpretation of SHAP values for linear models using the waterfall plot.
@@ -12,10 +13,7 @@ In this chapter you will learn
 Let's begin with a simple example.
 "Simple", because we'll start with a linear regression model which is already interpretable, allowing us to compare SHAP values with our intuitive understanding of the model.
 
-## SHAP for linear models
-
-TODO: Maybe move to estimation chapter?
-TODO: Or merge with the coefficients chapter further down
+## Estimating SHAP for linear models
 
 Our goal in this section is to define SHAP values when the underlying model is a linear regression model.
 We want to understand how each feature affects the prediction of a data point.
@@ -157,8 +155,6 @@ Interpretation:
 - An increase of density by 1 unit decreases the predicted quality by -124.264.
 - Volatile acidity, citric acid, chlorides, total sulfur dioxide, and density have a negative effect.
 
-However, this information alone does not help us understand the effect of these factors on a single prediction, as it also depends on the specific value of the feature for that data instance.
-
 ## Model coefficients offer a global perspective
 
 The coefficient for a feature is the same for all data points, which means you can see the coefficient as a "global" model interpretation.
@@ -269,6 +265,7 @@ But, full disclosure: I haven't seen much research on that, so take it with a gr
 :::
 
 Now, let's examine the SHAP values.
+
 It's gonna look a bit ugly but it's informative to inspect the `Explanation` object.
 
 ```{python}
@@ -278,6 +275,7 @@ print(shap_values)
 This Explanation object contains `.values`, `.base_values`, and `.data` fields.
 The `.values` represent the feature SHAP values, `.base_values` is the average prediction (the same for each data point), and `.data` contains the feature values.
 Each element in these arrays corresponds to one data point in `X_test`, which we submitted to compute the SHAP values.
+
 However, having only the raw SHAP values isn't very helpful.
 The true power of the shap library lies in the various visualizations it offers.
 
@@ -330,7 +328,7 @@ fv3 = X_test.iloc[i, ind]
 sv3 = exp.values[ind]
 
 display(Markdown("""
-Interpretation: The predicted value of {y} for instance {i} differs from the expected average prediction of {base_value} by {diff}.
+Interpretation: The predicted value of f(x)={y} for instance {i} differs from the expected average prediction of {base_value} by {diff}.
 
 - {feature1} equals {fv1}, contributed {sv1}
 - {feature2} equals {fv2}, contributed {sv2}
@@ -453,8 +451,8 @@ shap.dependence_plot(
 )
 ```
 
-This plot illustrates the global dependence modeled by the linear regression between alcohol and the predicted wine quality.
-It's evident that as alcohol content increases, so does the predicted quality of the wine.
+This plot illustrates the global dependence modeled by the linear regression between alcohol and the corresponding SHAP values for alcohol.
+It's evident that as alcohol content increases, so does the corresponding SHAP values.
 
 Here are a few more explanations about the dependence plot:
 

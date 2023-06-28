@@ -1,5 +1,12 @@
 # Understanding Feature Interactions with SHAP {#interaction}
 
+Learning goals
+
+- Understand what a feature interaction is
+- Understand how SHAP handles feature interactions
+- Interpret interactions within the dependence plot
+- Learn about SHAP interaction
+
 Interpretation gets tricky when the model has interactions.
 This chapter goes deep into a simulated example so we can get to better understand how interactions are distributed among the features.
 
@@ -49,6 +56,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 import matplotlib.pyplot as plt
+np.random.seed(42)
 
 n = 1000
 df = pd.DataFrame({
@@ -115,12 +123,14 @@ shap.summary_plot(shap_values, X_test)
 The summary plot already shows us the general relationships:
 
 - The further away from the stage ($x_2$), the smaller the SHAP values.
-- The taller the fan ($x_1$), the smaller the SHAP values.
+- The taller the fan ($x_1$), the greater the SHAP values.
 
 But there are also some breaks in the patterns: There are small fans that receive a large SHAP value. This is due to the interaction (sitting on shoulders).
-To investigate deeper, let's look into the dependence plot.
+To investigate deeper, let's look into the dependence plot, @fig-dependence-x1.
 
 ```{python}
+#| label: fig-dependence-x1
+#| fig-cap: "Dependence plot for x1, the height feature"
 shap.dependence_plot("x1", shap_values, X_test)
 ```
 
@@ -144,15 +154,25 @@ The reason why the interaction also "bleeds" into the cluster where we wouldn't 
 
 Let's investigate the two fans:
 
-1. Mia, 159cm tall with a distance of 4 to the stage.
-2. Tom, 161cm tall standing right next to Mia with a distance of 4 to the stage.
+1. Mia, 159cm tall with a distance of 2 to the stage.
+2. Tom, 161cm tall standing right next to Mia with a distance of 2 to the stage.
 
 The model predicts the following for how much they will enjoy the concert:
 
 ```{python}
 # Creating data for Mia and Tom
 Xnew = pd.DataFrame({'x1': [159, 161], 'x2': [2,2]})
-print(rf_model.predict(Xnew))
+
+print("""
+Mia: {mia}
+Tom: {tom}
+Expected: {exp}
+""".format(
+  mia=round(rf_model.predict(Xnew)[0], 2),
+  tom=round(rf_model.predict(Xnew)[1], 2),
+  exp=round(explainer.expected_value[0], 2)
+))
+
 ```
 They have a rather similar predicted joy for the concert, with Mia having a slightly worse prediction -- makes sense given she is slightly smaller and neither of them qualify for shoulders.
 
@@ -160,7 +180,12 @@ Let's have a look at their SHAP values.
 
 ```{python}
 shap_values = explainer.shap_values(Xnew)
-print(shap_values)
+
+print("Mia")
+print(shap_values[0])
+
+print("Tom")
+print(shap_values[1])
 ```
 
 The SHAP values differ quite substantially.
@@ -201,20 +226,146 @@ The answer would be that the effect would be quite similar for both Mia and Tom 
 But SHAP values don't work that way.
 The values reflect interactions with other features, even if we have to change multiple feature values of a data instance.
 
+::: {.callout-warning}
+
+SHAP values are not to be interpreted as a what-if analysis (e.g. "what if I increased the feature by one unit")
+
+:::
+
+
+
+
 Because in a what-if analysis, we would only evaluate how the prediction changes when the height changes, which should be rather similar for Tom and Mia.
 
 But, what does such an artificial example have to do with real ML applications?
 The phenomenon that occurs here in the extreme plays out in more complex but subtle ways in real applications.
 Only potentially with more features, and the interactions won't be as blunt but might be more smooth and intricate.
+But we can expect this global phenomenon to occur as well.
+To be honest, the interactions in a machine learning model can be very complex and also SHAP values don't help us a lot to understand them.
+So take this limitation in mind when interpreting SHAP values.
 
 
-::: {.callout-tip}
+## SHAP Interaction Values
 
-## Takeaways
+For now we have talked about SHAP values where each feature gets just one SHAP value, so you end up with $p$ SHAP values.
+It is, however, possible to define SHAP values so that you get the $p$ SHAP values for the main effects plus $p \cdot (p-1)$ SHAP interaction values which each attributes the prediction to the individual effects and two-way interaction effects.
+That means with SHAP, we can separate main effects from interaction effects.
 
-- SHAP values are not to be interpreted as a what-if analysis.
-- Feature interactions are split across the SHAP values.
-- A SHAP value must be interpreted in the context of background data and the full prediction function.
+The SHAP interaction values are defined as [@lundberg2020local;@fujimoto2006axiomatic]: 
+
+$$\phi_{i,j}=\sum_{S\subseteq\backslash\{i,j\}}\frac{|S|!(M-|S|-2)!}{2(M-1)!}\delta_{ij}(S)$$
+when $i\neq{}j$ and:
+
+$$\delta_{ij}(S)=\hat{f}_x(S\cup\{i,j\})-\hat{f}_x(S\cup\{i\})-\hat{f}_x(S\cup\{j\})+\hat{f}_x(S)$$
+
+The interaction is split equaly between $\phi_{i,j}$ and $\phi_{j,i}$, so to get the total interaction effect you have to add them up: $\phi_{i,j} + \phi_{j,i}$.
+But where does this formulation leave the main effect, for example for feature $j$?
+We call this main SHAP value $\phi_{j,j}$ to symbolize that it was computed along with the SHAP interaction values.
+The SHAP main effect is then defined as:
+
+$$\phi_{j,j} = \phi_j - \sum_{j\neq i} \phi_{j,i}$$
+
+That means the SHAP main value of a feature is the usual SHAP value minus all interaction effects.
+By calculating the SHAP interaction values for all features, we obtain one matrix per instance with dimensions M x M, where M represents the number of features.
+And on the diagonal, we get the SHAP main effects.
+
+
+If you have three features $x_1$, $x_2$, and $x_3$, you would end up with 9 SHAP values, which we can represent in a matrix
+
+- 3 SHAP main values: $\phi_{1,1}, \phi_{2,2}, \phi_{3,3}$.
+- 6 SHAP interaction values: $\phi_{1,2} = \phi_{2,1}, \phi_{2,3}=\phi_{3,2}$ and $\phi_{1,3} = \phi_{3,1}$.
+
+
+\begin{bmatrix}
+\phi_{1,1} & \phi_{1,2} & \phi_{1,3} \\
+\phi_{2,1} & \phi_{2,2} & \phi_{2,3} \\
+\phi_{3,1} & \phi_{3,2} & \phi_{3,3}
+\end{bmatrix}
+
+
+All values in this matrix add up to the prediction (minus the average prediction).
+This also means that when we decide to use the SHAP interaction values instead of plain SHAP, then the SHAP values $\phi_1$, $\phi_2$, and $\phi_3$ will diver from before since in the first case interactions between features need to be distributed among the SHAP values whereas in the interaction value case, they are also in $\phi_{1,2}, \phi_{2,3}$, and $\phi_{1,3}$.
+
+
+
+
+Let's estimate for the concert example the SHAP interaction values and visualize them in a dependence plot:
+
+```{python}
+#| label: fig-interaction
+#| fig-cap: SHAP interaction dependence plot for x1 and x2
+shap_interaction_values = explainer.shap_interaction_values(X_test)
+shap.dependence_plot(("x1", "x2"), shap_interaction_values, X_test)
+```
+
+If you compare that to the dependence plot, @fig-dependence-x1 before:
+It seems like it's the same plot but with the "trend" effect of $x_1$ removed, kind of rotated.
+And looking at the formula above, this makes sense, since we literally subtract the main effects of $x_1$ and $x_2$.
+Now we see much more clearly that the interaction is only due to some break at $x_1 = 160cm$, but this linear trend wasn't part of the interaction.
+We again see the two "clusters":
+
+- People close to the stage ($x_2 \leq 7$): This is the line that starts low ($\phi_{1,2} \approx -2$)  and jumps at $x_1 = 160$ to a somewhat higher SHAP value ($\phi_{1,2} \approx 1$).
+- People far away from the stage ($x_2 >  7$): The line that starts high ($\phi_{1,2} \approx 4.5$) and then jumps to a low SHAP value ($\phi_{1,2} \approx -2.5$)
+
+If we split the data into two segments for fans close to the stage and those far away, we can see this 
+
+We can also visualize the SHAP main effects with a dependence plot:
+
+```{python}
+#| label: fig-dependence-x1-interaction
+#| fig-cap: SHAP main effect dependence plot for x1 when accounting for interactions
+shap.dependence_plot(("x1", "x1"), shap_interaction_values, X_test)
+```
+
+If you compare these SHAP main effects to the dependence plot of the SHAP values in @fig-depednence-x1, we can see:
+
+- We still got the "jumps".
+- But we no longer have the two clusters within each.
+- The distance in SHAP main value of the jump is $\approx 3$ and this is no coincidence, since that's the "bonus" of 10 in the predicted fun, but it only affects 3/10 of the people, since we simulated the data to be uniformly distributed.
+- Otherwise the lines show the linear trend with slope 0.1 for $x_1$ and -1 for $x_2$
+
+Also for the stage feature we see a similar change:
+
+```{python}
+#| label: fig-dependence-x2-interaction
+#| fig-cap: SHAP main effect dependence plot for x2 when accounting for interactions
+shap.dependence_plot(("x2", "x2"), shap_interaction_values, X_test)
+```
+
+## Interaction values for Mia and Tom
+
+Let's estimate the SHAP interaction values for Mia and Tom, which gives us the following SHAP values each, one for height (upper left), one for stage (bottom right) and interaction between height and stage (top right and bottom left).
+
+```{python}
+shap_interaction_values = explainer.shap_interaction_values(Xnew)
+print("Mia")
+print(shap_interaction_values[0])
+
+print("Tom")
+print(shap_interaction_values[1])
+```
+
+These SHAP values add up to prediction minus the expected prediction. Try it out yourself. Make sure the interaction is counted both times. 
+
+And these SHAP values give us some interesting observations:
+
+- The SHAP value for the stage is the same for both now ($\approx 2.2$). Since they both have the same feature value here (closeness to stage = 2) and the interaction with height is reflected in an extra SHAP value, it makes sense that both have the same SHAP value here.
+- The height feature has a positive effect for Mia, but a negative one for Tom, which is explained by looking @fig-dependence-x2-interaction
+- Also their interaction effects go into opposite directions, negative for Mia, positive for Tom, in accordance with @fig-interaction
+- They both have a very similar prediction, so the main difference is in how the prediction (minus average prediction) is distributed among $\phi_{1,1}$ and $\phi_{1,2} + \phi_{2,1}$.
+- The technical answer is that SHAP interaction values just split the "bonus" effect differently
+- The interpretative answer is that have a below average height and don't profit from the stage bonus.
+  - Tom, due to his height being slightly above the bonus threshold, the negative part is mostly attributed to his height alone. The positive SHAP interaction value offsets that overly negative SHAP main effect.
+  - Mia's height and the corresponding SHAP main effect is judged along with the other persons in that range, which potentially have the bonus (shoulder-effect), which gives the height a positive spin. But since she is too close to the stage and has no chance of getting the shoulder-bonus, the interaction is negative.
+
+::: {.callout-warning}
+
+The way I formulated the initial interaction function, you might have expected that the SHAP  main effect ($\phi_{1,1}$)of the height feature would show only a positive linear line without any jump.
+Same goes for the SHAP main effect $\phi_{2,2}$ that you might have expected to show a negative, linear slope in the dependence plot.
+And the interaction effect should have been the only values showing the jump.
+
+This example shows that SHAP, by it's design of iterating over all possible coalitions, attributes feature interactions (here the shoulder bonus) in unintuitive ways.
+It's a valid attribution at least in terms of the SHAP axioms, but it might go against what we would have attributed by hand.
 
 :::
 

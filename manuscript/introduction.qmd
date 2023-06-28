@@ -140,15 +140,74 @@ Methods like SHAP can be applied to any model, so even with a decision tree, you
 ## SHAP is an explainable AI technique
 
 SHAP[@NIPS2017_7062] is a method that can be used to explain individual predictions of machine learning models.
+To give you a first idea what this looks like, @fig-waterfall gives you a first impression.
+If you use SHAP to explain a prediction, you get one value per input feature that tells you how much this feature value contributed towards the prediction.
+In the following case, the prediction model predicts the probability of a person to make more than \$50k, based on socio-economic factors of that person.
+Some demographic have a positive effect on the predicted probability, some a negative.
 
-TODO: 
-- Figure here
-- explain the figure a bit
-- explain idea of attributions
-- mention theory
+```{python}
+#| echo: false
+#| label: fig-waterfall
+#| caption: SHAP values to explain a prediction. 
+import shap
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.linear_model import LogisticRegression
+import numpy as np
+from sklearn.model_selection import train_test_split
+
+X, y = shap.datasets.adult()
+
+X_train, X_test, y_train, y_test = train_test_split(
+  X, y, test_size=0.2, random_state=1
+)
 
 
+# Load the Adult dataset
+X, y = shap.datasets.adult()
 
+# Define the categorical and numerical features
+cats = ['Workclass', 'Marital Status', 'Occupation',
+        'Relationship', 'Race', 'Sex', 'Country']
+nums = ['Age', 'Education-Num', 'Capital Gain',
+        'Capital Loss', 'Hours per week']
+
+# Define the column transformer
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('cat', OneHotEncoder(), cats),
+        ('num', StandardScaler(), nums)
+    ])
+
+# Define the pipeline
+model = Pipeline([
+    ('preprocessor', preprocessor),
+    ('classifier', LogisticRegression(max_iter=10000))
+])
+
+# Fit the pipeline to the training data
+model.fit(X_train, y_train)
+
+X_sub = shap.sample(X_train, 100)
+
+ex = shap.Explainer(model.predict_proba, X_sub)
+shap_values = ex(X_test.iloc[0:100])
+class_index = 0
+data_index = 1
+
+sv = shap.Explanation(
+  values = shap_values.values[data_index,:,class_index],
+  base_values = shap_values.base_values[data_index,class_index],
+  feature_names=X.columns,
+  data=X_test.iloc[data_index]
+)
+shap.waterfall_plot(sv)
+```
+
+Don't worry, you don't have to fully understand this figure just yet.
+It's just the target to keep in mind.
+That's where we are going with this book, starting with the necessary background in Shapley values, seing how this transfers to explaining machine learning predictions and then actually applying those techniques.
 
 <!--
 SHAP is the application of Shapley values in Explainable AI .
@@ -186,6 +245,9 @@ The rough idea behind SHAP explanations:
 
 -->
 
+
+TODO: Rewrite this section. move ad to the end of the book
+
 ## Why a separate book for SHAP?
 
 I have also written another book about Interpretable Machine Learning.
@@ -221,6 +283,9 @@ SHAP values are used in various areas to explain predictive models:
 Now it's time to see SHAP in action, starting with a getting-started example before diving into the intuition and theory of SHAP.
 
 ## Structure of this book
+
+For now, it's the goals 
+
 
 TODO: Write a small guide here for the book structure
 

@@ -63,7 +63,7 @@ plt.ylabel('x2')
 plt.show()
 ```
 
-The plot above illustrates that when we ignore the correlation between $X_1$ and $X_2$ and sample $X_2$ independently from $X_1$, we create new data points outside of the distribution.
+The plot on the right illustrates that when we ignore the correlation between $X_1$ and $X_2$ and sample $X_2$ independently from $X_1$, we create new data points outside of the distribution.
 This is what occurs with SHAP values.
 On the left, we can see what sampling from $P(X_2 | X_1)$ instead of $P(X_2)$ would look like.
 This conditional sampling will also be part of one of the solutions.
@@ -71,7 +71,7 @@ This conditional sampling will also be part of one of the solutions.
 ## A philosophical problem
 
 Before delving into solution details, let's explore the issue further.
-The problem of correlation and extrapolation is not just a technical challenge but also a philosophical one: do we want the interpretation reflect the modeled relations or the data?
+The problem of correlation and extrapolation is not just a technical challenge but also a philosophical one: do we want the interpretation to reflect the modeled relations or the data?
 
 Consider this: What does it **mean** when features are correlated, and what are the consequences for interpretation?
 From an information theoretic perspective, correlation means that two features share information.
@@ -90,7 +90,7 @@ If you have the option to change the features, we can leverage a wider range of 
 - Employ feature selection methods, particularly those that eliminate correlated features.
 - Remove features with minimal variance.
 - Utilize dimensionality reduction techniques. But this might come with a loss of interpretability, for example, principal component analysis creates difficult to interpret features.
-- Apply feature engineering to decrease correlation. For example, if you have the features "apartment rent" and "number of rooms", they will be correlated. Instead you can decorrelate them by using turning the rent into "rent per square meter". 
+- Apply feature engineering to decrease correlation. For example, if you have the features "apartment rent" and "number of rooms", they will be correlated. Instead you can decorrelate them by turning the rent into "rent per square meter". 
 - Combine features: Perhaps you have the amount of rain in the morning and afternoon as separate features. Maybe daily rainfall is sufficient? Test it out.
 
 Reducing correlated features and the overall number of features can significantly benefit model fitting.

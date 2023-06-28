@@ -99,7 +99,7 @@ shap.plots.bar(shap_values[0, :, 'NEGATIVE'])
 
 That was quite simple, right?
 
-TODO CHECK AGAIN: We see that "IBM" and "sc" contributed the most to the negative sentiment, especially "sc".
+We see that "sc" contributed the most to the negative sentiment.
 
 However, "scam" is oddly split into "sc" and "am," which isn't ideal for interpretation.
 This issue arises from how we mask the input.
@@ -114,7 +114,7 @@ Then, we provide both the model and the masker to SHAP.
 
 Here are the results:
 
-```python
+```{python}
 masker = shap.maskers.Text(tokenizer=r"\W+")
 explainer = shap.Explainer(model, masker=masker)
 shap_values = explainer(s)
@@ -325,8 +325,8 @@ shap_values = explainer([input_text])
 shap.plots.waterfall(shap_values[0, :, 5 + 1])
 ```
 
-This is the explanation for the second word in the predicted sequence, which is "spaghetti".
-"Italian" and "cuisine" positively contributed to this word, which makes a lot of sense.
+This is the explanation for the second word in the predicted sequence, which is "throwing".
+The word "insulted" positively contributed to this word while all others had a negative contribution.
 
 ## Other text-to-text tasks
 
