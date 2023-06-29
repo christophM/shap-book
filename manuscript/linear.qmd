@@ -179,6 +179,22 @@ $\phi_{ji}(\hat{f}) = \beta_j x_{ij} - E(\beta_jX_j) = \beta_{j} (x_{ij} - E(X_j
 ## Installing `shap`
 
 To use the dataset and apply SHAP to the model, we need to install the `shap` library.
+
+::: {.callout-note}
+
+The SHAP library was written by Scott Lundberg, author of the SHAP paper [@lundberg2017unified] and many other SHAP-related papers.
+The [first commit](https://github.com/slundberg/shap/tree/7673c7d0e147c1f9d3942b32ca2c0ba93fd37875) was on November 22nd, 2016.
+At the time of writing, there are over 2000 commits.
+The SHAP package is open source and hosted on Github, making it public and allowing everyone to track its progress.
+The repository has been starred over 19k times and forked nearly 3k times.
+Feature-wise, it's the most comprehensive library available for SHAP values.
+I believe the `shap` library is the most widely-used implementation of SHAP values in machine learning.
+
+:::
+
+
+
+
 As with most Python packages, you can install it using `pip`.
 
 ```{sh}

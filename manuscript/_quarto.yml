@@ -24,6 +24,7 @@ book:
     - text.qmd
     - extensions.qmd
     - other.qmd
+    - alternative-libraries.qmd
     - dashboard.qmd  
     - limitations.qmd
     - shap-library.qmd

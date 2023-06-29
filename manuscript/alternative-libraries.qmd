@@ -1,0 +1,28 @@
+# Alternatives to the `shap` library
+
+There are alternative implementations of `shap` and SHAP values available.
+
+In Python:
+
+- [Captum](https://github.com/pytorch/captum)[@kokhlikyan2020captum]: A general model interpretability library that implements KernelShap, Sampling estimator, GradientShap, and Deep Shap.
+- [shapley](https://github.com/benedekrozemberczki/shapley)[@rozemberczki2022shapley]: Implements the exact estimator, some linear explanation methods, and Monte Carlo permutation sampling.
+
+Python packages that internally rely on `shap`:
+
+- [DALEX](https://github.com/ModelOriented/DALEX)[@baniecki2021dalex]
+- [AIX360](https://github.com/Trusted-AI/AIX360)[@aix360sept2019]
+- [InterpretML](https://github.com/interpretml/interpret/)[@nori2019interpretml] covers multiple methods, including shap.
+- [OmnixAI](https://github.com/salesforce/OmniXAI)[@wenzhuo2022omnixai], a library for explainable AI
+- [shapash](https://github.com/MAIF/shapash) for dashboards and reports, covered in [this chapter](#dashboard).
+
+In R:
+
+- [DALEX](https://github.com/ModelOriented/DALEX)[@biecek2018dalex]
+- [kernelshap](https://github.com/ModelOriented/kernelshap)
+- [shapr](https://github.com/NorskRegnesentral/shapr)[@Sellereite2019]
+- [ShapleyR](https://github.com/redichh/ShapleyR)
+- [shapper](https://github.com/ModelOriented/shapper), relying on the Python shap package.
+- [shapviz](https://github.com/ModelOriented/shapviz) implements many SHAP plots from the original Python `shap` package and more.
+- [treeshap](https://github.com/ModelOriented/treeshap)
+- [iml](https://github.com/christophM/iml)[@molnar2018iml]
+
