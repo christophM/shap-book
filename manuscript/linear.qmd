@@ -182,13 +182,18 @@ To use the dataset and apply SHAP to the model, we need to install the `shap` li
 
 ::: {.callout-note}
 
-The SHAP library was written by Scott Lundberg, author of the SHAP paper [@lundberg2017unified] and many other SHAP-related papers.
+## `shap` library
+
+The `shap` library was written by Scott Lundberg, author of the SHAP paper [@lundberg2017unified] and many other SHAP-related papers.
 The [first commit](https://github.com/slundberg/shap/tree/7673c7d0e147c1f9d3942b32ca2c0ba93fd37875) was on November 22nd, 2016.
 At the time of writing, there are over 2000 commits.
-The SHAP package is open source and hosted on Github, making it public and allowing everyone to track its progress.
+`shap` is open source and hosted on Github, making it public and allowing everyone to track its progress.
 The repository has been starred over 19k times and forked nearly 3k times.
 Feature-wise, it's the most comprehensive library available for SHAP values.
 I believe the `shap` library is the most widely-used implementation of SHAP values in machine learning.
+
+
+You can find the `shap` repository at: https://github.com/slundberg/shap
 
 :::
 
@@ -438,7 +443,7 @@ shap.summary_plot(shap_values, X_test, feature_names=wine.columns)
 
 ::: {.callout-note}
 
-## The Summary Plot
+## Summary Plot
 
 - Also called bee swarm plot
 - The x-axis represents the SHAP values, the y-axis shows the features, and the color indicates the feature's value.
@@ -467,7 +472,7 @@ Since we know that the model is a linear regression model, we also know that thi
 - Then for each feature you are interested in:
   - Look at the distribution of the points. This tells you about the different ways the feature values can influence the prediction. A high spread for example tells you that there is a wide range of influence.
   - Look at the color trend for a feature: This gives you a first hint whether the relationship is monotonic or shows some patterns.  
-  - Look for color clusters
+  - Look for color clusters that may hint at clusters in the data.
 
 :::
 

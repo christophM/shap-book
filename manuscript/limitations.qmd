@@ -67,6 +67,7 @@ An explanation for a field with a low prediction might state that fertilizer use
 However, it doesn't answer the question of how to improve the field's yield.
 Should fertilizer use be increased?
 SHAP values don't provide a solution, as they only explain how the current value affected the prediction compared to the background data, without suggesting how to modify it.
+But they do tell you which features need to be preserved to avoid a regression to the mean.
 
 For actionable recommendations, consider using [counterfactual explanations](christophm.github.io/interpretable-ml-book/counterfactual.html).
 Additionally, ensure the model itself offers actionable advice by using representative data samples and modeling causal relationships.
@@ -90,7 +91,7 @@ This can only be avoided if you can create data instances that resemble real dat
 
 ## You can fool SHAP
 
-It's possible to create intentionally misleading interpretations with SHAP, which can conceal biases [@slack2020fooling].
+It's possible to create intentionally misleading interpretations with SHAP, which can conceal biases [@slack2020fooling], at least if you use the marginal sampling version of SHAP.
 If you are the data scientist creating the explanations, this is not an issue (it could even be advantageous if you are an unscrupulous data scientist who wants to create misleading explanations).
 However, for the recipients of a SHAP explanation, it is a disadvantage, as they cannot be certain of the explanation's truthfulness.
 

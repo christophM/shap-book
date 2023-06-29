@@ -27,7 +27,6 @@ book:
     - alternative-libraries.qmd
     - dashboard.qmd  
     - limitations.qmd
-    - shap-library.qmd
     - references.qmd
   appendices:
     - estimation.qmd

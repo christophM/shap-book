@@ -42,6 +42,7 @@ Machine learning, on the other hand, had made enormous progress in those years.
 In 2012, the ImageNet competition [@deng2009imagenet], led by Fei-Fei Li, was won for the first time by a deep neural network (AlexNet) with a significant margin over the next best (non-neural network) algorithm.
 In many other ways, machine learning continued to improve and attract more research.
 
+While there had been earlier definitions of Shapley values for linear models, 2010 marks a transition to model-agnostic estimation of Shapley values.
 In 2010, researchers Erik Štrumbelj and Igor Kononenko published a paper titled "An efficient explanation of individual classifications using game theory" [@strumbelj2010efficient].
 They proposed using Shapley values to explain predictions of machine learning models.
 Four years later, in 2014, they published another paper with an improved method for computing Shapley values [@strumbelj2014explaining], where they essentially suggested the sampling estimator (see [Estimation Chapter](#estimation)).

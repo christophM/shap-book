@@ -206,7 +206,7 @@ shap.waterfall_plot(sv)
 ```
 
 Interpretation:
-A marital status of 0 (married) contributes +1.36 to the log odds of >50k versus <=50k compared to the average prediction.
+A marital status of 0 (married) contributes +1.47 to the log odds of >50k versus <=50k compared to the average prediction.
 The advantage of log odds is that the model is linear at this level, allowing for simpler solutions.
 
 However, one of SHAP values' strengths is its applicability at the probability level.
@@ -251,7 +251,7 @@ shap.summary_plot(
 )
 ```
 
-We can observe that Marital Status and Capital Gain are the two most important features (on the log odds scale).
+We can observe that Marital Status and Education are the two most important features (on the log odds scale).
 For some individuals, Capital Gain has very large effects, indicating that high values of capital gain lead to high SHAP values and, consequently, a high probability of earning more than 50k.
 
 

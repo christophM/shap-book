@@ -163,8 +163,8 @@ Observations:
 - The `shap` package identifies the highest interaction with density.
 - Density and residual sugar are correlated (not independent); for instance, high sugar levels result in high density values. Physics.
 - Comparing curves for low density (around 0.99) and high density (around 0.998):
-  - When density is low, increasing residual sugar has an increasing effect.
-  - If density is high, increasing residual sugar doesn't have as strong an effect.
+  - When density is low, increasing residual sugar values are associated with larger SHAP values.
+  - If density is high, different residual sugar values doesn't show much changes in SHAP values.
 
 
 ## Analyzing interactions in more detail
