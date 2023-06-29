@@ -1,7 +1,5 @@
 # SHAP for Linear Models {#linear}
 
-TODO: Reread and check flow of chapter
-
 In this chapter you will learn
 
 - A simple method to estimate SHAP for linear regression models
@@ -21,22 +19,22 @@ We want to understand how each feature affects the prediction of a data point.
 In a linear model, calculating the individual effects is straightforward.
 Here's what a linear model prediction looks like for one data instance:
 
-$$\hat{f}(x)=\beta_0+\beta_{1}x_{1}+\ldots+\beta_{p}x_{p}$$
+$$f(x)=\beta_0+\beta_{1}x_{1}+\ldots+\beta_{p}x_{p}$$
 
 where x is the instance for which we want to compute the contributions.
 Each $x_j$ is a feature value, with j = 1,...,p.
 The $\beta_j$ is the weight corresponding to feature j.
 
-The contribution $\phi_j$ of the j-th feature on the prediction $\hat{f}(x)$ is:
+The contribution $\phi_j$ of the j-th feature on the prediction $f(x)$ is:
 
-$$\phi_j(\hat{f})=\beta_{j}x_j-E(\beta_{j}X_{j})=\beta_{j}(x_j - E(X_{j}))$$
+$$\phi_j(f)=\beta_{j}x_j-E(\beta_{j}X_{j})=\beta_{j}(x_j - E(X_{j}))$$
 
 Where $E(\beta_jX_{j})$ is the mean effect estimate for feature j, the contribution is the difference between the feature effect and the average effect.
 Nice!
 Now we know how much each feature contributed to the prediction.
 If we sum all the feature contributions for one instance, the result is the following:
 
-\begin{align*}\sum_{j=1}^{p}\phi_j(\hat{f})=&\sum_{j=1}^p(\beta_{j}x_j-E(\beta_{j}X_{j}))\\=&(\beta_0+\sum_{j=1}^p\beta_{j}x_j)-(\beta_0+\sum_{j=1}^{p}E(\beta_{j}X_{j}))\\=&\hat{f}(x)-E(\hat{f}(X))\end{align*}
+\begin{align*}\sum_{j=1}^{p}\phi_j(f)=&\sum_{j=1}^p(\beta_{j}x_j-E(\beta_{j}X_{j}))\\=&(\beta_0+\sum_{j=1}^p\beta_{j}x_j)-(\beta_0+\sum_{j=1}^{p}E(\beta_{j}X_{j}))\\=&f(x)-E(f(X))\end{align*}
 
 This is the predicted value for the data point x minus the average predicted value.
 Feature contributions can be negative.
@@ -163,17 +161,17 @@ The coefficient for a feature is the same for all data points, which means you c
 But for a specific data point (= local explanation), we can also make use of the information of the feature value.
 Imagine we have coefficient $\beta_j=0.5$.
 It matters whether the feature value is, for example, 0, 0.008, or -4, because multiplication will produce different results (0, 0.004, -2).
-A more meaningful way to present a feature effect would be the coefficient multiplied with the feature value: $\beta_j \cdot x_{ij}$.
+A more meaningful way to present a feature effect would be the coefficient multiplied with the feature value: $\beta_j \cdot x_^{(i)}_j$.
 
 However, this formula is also "incomplete" as it leaves us without any sense of whether the contribution is large or small.
-Let's say that the contribution is $\beta_j \cdot x_{ij} = 2$, again with $\beta_j=0.5$ and $x_{ij}=4$.
+Let's say that the contribution is $\beta_j \cdot x^{(i)}_j = 2$, again with $\beta_j=0.5$ and $x^{(i)}_j=4$.
 Is that a lot?
 That depends on the range of $x_j$.
-If 4 is the lowest possible value of $x_{j}$, then 2 is actually the smallest possible contribution, but if $x_j$ follows a Normal distribution centered at 0, then a contribution of 4 is more than expected.
-An easy fix is to center the effect $\beta_j x_{ij}$ around the expected effect $E(\beta_j X_j)$.
+If 4 is the lowest possible value of $x_^{(i)}_j$, then 2 is actually the smallest possible contribution, but if $x^{(i)}_j$ follows a Normal distribution centered at 0, then a contribution of 4 is more than expected.
+An easy fix is to center the effect $\beta_j x^{(i)}_j$ around the expected effect $E(\beta_j X_j)$.
 It's not coincidence that the result is also the SHAP value $\phi_j$ for a feature in a linear model:
 
-$\phi_{ji}(\hat{f}) = \beta_j x_{ij} - E(\beta_jX_j) = \beta_{j} (x_{ij} - E(X_j))$.
+$\phi_{ji}(f) = \beta_j x^{(i)}_j- E(\beta_jX_j) = \beta_{j} (x^{(i)}_j- E(X_j))$.
 
 
 ## Installing `shap`
@@ -308,6 +306,12 @@ We still haven't seen the SHAP values.
 So, let's take the first data instance and visualize its SHAP values:
 
 ```{python}
+#shap.plots.waterfall(shap_values[0])
+```
+
+
+```{python}
+
 exp = shap.Explanation(
   values=shap_values[0],
   base_values=explainer.expected_value,

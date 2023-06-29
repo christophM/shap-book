@@ -67,8 +67,8 @@ To calculate the exact SHAP value, all possible coalitions (sets) of feature val
 However, as the number of features increases, the exact solution becomes problematic due to the exponential increase in the number of possible coalitions.
 @strumbelj2014explaining proposed an approximation using Monte Carlo sampling:
 
-$$\hat{\phi}_{j}=\frac{1}{M}\sum_{m=1}^M\left(\hat{f}(x^{m}_{+j})-\hat{f}(x^{m}_{-j})\right)$$
-Where $\hat{f}(x^{m}_{+j})$ is the prediction for x, but with a random number of feature values replaced by feature values from a random data point z, except for the respective value of feature j.
+$$\hat{\phi}_{j}=\frac{1}{M}\sum_{m=1}^M\left(f(x^{m}_{+j})-f(x^{m}_{-j})\right)$$
+Where $f(x^{m}_{+j})$ is the prediction for x, but with a random number of feature values replaced by feature values from a random data point z, except for the respective value of feature j.
 Monte Carlo sampling simply means sampling from the coalitions.
 The x-vector $x^{m}_{-j}$ is almost identical to $x^{m}_{+j}$, but the value $x_j^{m}$ is also taken from the sampled z.
 Each of these M new instances is a kind of "Frankenstein's Monster" assembled from two instances.
@@ -89,7 +89,7 @@ For features that appear to the left of the feature $x_j$, we take the values fr
   - Construct two new instances
     - With j: $x_{+j}=(x_{(1)},\ldots,x_{(j-1)},x_{(j)},z_{(j+1)},\ldots,z_{(p)})$
     - Without j: $x_{-j}=(x_{(1)},\ldots,x_{(j-1)},z_{(j)},z_{(j+1)},\ldots,z_{(p)})$
-  - Compute marginal contribution: $\phi_j^{m}=\hat{f}(x_{+j})-\hat{f}(x_{-j})$
+  - Compute marginal contribution: $\phi_j^{m}=f(x_{+j})-f(x_{-j})$
 - Compute SHAP value as the average: $\phi_j(x)=\frac{1}{M}\sum_{m=1}^M\phi_j^{m}$
 
 First, select an instance of interest x, a feature j, and the number of iterations M. 
@@ -99,7 +99,7 @@ The instance $x_{+j}$ is the instance of interest, but all values in the order a
 The instance $x_{-j}$ is the same as $x_{+j}$, but additionally has feature j replaced by the value for feature j from the sample z. 
 Compute the difference in the prediction from the black box:
 
-$$\phi_j^{m}=\hat{f}(x^m_{+j})-\hat{f}(x^m_{-j})$$
+$$\phi_j^{m}=f(x^m_{+j})-f(x^m_{-j})$$
 
 Average all these differences, resulting in:
 
@@ -316,7 +316,7 @@ The Kernel explainer was the original implementation of SHAP, proposed in @lundb
 The Kernel explainer consists of five steps:
 
 - Sample coalitions $z_k' \in \{0, 1\}^M, \quad k \in \{1, \ldots, K\}$ (1 = feature present in coalition, 0 = feature absent).
-- Obtain a prediction for each $z_k'$ by first converting $z_k'$ to the original feature space, and then applying model $\hat{f}: \hat{f}(h_x(z_k'))$.
+- Obtain a prediction for each $z_k'$ by first converting $z_k'$ to the original feature space, and then applying model $f: f(h_x(z_k'))$.
 - Compute the weight for each $z_k'$ using the SHAP kernel.
 - Fit a weighted linear model.
 - Return SHAP values $\phi_j$, which are the coefficients from the linear model.
@@ -354,7 +354,7 @@ $$g(z')=\phi_0+\sum_{j=1}^M\phi_jz_j'$$
 
 We train the linear model g by optimizing the following loss function L:
 
-$$L(\hat{f},g,\pi_{x})=\sum_{z'\in{}Z}[\hat{f}(h_x(z'))-g(z')]^2\pi_{x}(z')$$
+$$L(f,g,\pi_{x})=\sum_{z'\in{}Z}[f(h_x(z'))-g(z')]^2\pi_{x}(z')$$
 
 where Z is the training data.
 This is the familiar sum of squared errors that we typically optimize for linear models.
@@ -423,7 +423,7 @@ The complexity of this Tree explainer (over a background set of size $n_{bg}$) i
 There is an alternative method for computing SHAP values for trees.
 This method is more of historical interest, as it is no longer the default approach and has some issues.
 This second approach depends on the tree paths and requires no background data.
-While the first approach to Tree SHAP assumes the features $X_j$ and $X_{-j}$ to be independent, or at least combined as if they were independent, this other approach is closer to the conditional expectation $E_{X_j|X_{-j}}(\hat{f}(x)|x_j)$.
+While the first approach to Tree SHAP assumes the features $X_j$ and $X_{-j}$ to be independent, or at least combined as if they were independent, this other approach is closer to the conditional expectation $E_{X_j|X_{-j}}(f(x)|x_j)$.
 However, it is not precisely that [@aas2021explaining], so its exact nature is somewhat unclear.
 Since the features are not modified in a marginal but conditional manner, the resulting SHAP values differ from those obtained using the Interventional Tree Explainer approach.
 They are still valid SHAP values, but by changing the conditioning, it represents a different value function and, therefore, a different game that is played and attributed to the feature values.

@@ -11,6 +11,8 @@ Though they may seem quite different initially, they're actually quite similar u
 We'll start with the simpler case where a model outputs a single score for a text input, such as classification, like determining the category of a news article.
 
 In this chapter, we'll primarily work with transformers, which are state-of-the-art for text-based machine learning.
+But, remember, SHAP values are model-agnostic.
+So it doesn't matter whether the underlying model is a transformer neural network or a support vector machine that works with engineered features, like TF-IDF (Term Frequency-Inverse Document Frequency).
 
 ## How SHAP for text works
 
@@ -179,7 +181,7 @@ The replacement acts as a reference.
 In one case, any sentence dropped from the coalition is replaced with "I love it," and in the other explanation, with "I hate it."
 
 What changes?
-The base value shifts from strongly positive to negative.
+The base value shifts from strongly positive to negative, as you can infer from the difference in range of SHAP values on the x-axis.
 Every sentence is now interpreted in contrast with the replacement.
 This was also true before, but previously we replaced it with an empty string, which is more neutral than the sentences provided.
 

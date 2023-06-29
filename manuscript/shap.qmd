@@ -57,12 +57,12 @@ SHAP describes the following three desirable properties:
 
 **1) Local accuracy**
 
-$$\hat{f}(x)=g(x')=\phi_0+\sum_{j=1}^M\phi_jx_j'$$
+$$f(x)=g(x')=\phi_0+\sum_{j=1}^M\phi_jx_j'$$
 
-If you define $\phi_0=E_X(\hat{f}(x))$ and set all $x_j'$ to 1, this is the Shapley efficiency property.
+If you define $\phi_0=E_X(f(x))$ and set all $x_j'$ to 1, this is the Shapley efficiency property.
 Only with a different name and using the coalition vector.
 
-$$\hat{f}(x)=\phi_0+\sum_{j=1}^M\phi_jx_j'=E_X(\hat{f}(X))+\sum_{j=1}^M\phi_j$$
+$$f(x)=\phi_0+\sum_{j=1}^M\phi_jx_j'=E_X(f(X))+\sum_{j=1}^M\phi_j$$
 
 **2) Missingness**
 
@@ -81,14 +81,14 @@ In practice, this is only relevant for features that are constant.
 
 **3)  Consistency**
 
-Let $\hat{f}_x(z')=\hat{f}(h_x(z'))$ and $z_{-j}'$ indicate that $z_j'=0$.
+Let $f_x(z')=f(h_x(z'))$ and $z_{-j}'$ indicate that $z_j'=0$.
 For any two models f and f' that satisfy:
 
-$$\hat{f}_x'(z')-\hat{f}_x'(z_{-j}')\geq{}\hat{f}_x(z')-\hat{f}_x(z_{-j}')$$
+$$f_x'(z')-f_x'(z_{-j}')\geq{}f_x(z')-f_x(z_{-j}')$$
 
 for all inputs $z'\in\{0,1\}^M$, then:
 
-$$\phi_j(\hat{f}',x)\geq\phi_j(\hat{f},x)$$
+$$\phi_j(f',x)\geq\phi_j(f,x)$$
 
 The consistency property says that if a model changes so that the marginal contribution of a feature value increases or stays the same (regardless of other features), the Shapley value also increases or stays the same.
 From Consistency the Shapley properties Linearity, Dummy and Symmetry follow, as described in the Appendix of Lundberg and Lee.

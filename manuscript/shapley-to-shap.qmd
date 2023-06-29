@@ -18,7 +18,7 @@ Now it's time to transfer this approach from game theory to the task of explaini
 
 Let's consider the following scenario:
 
-You have trained a machine learning model $\hat{f}$ to predict apartment prices.
+You have trained a machine learning model $f$ to predict apartment prices.
 For a specific apartment $x^{(i)}$, it predicts €300,000 and you need to explain this prediction.
 The apartment $x^{(i)}$ has an area of 50 m^2^ (538 square feet), is located on the 2nd floor, has a park nearby, and cats are banned:
 
@@ -56,13 +56,13 @@ Don't worry, it's just an overview and this chapter will explain the more comple
 | Concept | Machine Learning | Math terms |
 |--------|-------------------|------------|------|
 | Player | Feature value  | $j$|
-| Game | Model prediction for a data point | $\hat{f}(x^{(i)}_j)$|
+| Game | Model prediction for a data point | $f(x^{(i)}_j)$|
 | Coalition | Set of feature values | $S \subseteq \{1, \ldots, p\}$ |
 | Not in coalition | Features not in coalition $S$ | $C: C = \{1, \ldots, p\} \setminus S$ |
 | Coalition size | Number of feature values | $|S|$| 
 | Total number of players | Number of features | $p$| 
-| Total payout | Prediction for $x^{(i)}$ minus average prediction | $\hat{f}(x^{(i)}) - \mathbb{E}(\hat{f})$ |
-| Value function| Prediction for feature values in coalition S minus expected | $v_{\hat{f},x^{(i)}}(S) = \int \hat{f}(x^{(i)})dX_{C} - \mathbb{E}[\hat{f}(X)]$|
+| Total payout | Prediction for $x^{(i)}$ minus average prediction | $f(x^{(i)}) - \mathbb{E}_X(f(X))$ |
+| Value function| Prediction for feature values in coalition S minus expected | $v_{f,x^{(i)}}(S) = \int f(x^{(i)})dX_{C} - \mathbb{E}[f(X)]$|
 | SHAP value | Contribution of feature $j$ towards payout |  $\phi_j$ |
 
 
@@ -72,8 +72,8 @@ TODO: Edit this section
 
 ::: {.callout-note}
 
-The value function depends on a certain model $\hat{f}$ and a certain data point to be explained $x^{(i)}$ and maps a coalition $S$ to it's value.
-The correct way to write it therefore would be as $v_{\hat{f}, x^{(i)}}(S)$, but for shortness I will use $v(S)$.
+The value function depends on a certain model $f$ and a certain data point to be explained $x^{(i)}$ and maps a coalition $S$ to it's value.
+The correct way to write it therefore would be as $v_{f, x^{(i)}}(S)$, but for shortness I will use $v(S)$.
 
 :::
 
@@ -83,7 +83,7 @@ This value function ultimately determines the interpretation for the attribution
 Let's think back to the apartment example with the four features park, cat, area, and floor and the goal of attributing the prediction to the individual features for one data point.
 Without just looking at the table, let's think about this step by step.
 Since we want to explain the prediction somehow, the model prediction has to be part of the value function.
-The first intuition is that $v(S)$ should somehow depend on $\hat{f}(x)$.
+The first intuition is that $v(S)$ should somehow depend on $f(x)$.
 It's a value function, so it has to work for arbitrary subsets of features.
 That's when we run into the first trouble, because translated to terms of prediction, we need way to express "what does this prediction look like with only the features $S$?".
 The problem is that most prediction functions don't work if you only put in parts of the feature values, but not all of them.
@@ -97,7 +97,7 @@ Upper case $X_j$ is the corresponding random variable, $X_S$ is a bunch of rando
 
 And there is one interesting operation that we can do with random variables:
 We can "marginalize" over them, which in mathematical terms is an integration over the entire space of the variable.
-And we can also marginalize terms that are based on random variables, just like our prediction function $\hat{f}$.
+And we can also marginalize terms that are based on random variables, just like our prediction function $f$.
 So when the area feature is absent, we can simulate this, in theory, by integrating the prediction function over the distribution of area values.
 
 ::: {.callout-tip}
@@ -111,9 +111,9 @@ See where this is going?
 
 Now it becomes clearer where the value function comes from, at least the first part:
 
-$$v(S)=\int\hat{f}(x_{1},\ldots,x_{p})d\mathbb{P}_{X_{C}}-E_X(\hat{f}(X))$$
+$$v(S)=\intf(x_{1},\ldots,x_{p})d\mathbb{P}_{X_{C}}-E_X(f(X))$$
 
-$\int\hat{f}(x_{1},\ldots,x_{p})d\mathbb{P}_{X_{C}}$ is the prediction function $\hat{f}$ where, for features in coalition S, we fill in the values $x^{(i)}_j$, and for the feature not in S, but in C, we integrate over those.
+$\intf(x_{1},\ldots,x_{p})d\mathbb{P}_{X_{C}}$ is the prediction function $f$ where, for features in coalition S, we fill in the values $x^{(i)}_j$, and for the feature not in S, but in C, we integrate over those.
 The integration is a theoretical construct, but in reality we don't know what this integral looks like and we can't solve it analytically.
 But consider these separate steps: First define something that we want to have in theory and then think about how to estimate this.
 Her we can already see a big difference to how we talked about Shapley values: There was no need to integrate over any variables, but we could just iterate the player coalitions.
@@ -127,28 +127,28 @@ Let's go back to this example:
 
 Very informally, the value function for the coalition of park, floor would be:
 
-$$v({\text{park}, \text{floor}) = \int\hat{f}(x_{park}="nearby",X_{cat}, X_{area}, x_{floor}=2)d\mathbb{P}_{X_{cat,area}}-E_X(\hat{f}(X)) $$
+$$v({\text{park}, \text{floor}) = \intf(x_{park}="nearby",X_{cat}, X_{area}, x_{floor}=2)d\mathbb{P}_{X_{cat,area}}-E_X(f(X)) $$
 
 So the roles for this coalition and how we put them into the value function:
 
-- Park and floor, the "present" features: just put them into $\hat{f}$ with the values the data instance has for these features
+- Park and floor, the "present" features: just put them into $f$ with the values the data instance has for these features
 - Cat and area: treat them as random variables and integrate over them. 
 
-But what about the second term, $E_X(\hat{f}(X))$, what is this all about?
+But what about the second term, $E_X(f(X))$, what is this all about?
 It's the expected prediction, meaning, for a given distribution of the features what is the expected prediction?
 Coming back to the apartment example, what is the expected prediction if we know nothing about an apartment?
 That's what this number says.
 Value functions are typically defined so that the value of the empty set is zero.
-And by subtracting $E_X(\hat{f}(X))$, it's ensured that the coalition with no features at all get's a value of zero.
+And by subtracting $E_X(f(X))$, it's ensured that the coalition with no features at all get's a value of zero.
 Because:
 
 \begin{align}
-v(\emptyset) &=& \int\hat{f}(x_{1},\ldots,x_{p})d\mathbb{P}_{X}-E_X(\hat{f}(X)) \\
-             &=& E_X(\hat{f}(X)) - E_X(\hat{f}(X)) \\
+v(\emptyset) &=& \intf(x_{1},\ldots,x_{p})d\mathbb{P}_{X}-E_X(f(X)) \\
+             &=& E_X(f(X)) - E_X(f(X)) \\
              &=& 0 \\
 \end{align}
 
-That's because when we integrate the prediction function over all features, that's the very definition of the expected prediction $E_X(\hat{f}(X))$.
+That's because when we integrate the prediction function over all features, that's the very definition of the expected prediction $E_X(f(X))$.
 
 ## Now the marginal contribution
 
@@ -159,9 +159,9 @@ How much does a feature $j$ contribute to a coalition of features $S$?
 The marginal contribution of $j$ to $S$ is:
 
 \begin{align}
-v(S \cup \{j\}) - v(S) &=& \int\hat{f}(x^{(i)}_S, X_C)d\mathbb{P}_{X_{C}} - E_X(\hat{f}(X))\\
-                       &&  - \left(\int\hat{f}(x^{(i)}_{S \cup \{j\}}, X_{C \backslash \{j\}})d\mathbb{P}_{X_{C \backslash \{j\}}}-E_X(\hat{f}(X))\right) \\
-                       &=& \int\hat{f}(X | X_{S \cup \{j\}} = x^{(i)}_{S \cup\{j\}})d\mathbb{P}_{X_{C \backslash \{j\}}}- \int\hat{f}(X | X_{S} = x^{(i)}_{S})d\mathbb{P}_{X_{C}}\\
+v(S \cup \{j\}) - v(S) &=& \intf(x^{(i)}_S, X_C)d\mathbb{P}_{X_{C}} - E_X(f(X))\\
+                       &&  - \left(\intf(x^{(i)}_{S \cup \{j\}}, X_{C \backslash \{j\}})d\mathbb{P}_{X_{C \backslash \{j\}}}-E_X(f(X))\right) \\
+                       &=& \intf(X | X_{S \cup \{j\}} = x^{(i)}_{S \cup\{j\}})d\mathbb{P}_{X_{C \backslash \{j\}}}- \intf(X | X_{S} = x^{(i)}_{S})d\mathbb{P}_{X_{C}}\\
 \end{align}
 
 Again, for the apartment example, the contribution of the cat to a coalition of {park, floor} would be:
@@ -177,7 +177,7 @@ Because that's what the value function expresses: Present features are known, ab
 Putting all the terms together the Shapley value equation, we get:
 
 $$
-\phi_j =  \sum_{S\subseteq\{1,\ldots,p\} \backslash \{j\}}\frac{|S|!\left(p-|S|-1\right)!}{p!}\left(\int\hat{f}(X | X_{S \cup \{j\}} = x^{(i)}_{S \cup\{j\}})d\mathbb{P}_{X_{C \backslash \{j\}}}- \int\hat{f}(X | X_{S} = x^{(i)}_{S})d\mathbb{P}_{X_{C}} \right) \\
+\phi_j =  \sum_{S\subseteq\{1,\ldots,p\} \backslash \{j\}}\frac{|S|!\left(p-|S|-1\right)!}{p!}\left(\intf(X | X_{S \cup \{j\}} = x^{(i)}_{S \cup\{j\}})d\mathbb{P}_{X_{C \backslash \{j\}}}- \intf(X | X_{S} = x^{(i)}_{S})d\mathbb{P}_{X_{C}} \right) \\
 $$
 
 The SHAP value $\phi_j$ of a feature value is then defined as its contribution to the payout, calculated as a weighted sum over all possible feature value combinations.
@@ -215,7 +215,7 @@ Let's go through the axioms one by one and identify what the mean for the theore
 
 The feature contributions must add up to the difference between the prediction for x and the average.
 
-$$\sum_{j=1}^p\phi_j = \hat{f}(x) - E_X(\hat{f}(X))$$
+$$\sum_{j=1}^p\phi_j = f(x) - E_X(f(X))$$
 
 Implications: 
 The efficiency axiom is quite common in explainable AI, and it's also followed by methods like LIME.
@@ -229,7 +229,7 @@ The contributions of two feature values j and k should be the same if they contr
 
 If
 
-$$v_{\hat{f},x}(S \cup \{j\}) = val_{\hat{f},x}(S \cup \{k\})$$
+$$v_{f,x}(S \cup \{j\}) = val_{f,x}(S \cup \{k\})$$
 
 for all
 
@@ -251,7 +251,7 @@ A feature j that does not change the predicted value – regardless of which coa
 
 If
 
-$$v_{\hat{f},x}(S \cup \{j\}) = v_{\hat{f},x}(S)$$
+$$v_{f,x}(S \cup \{j\}) = v_{f,x}(S)$$
 
 for all
 
