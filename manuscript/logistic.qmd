@@ -6,6 +6,7 @@ In this chapter you will learn:
 - How to apply SHAP for classification.
 - How to handle categorical features (also relevant for regression of course).
 - That SHAP puts out one SHAP value not only for each instance and feature, but also for each class.
+- Alternatives to the waterfall plot: the bar plot and the force plot
 
 
 Differences from linear regression include:
@@ -126,13 +127,7 @@ Therefore we have to also indicate the class for which we want to access the SHA
 class_index = 0
 data_index = 1
 
-sv = shap.Explanation(
-  values = shap_values.values[data_index,:,class_index],
-  base_values = shap_values.base_values[data_index,class_index],
-  feature_names=X.columns,
-  data=X_test.iloc[data_index]
-)
-shap.waterfall_plot(sv)
+shap.plots.waterfall(shap_values[data_index,:,class_index])
 ```
 
 For this individual, the predicted likelihood of earning more than \$50k was 99.9% which is more than the expected 79%.
@@ -143,14 +138,7 @@ Let's examine the SHAP values for the alternative class.
 
 ```{python}
 class_index = 1
-
-sv = shap.Explanation(
-  values = shap_values.values[data_index,:,class_index],
-  base_values = shap_values.base_values[data_index,class_index],
-  feature_names=X.columns,
-  data=X_test.iloc[data_index]
-)
-shap.waterfall_plot(sv)
+shap.plots.waterfall(shap_values[data_index,:,class_index])
 ```
 
 This plot is identical to the previous one, except all SHAP values are multiplied by -1.
@@ -158,6 +146,40 @@ This makes sense since the probabilities for both classes must sum to 1.
 Thus, a factor that increases the classification by 0.11 for class >50k decreases the classification by 0.11 for class <=50k.
 We only need to choose one of the two classes.
 This changes when we have three or more classes, see the [Image Chapter](#image) for a multi-class example.
+
+
+## Alternatives to the waterfall plot
+
+The waterfall plot visualizes the SHAP values of a data instances.
+But there are more options to visualize the exact same type of information: the bar plot and the force plot.
+If I had to put the 3 plots on a spectrum, I would say that the bar plot is the most conventional which people might already know, the comes the waterfall plot and then the force plot which is more difficult to read.
+
+Let's start with the bar plot.
+
+```{python}
+shap.plots.bar(shap_values[data_index,:,class_index])
+```
+
+I will skip the interpretation here, since we have already done it before and it's the same information, just presented differently.
+
+Then we can also use the force plot:
+
+```{python}
+#| eval: False
+shap.initjs()
+shap.plots.force(shap_values[data_index,:,class_index])
+```
+
+![Force Plot](images/force-plot.png)
+
+Note that the force plot is with Javascript and you can hover over the plot to reveal more insights.
+It also means that you can embed it, for example, in a Jupyter notebook, but not in a PDF file.
+What you actually see above is a screenshot of a force plot.
+Why is it called force plot?
+Because the SHAP values are plotted as forces, here arrows, that can either push to increase the prediction or decrease it.
+If you compare it to the waterfall plot, it's like a horizontal arrangement of the arrows.
+
+Personally, I like the waterfall plot the most since it not only is easy enough to read, but also show the efficiency axiom, that the sum of all SHAP values is equal to the difference of f(x) and E[f(x)].
 
 ## Interpreting log odds
 
@@ -232,31 +254,54 @@ shap.summary_plot(
 We can observe that Marital Status and Capital Gain are the two most important features (on the log odds scale).
 For some individuals, Capital Gain has very large effects, indicating that high values of capital gain lead to high SHAP values and, consequently, a high probability of earning more than 50k.
 
-<!--
 
-The categories for marital status include: Married-civ-spouse, Divorced, Never-married, Separated, Widowed, Married-spouse-absent, and Married-AF-spouse.
+## Clustering SHAP values 
+
+You can cluster your data using SHAP values.
+The goal of clustering is to find groups of similar instances.
+Typically, clustering is based on features, which are often on different scales.
+For example, height might be measured in meters, color intensity from 0 to 100, and some sensor output between -1 and 1.
+The challenge is to compute distances between instances with such diverse, non-comparable features.
+
+SHAP clustering works by clustering the SHAP values of each instance, meaning that you cluster instances by explanation similarity.
+All SHAP values have the same unit -- the unit of the prediction space.
+You can use any clustering method.
+The following example uses hierarchical agglomerative clustering to order the instances.
+
+The plot consists of many force plots, each of which explains the prediction of an instance.
+We rotate the force plots vertically and place them side by side according to their clustering similarity.
+It's again a Javascript plot.
+Here for the first 21 data points:
 
 ```{python}
-#| eval: false
-mapping = {
-  0: "Married-civ-spouse",
-  1: "Divorced",
-  2: "Never-married",
-  3: "Separated",
-  4: "Widowed",
-  5: "Married-spouse-absent",
-  6: "Married-AF-spouse"
-}
-fv = [mapping[X.iloc[i,:]] for i in range(100)]
+#| eval: False
+shap.plots.force(sv_logit[0:20:,:,0])
 ```
 
+![Clustering Plot](images/clustering-plot-1.png)
+
+You can also change the ordering.
+
+![Clustering Plot](images/clustering-plot-2.png)
+
+You can also hover and get more information, change what you see on the x-axis and try many other orderings.
+I see this plot as an exploratory tool.
+
+## The heatmap plot
+
+Another type of plot is the heatmap plot.
+It's another form of showing all individual SHAP values, but without aggregating them like in the dependence or importance plot.
+The heatmap plot shows in each row one of the features and the SHAP values are plotted in the form of a heatmap.
+The special thing is that on top there is a curve for the predicted value, so you can relate how predicted outcomes and SHAP values for certain features fit together. 
+The ordering of the instances, the "columns" in this plot if you will, is based on clustering, same as in the multi-forceplot above.
+
 ```{python}
-shap.dependence_plot(
-  "Marital Status",
-  shap_values.values[:,:,0],
-  features = X.iloc[0:100,:]
-)
+shap.plots.heatmap(sv_logit[:,:,0])
 ```
--->
+
+Some of the features are automatically summarized, a plotting behavior which you can control by setting the `max_display` argument.
+
+
+
 
 [^no-probability]: While the output is a number between 0 and 1, classifiers are often not so well calibrated, so be careful with interpreting the output as a probability in the real world.

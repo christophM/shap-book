@@ -104,9 +104,6 @@ And there is a difference to the results from the Linear explainer: we can direc
 
 :::
 
-
-
-
 This waterfall plot presents a different picture of what's happening, compared to the purely linear model.
 
 - For this wine, the most important features were alcohol and free sulfur dioxide, while in the linear model, it was residual sugar and free sulfur dioxide.
@@ -165,5 +162,38 @@ This gives us another boost in trust for understanding SHAP values.
 There's also a paper [@bordt2022shapley] showing that when the model is a GAM, then the non-linear components can be recovered by SHAP.
 
 Similarly to the linear case, in the additive case, SHAP values track the feature effect well and are aligned to what we would expect.
+
+## Analyzing the feature importance
+
+There is another type of plot that `shap` offers: the importance plot.
+The concept behind SHAP feature importance is straightforward:
+Features with large absolute SHAP values are important.
+To determine global importance, we average the **absolute** SHAP values per feature across the data:
+
+$$I_j=\frac{1}{n}\sum_{i=1}^n{}|\phi_j^{(i)}|$$
+
+Next, we sort the features by decreasing importance and plot them.
+The following figure displays the SHAP feature importance for the random forest previously trained to predict cervical cancer.
+This, by the way, is the same way that the summary plot sorts the features. 
+
+```{python}
+shap.plots.bar(shap_values)
+```
+
+
+SHAP feature importance offers an alternative to [permutation feature importance](https://christophm.github.io/interpretable-ml-book/feature-importance.html).
+A significant difference exists between these importance measures:
+
+::: {.callout-note}
+
+Permutation feature importance (PFI) is based on the decrease in model performance, while SHAP is based on the magnitude of feature attributions.
+This difference is especially stark if the model is overfitting, because a feature that in reality doesn't have a relation to the target will have an expected PFI of zero, but may have a non-zero SHAP importance.
+
+:::
+
+Although the feature importance plot is useful, it provides no information beyond the importances.
+For a more informative plot, we will examine the summary plot next.
+
+
 
 

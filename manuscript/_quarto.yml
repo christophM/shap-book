@@ -18,7 +18,6 @@ book:
     - interactions.qmd
     - regression.qmd
     - correlation.qmd
-    - plots.qmd
     - logistic.qmd
     - image.qmd
     - image-deepexplainer.qmd
