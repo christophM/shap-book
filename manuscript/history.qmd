@@ -1,87 +1,85 @@
 # A Short History of SHAP and Shapley Values {#history}
 
-In this chapter, you will learn:
+::: {.callout-tip appearance="simple"}
 
-- The historic milestones of SHAP values
-- Understand how SHAP and Shapley values are kind of the same thing
-- Get a bird's eye view on the development which also serves as a frame for learning the theory
+By the end of this chapter, you will be able to:
 
-This chapter gives  brief overview of the history of SHAP and Shapley values, focusing on the chronological order of inventions.
-If you don't care about the history but only about the application of SHAP, there is no harm in skipping this history chapter.
+- Identify and describe key historic milestones of SHAP
+- Explain the relation between SHAP and Shapley values
 
+:::
+
+This chapter gives brief overview of the history of SHAP and Shapley values, focusing on the chronological order of inventions.
 I divide the history into 3 parts marked by a milestone each:
 
 - 1953: Shapley values in game theory
-- 2012: First steps in machine learning
+- 2010: First steps in machine learning
 - 2017: SHAP, the Cambrian explosion
+
 
 ## Lloyd Shapley wants a fair game
 
 Shapley values hold greater significance than initially apparent in this book.
-They are named after their inventor, Lloyd Shapley, who created the Shapley value in 1951.
+They are named after their inventor, Lloyd Shapley, who described Shapley values in 1951.
 Particularly in the 1950s, game theory experienced an active phase during which numerous core concepts were developed, including repeated games, the prisoner's dilemma, fictitious play, and, of course, Shapley values.
 While Lloyd Shapley was a mathematician, he excelled in game theory, with fellow theorist Robert Aumann referring to him as the ["greatest game theorist of all time"](https://www.wsj.com/articles/lloyd-shapley-won-the-nobel-prize-for-economics-1923-2016-1458342678).
 Following World War II, Shapley completed his PhD at Princeton University with a thesis titled "Additive and Non-Additive Set Functions."
 In 1953, he published "A Value for n-Person Games" [@shapley1953value], introducing Shapley values.
-
 In 2012, Lloyd Shapley and Alvin Roth received the Nobel Prize in Economics [^fake-nobel] for their research in "market design" and "matching theory."
 
-The fundamental idea behind Shapley values is to measure each player's contribution in a game by averaging over all possible coalitions that could form without that player.
-In other words, a player's Shapley value represents the expected marginal contribution they make to every possible coalition.
+Shapley values are a solution in coalitional game theory, which is concerned with games in which players cooperate to reach some outcome.
+They are a solution to the following problem:
+A coalition of players participate in a collaborative game, meaning they work together to achieve a certain outcome.
+The outcome or payout of the game should now be fairly split among the players, which may have contributed differently.
+Shapley values offer a mathematical way of fairly distributing the payout among the players.
 
-Since then, Shapley values have become a foundational concept in cooperative game theory, applied across various fields including political science, economics, and computer science.
+Shapley values have become a foundational concept in cooperative game theory, applied across various fields including political science, economics, and computer science.
 They are widely utilized for determining fair and efficient methods of resource distribution within a group, such as dividing profits among shareholders, allocating costs among collaborators, and assigning credit to contributors in a research project.
 At this point, Shapley values were not yet used in machine learning.
-In fact, machine learning was just beginning at the time. 
+In fact, machine learning, at the time, was in its infancy.
 
 ## First steps in machine learning
 
 Fast forward to 2010.
 Shapley hadn't received his Nobel in Economics yet, but the theory on Shapley values had been around for nearly 60 years.
 Machine learning, on the other hand, had made enormous progress in those years.
-In 2012, the ImageNet competition [@deng2009imagenet], led by Fei-Fei Li, was won for the first time by a deep neural network (AlexNet) with a significant margin over the next best (non-neural network) algorithm.
+In 2012, the ImageNet competition [@deng2009imagenet], led by Fei-Fei Li, was won for the first time by a team using a deep neural network (AlexNet) with a significant margin over the second best model.
 In many other ways, machine learning continued to improve and attract more research.
 
 While there had been earlier definitions of Shapley values for linear models, 2010 marks a transition to model-agnostic estimation of Shapley values.
 In 2010, researchers Erik Štrumbelj and Igor Kononenko published a paper titled "An efficient explanation of individual classifications using game theory" [@strumbelj2010efficient].
 They proposed using Shapley values to explain predictions of machine learning models.
-Four years later, in 2014, they published another paper with an improved method for computing Shapley values [@strumbelj2014explaining], where they essentially suggested the sampling estimator (see [Estimation Chapter](#estimation)).
+Four years later, in 2014, they published another paper with an improved method for computing Shapley values [@strumbelj2014explaining].
 
 However, for some reason, this approach didn't gain traction.
 At least not in the way it eventually would.
-
-Some possible reasons for its lack of popularity:
+Some speculation for why Shapley values didn't catch on at the time:
 
 - Explainable AI/Interpretable machine learning wasn't as widely recognized at the time.
-- The papers by Štrumbelj and Kononenko didn't include code, making it harder to use.
-- The sampling method was still relatively slow and not suitable for image or text classification.
+- The papers by Štrumbelj and Kononenko didn't include code.
+- The estimation method was still relatively slow and not suitable for image or text classification.
 
-But all these reasons are somewhat speculative.
 Let's examine the events that led to Shapley values becoming popular in machine learning.
 
 ## SHAP causes a Cambrian explosion
 
-Around 2016, another paper about LIME [@ribeiro2016should] emerged, which stands for Local Interpretable Model-Agnostic Explanations.
-I view this LIME paper as a catalyst for the field of explainable AI and interpretable machine learning.
-That's a bit subjective because it served as a catalyst for me, your humble author.
-However, due to its timing and popularity, this paper signifies the beginning of a heightened interest in interpreting machine learning models.
+Around 2016, @ribeiro2016should published a paper introducing Local Interpretable Model-Agnostic Explanations (LIME), a method that explained predictions by fitting local linear regression models.
+I view the LIME paper as a catalyst for the field of explainable AI and interpretable machine learning (it was for me).
+Or to make the claim a bit more cautiously: The paper coincides with a beginning heightened interest in interpreting machine learning models.
 The prevailing sentiment at the time was: "Oh, we are developing increasingly advanced machine learning algorithms, such as deep neural networks, but, gosh, look at them, we have no idea how these models generate their predictions; how can we trust them?"
 
 Then came SHAP.
 
-Not long after, in 2017, Scott Lundberg and Su-In Lee published a paper called "A Unified Approach to Interpreting Model Predictions" [@lundberg2017unified].
+In 2017, not long after the LIME paper, Scott Lundberg and Su-In Lee published a paper called "A Unified Approach to Interpreting Model Predictions" [@lundberg2017unified].
+In this paper they introduced **SH**apley **A**dditive ex**P**lanations (SHAP) a method to explain machine learning predictions.
 It was published at NIPS, now NeurIPS[^neurips], which stands for Neural Information Processing Systems.
 This is a major conference, and if your research is published there as a machine learning researcher, it's more likely to draw attention.
 But what was the SHAP paper about?
 After all, Shapley values for machine learning were already defined in 2010/2014.
 
-Lundberg and Lee reformulated the estimation of SHAP values as a weighted linear regression using the [Kernel estimator](#estimation).
-Additionally, the paper showed how their proposed estimation method "unites" other explanation techniques, such as DeepLIFT [@shrikumar2017learning], LIME [@ribeiro2016should], and Layer-Wise Relevance Propagation [@bach2015pixel].
+Lundberg and Lee reformulated the estimation of SHAP values as a weighted linear regression using a Kernel function to weight the data points.[^new-estimator]
+Additionally, the paper showed how their proposed estimation method "unites"[^unification] other explanation techniques, such as DeepLIFT [@shrikumar2017learning], LIME [@ribeiro2016should], and Layer-Wise Relevance Propagation [@bach2015pixel].
 
-Thus, the novel contributions were:
-
-1. A new estimator for Shapley values[^new-estimator], which are then often referred to as SHAP values.
-2. Unification of several existing methods[^unification].
 
 [^unification]: I'm not particularly fond of the unification framing.
 Although having a framework that connects different methods is useful, SHAP itself doesn't truly unify them, as you need to modify other methods to produce SHAP values.
@@ -93,26 +91,47 @@ I know I may sound harsh, but in this chapter, I want to not only discuss SHAP v
 Here are my thoughts on why SHAP gained popularity:
 
 - The venue it was published in (NIPS/NeurIPS).
-- The timing.
-- Luck (always a factor).
-- Continued research by the authors and others.
-- Solid, open-source Python implementation.
+- Good timing: a pioneer in a strongly growing field. 
+- Continued research by the original authors and many others.
+- Open-source Python implementation (`shap` package).
 
 The role of open source code shouldn't be underestimated, as it allowed people to incorporate SHAP values into their projects.
+
+
+::: {.callout-note}
+
+## Naming conventions
+
+Naming is slightly confusing, for multiple reasons:
+
+- Shapley values (and SHAP values) can refer to both the method and the resulting numbers.
+- @lundberg2017unified "rebranded" Shapley values for machine learning by naming them SHAP, which stands for **SH**apley **A**dditive ex**P**lanations.
+
+This book adheres to the following conventions:
+
+- Shapley values: the original method from game theory
+- SHAP: application of Shapley values for machine learning predictions
+- SHAP values: the resulting values from SHAP for the features
+- `shap`: the library that implements SHAP
+
+"SHAP" is a bit like a brand name that is used to describe a product category, such as Post-it, Jacuzzi, Frisbee, or Band-Aid.
+I decided to use it since it's already established in the community and it distinguishes Shapley values as a general game-theoretic method and SHAP as a specific version for machine learning.
+
+:::
+
+
+
 
 Since then, SHAP has continued to grow in popularity.
 Another significant development occurred in 2020 when @lundberg2020local proposed an efficient computation method for SHAP specifically tailored to tree-based models.
 This was a significant advancement, as tree-boosting performs well in many applications, making it possible to quickly estimate SHAP values for state-of-the-art models.
-
 Lundberg's other notable achievement involved extending SHAP beyond individual predictions by stacking SHAP values, akin to assembling Legos, to create global model interpretations.
-This approach was encouraged by the fast computation for tree-based models, as obtaining global explanations with Kernel SHAP would have been much slower.
-
+This approach was supported by the fast computation for tree-based models.
 With the help of numerous contributors, Lundberg continued to develop the `shap` package, which has now grown into a comprehensive library with many estimators and functionalities.
-
 Since then, other researchers have built upon SHAP, suggesting [extensions](#extensions).
 Additionally, SHAP has been implemented in other places, meaning the `shap` package isn't the only source for this method.
 
-Keeping this historic outline in mind, we start from the beginning with game theory in the next chapter.
+Keeping this historic outline in mind, let's start with the theory of Shapley values and work up to SHAP.
 
 
 [^fake-nobel]: In reality, it's not the Nobel prize, but the "Nobel Memorial Prize in Economic Sciences," or officially, the "Sveriges Riksbank Prize in Economic Sciences in Memory of Alfred Nobel." It's a sort of imitation Nobel prize created by economists since they weren't included in the original five Nobel Prizes.

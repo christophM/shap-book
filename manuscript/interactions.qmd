@@ -263,7 +263,7 @@ But where does this formulation leave the main effect, for example for feature $
 We call this main SHAP value $\phi_{j,j}$ to symbolize that it was computed along with the SHAP interaction values.
 The SHAP main effect is then defined as:
 
-$$\phi_{j,j} = \phi_j - \sum_{j\neq i} \phi_{j,i}$$
+$$\phi_{j,j} = \phi^{(i)}_j - \sum_{j\neq i} \phi_{j,i}$$
 
 That means the SHAP main value of a feature is the usual SHAP value minus all interaction effects.
 By calculating the SHAP interaction values for all features, we obtain one matrix per instance with dimensions M x M, where M represents the number of features.

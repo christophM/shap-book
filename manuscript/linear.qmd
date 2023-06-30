@@ -19,22 +19,22 @@ We want to understand how each feature affects the prediction of a data point.
 In a linear model, calculating the individual effects is straightforward.
 Here's what a linear model prediction looks like for one data instance:
 
-$$f(x)=\beta_0+\beta_{1}x_{1}+\ldots+\beta_{p}x_{p}$$
+$$f(x^{(i)})=\beta_0+\beta_{1}x^{(i)}_{1}+\ldots+\beta_{p}x^{(i)}_{p}$$
 
 where x is the instance for which we want to compute the contributions.
-Each $x_j$ is a feature value, with j = 1,...,p.
+Each $x^{(i)}_j$ is a feature value, with j = 1,...,p.
 The $\beta_j$ is the weight corresponding to feature j.
 
-The contribution $\phi_j$ of the j-th feature on the prediction $f(x)$ is:
+The contribution $\phi^{(i)}_j$ of the j-th feature on the prediction $f(x^{(i)}_j)$ is:
 
-$$\phi_j(f)=\beta_{j}x_j-E(\beta_{j}X_{j})=\beta_{j}(x_j - E(X_{j}))$$
+$$\phi^{(i)}_j(f)=\beta_{j}x^{(i)}_j-E(\beta_{j}X_{j})=\beta_{j}(x^{(i)}_j - E(X_{j}))$$
 
 Where $E(\beta_jX_{j})$ is the mean effect estimate for feature j, the contribution is the difference between the feature effect and the average effect.
 Nice!
 Now we know how much each feature contributed to the prediction.
 If we sum all the feature contributions for one instance, the result is the following:
 
-\begin{align*}\sum_{j=1}^{p}\phi_j(f)=&\sum_{j=1}^p(\beta_{j}x_j-E(\beta_{j}X_{j}))\\=&(\beta_0+\sum_{j=1}^p\beta_{j}x_j)-(\beta_0+\sum_{j=1}^{p}E(\beta_{j}X_{j}))\\=&f(x)-E(f(X))\end{align*}
+\begin{align*}\sum_{j=1}^{p}\phi^{(i)}_j(f)=&\sum_{j=1}^p(\beta_{j}x^{(i)}_j-E(\beta_{j}X_{j}))\\=&(\beta_0+\sum_{j=1}^p\beta_{j}x^{(i)}_j)-(\beta_0+\sum_{j=1}^{p}E(\beta_{j}X_{j}))\\=&f(x)-E(f(X))\end{align*}
 
 This is the predicted value for the data point x minus the average predicted value.
 Feature contributions can be negative.
@@ -161,15 +161,15 @@ The coefficient for a feature is the same for all data points, which means you c
 But for a specific data point (= local explanation), we can also make use of the information of the feature value.
 Imagine we have coefficient $\beta_j=0.5$.
 It matters whether the feature value is, for example, 0, 0.008, or -4, because multiplication will produce different results (0, 0.004, -2).
-A more meaningful way to present a feature effect would be the coefficient multiplied with the feature value: $\beta_j \cdot x_^{(i)}_j$.
+A more meaningful way to present a feature effect would be the coefficient multiplied with the feature value: $\beta_j \cdot x^{(i)}_j$.
 
 However, this formula is also "incomplete" as it leaves us without any sense of whether the contribution is large or small.
 Let's say that the contribution is $\beta_j \cdot x^{(i)}_j = 2$, again with $\beta_j=0.5$ and $x^{(i)}_j=4$.
 Is that a lot?
 That depends on the range of $x_j$.
-If 4 is the lowest possible value of $x_^{(i)}_j$, then 2 is actually the smallest possible contribution, but if $x^{(i)}_j$ follows a Normal distribution centered at 0, then a contribution of 4 is more than expected.
+If 4 is the lowest possible value of $x^{(i)}_j$, then 2 is actually the smallest possible contribution, but if $x^{(i)}_j$ follows a Normal distribution centered at 0, then a contribution of 4 is more than expected.
 An easy fix is to center the effect $\beta_j x^{(i)}_j$ around the expected effect $E(\beta_j X_j)$.
-It's not coincidence that the result is also the SHAP value $\phi_j$ for a feature in a linear model:
+It's not coincidence that the result is also the SHAP value $\phi^{(i)}_j$ for a feature in a linear model:
 
 $\phi_{ji}(f) = \beta_j x^{(i)}_j- E(\beta_jX_j) = \beta_{j} (x^{(i)}_j- E(X_j))$.
 
@@ -390,7 +390,7 @@ We could infer this from the coefficient, but this will change in the next chapt
 
 ## Interpretation Template *(replace [] with your data)*
 
-Prediction [$f(x)$] for instance [$i$] differs from the average prediction [$E[f(X)]$] by [$f(xi) − E[f(X)]$] and [feature name = feature value] contributed [$\phi_j$] towards that difference.
+Prediction [$f(x)$] for instance [$i$] differs from the average prediction [$E[f(X)]$] by [$f(xi) − E[f(X)]$] and [feature name = feature value] contributed [$\phi^{(i)}_j$] towards that difference.
 
 :::
 
@@ -452,7 +452,7 @@ shap.summary_plot(shap_values, X_test, feature_names=wine.columns)
 - Also called bee swarm plot
 - The x-axis represents the SHAP values, the y-axis shows the features, and the color indicates the feature's value.
 - One row per feature and the order of the features is determined by their importance
-- Importance is defined as the sum of absolute SHAP values: $I_j = \sum_{i=1}^n \phi_j^{(i)}$
+- Importance is defined as the sum of absolute SHAP values: $I_j = \sum_{i=1}^n \phi^{(i)}_j^{(i)}$
 - Each point represents the SHAP value of a feature for a specific data instance.
 - In total, there are a $p \cdot n$ dots  in the summary plot (typically with lots of overplotting).
 
@@ -499,7 +499,7 @@ shap.dependence_plot(
 
 ## The dependence plot
 
-- Mathematically, the plot contains the following points: $\{(x_j^{(i)},\phi_j^{(i)})\}_{i=1}^n$
+- Mathematically, the plot contains the following points: $\{(x^{(i)}_j^{(i)},\phi^{(i)}_j^{(i)})\}_{i=1}^n$
 - x-axis is the feature value and y-axis the SHAP value
 - Each dot is a data point
 -  SHAP dependence plots offer an alternative to [partial dependence plots](https://christophm.github.io/interpretable-ml-book/pdp.html) and [accumulated local effects](https://christophm.github.io/interpretable-ml-book/ale.html).

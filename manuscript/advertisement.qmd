@@ -1,0 +1,13 @@
+# Other books by the author
+
+I have also written another book about Interpretable Machine Learning.
+Interpretable Machine Learning covers a wide range of XAI techniques, from counterfactual explanations, ICE curves, and PDPs to Accumulated Local Effect Plots, Permutation Feature Importance, and LIME.
+Shapley values and SHAP are also covered in this book.
+
+::: {.callout-note}
+[Interpretable Machine Learning book](https://christophmolnar.com/books/interpretable-machine-learning/) [@molnar2022]
+
+![](images/cover-interpretable-ml.jpg){width=24% fig-align="center"}
+:::
+
+

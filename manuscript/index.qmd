@@ -1,14 +1,14 @@
 # Preface
 
-When I wrote the book "Interpretable Machine Learning," I did not include SHAP.
+When I wrote my first book "Interpretable Machine Learning," I did not include SHAP.
 In a survey on Twitter, I asked which method people used most often for interpreting their machine learning models.
-I provided options such as LIME, permutation feature importance, and "Other," but I did not include SHAP or Shapley values.
+I provided options such as LIME, permutation feature importance, and "Other," but I didn't add SHAP as an option.
 
 To my surprise, most respondents chose "Other," and many comments pointed out the omission of SHAP.
 At the time, I was aware of SHAP, but I underestimated its popularity in machine learning explainability and beyond. 
 
 This popularity also had a negative side.
-My research in interpretable machine learning, during my PhD, primarily focused on partial dependence plots and permutation feature importance.
+My PhD research on interpretable machine learning focused on partial dependence plots and permutation feature importance.
 On more than one occasion, when we submitted a paper to a conference, we received feedback suggesting that we should have worked on SHAP or LIME instead.
 This advice was misguided, as that's not how science works, but it does speak to SHAP's popularity.
 

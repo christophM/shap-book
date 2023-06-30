@@ -30,9 +30,9 @@ One innovation that SHAP brings to the table is that the Shapley value explanati
 That view connects LIME and Shapley values.
 SHAP specifies the explanation as:
 
-$$g(z')=\phi_0+\sum_{j=1}^M\phi_jz_j'$$
+$$g(z')=\phi_0+\sum_{j=1}^M\phi^{(i)}_jz_j'$$
 
-where g is the explanation model, $z'\in\{0,1\}^M$ is the coalition vector, M is the maximum coalition size and $\phi_j\in\mathbb{R}$ is the feature attribution for a feature j, the Shapley values.
+where g is the explanation model, $z'\in\{0,1\}^M$ is the coalition vector, M is the maximum coalition size and $\phi^{(i)}_j\in\mathbb{R}$ is the feature attribution for a feature j, the Shapley values.
 What I call "coalition vector" is called "simplified features" in the SHAP paper.
 I think this name was chosen, because for e.g. image data, the images are not represented on the pixel level, but aggregated to superpixels.
 I believe it is helpful to think about the z's as describing coalitions:
@@ -43,7 +43,7 @@ The representation as a linear model of coalitions is a trick for the computatio
 For x, the instance of interest, the coalition vector x' is a vector of all 1's, i.e. all feature values are "present".
 The formula simplifies to:
 
-$$g(x')=\phi_0+\sum_{j=1}^M\phi_j$$
+$$g(x')=\phi_0+\sum_{j=1}^M\phi^{(i)}_j$$
 
 You can find this formula in similar notation in the [Shapley value](#shapley) chapter.
 More about the actual estimation comes later.
@@ -57,16 +57,16 @@ SHAP describes the following three desirable properties:
 
 **1) Local accuracy**
 
-$$f(x)=g(x')=\phi_0+\sum_{j=1}^M\phi_jx_j'$$
+$$f(x)=g(x')=\phi_0+\sum_{j=1}^M\phi^{(i)}_jx_j'$$
 
 If you define $\phi_0=E_X(f(x))$ and set all $x_j'$ to 1, this is the Shapley efficiency property.
 Only with a different name and using the coalition vector.
 
-$$f(x)=\phi_0+\sum_{j=1}^M\phi_jx_j'=E_X(f(X))+\sum_{j=1}^M\phi_j$$
+$$f(x)=\phi_0+\sum_{j=1}^M\phi^{(i)}_jx_j'=E_X(f(X))+\sum_{j=1}^M\phi^{(i)}_j$$
 
 **2) Missingness**
 
-$$x_j'=0\Rightarrow\phi_j=0$$
+$$x_j'=0\Rightarrow\phi^{(i)}_j=0$$
 
 Missingness says that a missing feature gets an attribution of zero.
 Note that $x_j'$ refers to the coalitions where a value of 0 represents the absence of a feature value.
@@ -88,7 +88,7 @@ $$f_x'(z')-f_x'(z_{-j}')\geq{}f_x(z')-f_x(z_{-j}')$$
 
 for all inputs $z'\in\{0,1\}^M$, then:
 
-$$\phi_j(f',x)\geq\phi_j(f,x)$$
+$$\phi^{(i)}_j(f',x)\geq\phi^{(i)}_j(f,x)$$
 
 The consistency property says that if a model changes so that the marginal contribution of a feature value increases or stays the same (regardless of other features), the Shapley value also increases or stays the same.
 From Consistency the Shapley properties Linearity, Dummy and Symmetry follow, as described in the Appendix of Lundberg and Lee.

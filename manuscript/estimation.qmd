@@ -68,7 +68,9 @@ However, as the number of features increases, the exact solution becomes problem
 @strumbelj2014explaining proposed an approximation using Monte Carlo sampling:
 
 $$\hat{\phi}_{j}=\frac{1}{M}\sum_{m=1}^M\left(f(x^{m}_{+j})-f(x^{m}_{-j})\right)$$
+
 Where $f(x^{m}_{+j})$ is the prediction for x, but with a random number of feature values replaced by feature values from a random data point z, except for the respective value of feature j.
+For reasons of readability, I'm dropping the $(i)$ from $\phi^{(i)}_j$ for the following explanations.
 Monte Carlo sampling simply means sampling from the coalitions.
 The x-vector $x^{m}_{-j}$ is almost identical to $x^{m}_{+j}$, but the value $x_j^{m}$ is also taken from the sampled z.
 Each of these M new instances is a kind of "Frankenstein's Monster" assembled from two instances.
@@ -222,7 +224,7 @@ This implies that there are no interactions[^interactions] and no non-linear rel
 In this case, the SHAP values are quite straightforward to compute, as we have seen in the [Theory Chapter](#theory).
 The SHAP values are then defined as:
 
-$$\phi_j = \beta_j \cdot (x_j - \mathbb{E}[X_j])$$
+$$\phi^{(i)}_j = \beta_j \cdot (x_j - \mathbb{E}[X_j])$$
 
 This also works if you have a non-linear link function.
 This means that the model is not entirely linear, but the weighted sum is transformed before making the prediction.
@@ -278,10 +280,10 @@ Thus, to compute the SHAP values of a feature, it's sufficient to add it to just
 This means we require exactly $(p+1) \cdot n_{bg}$ calls to the model, where $n_{bg}$ represents the size of the background data, or more specifically, the amount we sample from it.
 The SHAP value for feature $X_j$ can be computed as:
 
-$$\phi_j = f(x_j^{(i)}, \tilde{x}_{-j}^{(i)}) -  \frac{1}{n_{bg}} \sum_{i=1}^n f(x_j, \tilde{x}_{-j}^{(i)}),$$
+$$\phi^{(i)}_j = f(x_j^{(i)}, \tilde{x}_{-j}^{(i)}) -  \frac{1}{n_{bg}} \sum_{i=1}^n f(x_j, \tilde{x}_{-j}^{(i)}),$$
 
 where $\tilde{x}$ comes from the background data.
-This formula is similar to the linear explainer, where we have $\phi_j = \beta_j x_j - \frac{1}{n_{bg}} \sum_{i=1}^{n_{bg}} \beta_j \tilde{x}_j^{(i)}$.
+This formula is similar to the linear explainer, where we have $\phi^{(i)}_j = \beta_j x_j - \frac{1}{n_{bg}} \sum_{i=1}^{n_{bg}} \beta_j \tilde{x}_j^{(i)}$.
 The first term represents the effect of feature value $x_j$, while the second part centers it at the expected effect of feature $X_j$.
 However, since we have different models (linear versus additive), we need to make different assumptions about the shape of the effect.
 
@@ -319,7 +321,7 @@ The Kernel explainer consists of five steps:
 - Obtain a prediction for each $z_k'$ by first converting $z_k'$ to the original feature space, and then applying model $f: f(h_x(z_k'))$.
 - Compute the weight for each $z_k'$ using the SHAP kernel.
 - Fit a weighted linear model.
-- Return SHAP values $\phi_j$, which are the coefficients from the linear model.
+- Return SHAP values $\phi^{(i)}_j$, which are the coefficients from the linear model.
 
 We can create a random coalition by repeatedly flipping a coin until we have a chain of 0's and 1's.
 For example, the vector (1,0,1,0) represents a coalition of the first and third features.
@@ -350,7 +352,7 @@ For the remaining coalition sizes, we sample using readjusted weights.
 We have the data, the target, and the weights;
 everything we need to build our weighted linear regression model:
 
-$$g(z')=\phi_0+\sum_{j=1}^M\phi_jz_j'$$
+$$g(z')=\phi_0+\sum_{j=1}^M\phi^{(i)}_jz_j'$$
 
 We train the linear model g by optimizing the following loss function L:
 
@@ -358,7 +360,7 @@ $$L(f,g,\pi_{x})=\sum_{z'\in{}Z}[f(h_x(z'))-g(z')]^2\pi_{x}(z')$$
 
 where Z is the training data.
 This is the familiar sum of squared errors that we typically optimize for linear models.
-The estimated coefficients of the model, the $\phi_j$'s, are the SHAP values.
+The estimated coefficients of the model, the $\phi^{(i)}_j$'s, are the SHAP values.
 
 Since we are in a linear regression setting, we can also make use of standard tools for regression.
 For example, we can add regularization terms to make the model sparse.
