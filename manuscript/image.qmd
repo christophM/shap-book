@@ -1,5 +1,16 @@
 ## Image Classification with Partition Explainer {#image}
 
+
+::: {.callout-tip appearance="simple"}
+
+By the end of this chapter, you will be able to:
+
+- Use SHAP for image models
+- Understand different methods to make parts of the image "absent"
+
+:::
+
+
 So far, we've only explored tabular data.
 Now, let's work with image data.
 

@@ -14,19 +14,19 @@ book:
     - shapley-to-shap.qmd
     - estimation-overview.qmd
     - linear.qmd
+    - logistic.qmd
     - additive.qmd
     - interactions.qmd
-    - regression.qmd
     - correlation.qmd
-    - logistic.qmd
+    - regression.qmd
     - image.qmd
     - image-deepexplainer.qmd
     - text.qmd
+    - limitations.qmd
+    - dashboard.qmd  
+    - alternative-libraries.qmd
     - extensions.qmd
     - other.qmd
-    - alternative-libraries.qmd
-    - dashboard.qmd  
-    - limitations.qmd
     - references.qmd
   appendices:
     - estimation.qmd

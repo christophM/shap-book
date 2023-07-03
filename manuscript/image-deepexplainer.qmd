@@ -1,5 +1,17 @@
 # Explaining MNIST Model with Deep Explainer and Gradient Explainer {#image-deep-explainer}
 
+
+::: {.callout-tip appearance="simple"}
+
+By the end of this chapter, you will be able to:
+
+- Apply SHAP on a pixel level for image models
+- Understand differences between SHAP based on pixels versus larger patches
+- Explain the Deep explainer and the Gradient explainer
+
+:::
+
+
 In the previous chapter, we explored the Partition explainer, where larger image patches were treated as features for SHAP.
 
 In this chapter, we will explain image classifier classifications using a different approach, more akin to tabular data.

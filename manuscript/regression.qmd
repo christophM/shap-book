@@ -1,4 +1,16 @@
-# Regression
+# Regression with LightGBM
+
+CONTINUE HERE
+
+::: {.callout-tip appearance="simple"}
+
+By the end of this chapter, you will be able to:
+
+- Interpret SHAP for a complex model 
+
+:::
+
+
 
 In this chapter, we will revisit the wine data and fit a tree-based model.
 This means the model potentially includes numerous interactions and non-linear functions, resulting in a more complex interpretation compared to previous chapters.

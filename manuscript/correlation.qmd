@@ -1,5 +1,15 @@
 # The Correlation Problem {#correlation}
 
+::: {.callout-tip appearance="simple"}
+
+By the end of this chapter, you will be able to:
+
+- Describe the challenge of correlated features for SHAP
+- Pick solutions to reduce the correlation problem
+
+:::
+
+
 SHAP values have a subtle but significant issue when dealing with correlated features:
 simulating feature absence by replacing them with sampled values from the background data can produce unrealistic data points.
 These unrealistic data points are then used to generate explanations, which is problematic for several reasons:

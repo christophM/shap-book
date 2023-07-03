@@ -1,5 +1,17 @@
 # Building SHAP Dashboards with Shapash
 
+::: {.callout-tip appearance="simple"}
+
+By the end of this chapter, you will be able to:
+
+- Create dashboards that display insights from SHAP values
+- Install and work with Shapash
+
+:::
+
+
+
+
 Shapash is a package that utilizes SHAP (or LIME) to compute contributions and visualize them in a dashboard or report.
 The dashboard is useful for exploring explanations and is more convenient than iterating through explanations in a Jupyter notebook or, even worse, a Python script.
 This enables an exploratory data analysis style of discovery.

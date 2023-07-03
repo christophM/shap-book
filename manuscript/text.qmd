@@ -1,5 +1,16 @@
 # Explaining Language Models {#text}
 
+::: {.callout-tip appearance="simple"}
+
+By the end of this chapter, you will be able to:
+
+- Apply SHAP for text classification as well as text generation models
+- Choose a tokenization level for the interpretation 
+
+:::
+
+
+
 Let's dive into text-based models.
 All models in this chapter share a common trait: their inputs are texts.
 However, we'll encounter two distinct types of outputs:
@@ -339,41 +350,4 @@ There are other examples of text-to-text tasks for which notebooks exist:
 - [Machine translation](https://shap.readthedocs.io/en/latest/example_notebooks/text_examples/translation/Machine%20Translation%20Explanations.html)
 But any of those tasks are now possible with general text-to-text models, so the example above should be enough.
 
-<!--
 
-## Translation
-
-Translation is another text-to-text task.
-
-In this case, we will obtain an explanation for each output word.
-
-Hugging Face Auto classes can automatically derive the relevant model for a specific task or retrieve a model based on username and model-name.
-
-```{python}
-#| eval: false
-import numpy as np
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-import shap
-import torch
-# Load the model and tokenizer
-tokenizer = AutoTokenizer.from_pretrained('Helsinki-NLP/opus-mt-en-es')
-model = AutoModelForSeq2SeqLM.from_pretrained('Helsinki-NLP/opus-mt-en-es')
-```
-
-CONTINUE HERE
-Determine how to create a functional translation. Consider referring to the SHAP documentation tutorial.
-
-```{python}
-#| eval: false
-#| scrolled: true
-from transformers import pipeline
-
-translator = pipeline('translation_en_to_de')
-s = 'German humor is no laughing matter.'
-print(translator(s))
-explainer = shap.Explainer(translator.model, translator.tokenizer)
-shap_values = explainer([s])
-#| scrolled: true
-shap.plots.text(shap_values)
-```
--->

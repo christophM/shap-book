@@ -1,16 +1,18 @@
 # SHAP for Linear Models {#linear}
 
-In this chapter you will learn
 
-- A simple method to estimate SHAP for linear regression models
-- How to install the `shap` Python library.
-- How to apply SHAP on a machine learning model.
-- Interpretation of SHAP values for linear models
-- Interpreting the global model importances and dependencies 
-- We get to know three types of plots: the waterfall plot, the summary plot and the dependence plot
+::: {.callout-tip appearance="simple"}
+
+By the end of this chapter, you will be able to:
+
+- Install and use `shap`
+- Interpret and visualize SHAP values for linear regression models 
+- Interpret the overall model behavior with the help of the summary plot and the dependence plot
+
+:::
 
 Let's begin with a simple example.
-"Simple", because we'll start with a linear regression model which is already interpretable, allowing us to compare SHAP values with our intuitive understanding of the model.
+"Simple", because we'll start with a linear regression model which is said to be already interpretable, allowing us to compare SHAP values with our intuitive understanding of the model.
 
 ## Estimating SHAP for linear models
 

@@ -1,11 +1,16 @@
 # Understanding Feature Interactions with SHAP {#interaction}
 
-Learning goals
 
-- Understand what a feature interaction is
-- Understand how SHAP handles feature interactions
+::: {.callout-tip appearance="simple"}
+
+By the end of this chapter, you will be able to:
+
+- Describe what a feature interaction is
 - Interpret interactions within the dependence plot
-- Learn about SHAP interaction
+- Understand SHAP interaction values
+
+:::
+
 
 Interpretation gets tricky when the model has interactions.
 This chapter goes deep into a simulated example so we can get to better understand how interactions are distributed among the features.

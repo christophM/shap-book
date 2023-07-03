@@ -1,14 +1,18 @@
 # Classification with Logistic Regression {#classification}
 
+::: {.callout-tip appearance="simple"}
+
+By the end of this chapter, you will be able to:
+
+- Interpret SHAP for classification models
+- Decide whether to interpret the model on the level of probability or log odds
+- Handle categorical features
+- Use alternatives to the waterfall plot: the bar plot and the force plot
+
+:::
+
+
 This chapter shows how to use and interpret SHAP with logistic regression.
-In this chapter you will learn:
-
-- How to apply SHAP for classification.
-- How to handle categorical features (also relevant for regression of course).
-- That SHAP puts out one SHAP value not only for each instance and feature, but also for each class.
-- Alternatives to the waterfall plot: the bar plot and the force plot
-
-
 Differences from linear regression include:
 
 - Two outcomes instead of one.
@@ -19,8 +23,7 @@ Logistic regression is a special case of multi-class classification and what you
 In general, for binary classification, we have two outputs: one probability output for the first class and one for the second.
 However, since one class probability already defines the other's probability, you can work with just one of the probabilities.
 Nonetheless, having two classes is a special case of having $k$ classes.
-
-From the SHAP perspective, this is similar to regression, except the scale is the score output, not regression.
+From the SHAP perspective, classification is similar to regression, except the scale is the score output, not regression.
 
 ## The adult dataset
 
@@ -300,8 +303,6 @@ shap.plots.heatmap(sv_logit[:,:,0])
 ```
 
 Some of the features are automatically summarized, a plotting behavior which you can control by setting the `max_display` argument.
-
-
 
 
 [^no-probability]: While the output is a number between 0 and 1, classifiers are often not so well calibrated, so be careful with interpreting the output as a probability in the real world.

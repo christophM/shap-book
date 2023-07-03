@@ -1,5 +1,16 @@
 # Limitations of SHAP {#limitations}
 
+::: {.callout-tip appearance="simple"}
+
+By the end of this chapter, you will be able to:
+
+- Recognize limitations of SHAP values
+- Stay strong against in the face of hype
+
+:::
+
+
+
 As a statistician with both Bachelors and Masters degrees, I feel obliged to critically examine methods and resist hype.
 In this chapter, I will scrutinize SHAP.
 
