@@ -76,9 +76,17 @@ Now let's interpret the model:
 ```{python}
 import shap
 # Compute the SHAP values for the sample
-explainer = shap.Explainer(model)
+explainer = shap.Explainer(model, X_train)
 shap_values = explainer(X_test)
 ```
+
+
+::: {.callout-warning}
+
+Make sure to provide a dataset or masker when creating an Explainer for a tree-based model.
+While other explainers just won't work without data, the tree explainer will automatically switch to `feature_pertubation=tree_path_dependent` which isn't recommended due to unclear interpretation.
+
+:::
 
 For this model, `shap` can automatically extract the data for the background data.
 
