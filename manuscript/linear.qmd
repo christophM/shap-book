@@ -501,7 +501,7 @@ shap.dependence_plot(
 
 ## The dependence plot
 
-- Mathematically, the plot contains the following points: $\{(x^{(i)}_j^{(i)},\phi^{(i)}_j^{(i)})\}_{i=1}^n$
+- Mathematically, the plot contains the following points: $\{(x^{(i)}_j^{(i)},\phi^{(i)}_j)\}_{i=1}^n$
 - x-axis is the feature value and y-axis the SHAP value
 - Each dot is a data point
 -  SHAP dependence plots offer an alternative to [partial dependence plots](https://christophm.github.io/interpretable-ml-book/pdp.html) and [accumulated local effects](https://christophm.github.io/interpretable-ml-book/ale.html).

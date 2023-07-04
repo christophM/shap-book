@@ -13,10 +13,10 @@ By the end of this chapter, you will be able to:
 Last chapter, we transferred the Shapley value concepts from game theory to machine learning.
 While for simple games the exact Shapley values can be calculated, SHAP values have to be estimated, for two reasons:
 
-- The value function used by SHAP requires integration over the feature distribution. But sine we only have data and don't know the distributions, we have to use estimation techniques such as Monte Carlo integration.
-- Machine learning models often have lots of features. Since the number of coalitions increases exponentially with $2^p$ it's often unfeasible to compute the marginal contributions of a feature to all coalitions, but instead we have to sample coalitions.
+- The value function used by SHAP requires integration over the feature distribution. But since we only have data and don't know the distributions, we have to use estimation techniques such as Monte Carlo integration.
+- Machine learning models often have lots of features. Since the number of coalitions increases exponentially with the number of features ($2^p$) it's often unfeasible to compute the marginal contributions of a feature to all coalitions, but instead we have to sample coalitions.
 
-Let's first assume we only have a few features for which we can still iterate through all coalitions, so we can focus on the estimation of the SHAP values from data.
+Let's first assume we only have a few features for which we can still iterate through all coalitions, so we can focus on the estimation of the SHAP values from data without sampling coalitions.
 
 ## Estimating SHAP values with Monte Carlo integration
 
@@ -30,7 +30,7 @@ In the following figure, we evaluate the marginal contribution of the `cat-banne
 To compute the marginal contribution, we need two coalitions: {park-nearby, cat-banned, area-50} and {park-nearby, area-50}.
 For the absent features we would have to integrate the prediction function over the distribution of floor, and floor + cat, respectively.
 
-But we don't have these distributions, so instead we can use the Monte Carlo estimator.
+But we don't have these distributions, so instead we can use Monte Carlo integration.
 
 ::: {.callout-note}
 
@@ -55,7 +55,8 @@ The background data serves as the "background" for the interpretation of the res
 
 :::
 
-Let's simulate what it would like like starting with drawing just 1 sample, which means we would have only 1 Monte Carlo sample which of course makes for a very unstable average, but it helps to get started with the concept.
+Let's simulate what sampling from the background data would like like starting with drawing just 1 sample for the Monte Carlo integration.
+Of course makes a single sample makes for a very unstable estimate of the integral, but it helps to get started with the concept.
 
 Let's say the randomly sampled apartment looks like this:
 
@@ -83,23 +84,26 @@ We predict the apartment price for the coalition of `park-nearby` and `area-50` 
 The marginal contribution of `cat-banned` therefore is €310,000 - €320,000 = -€10,000.
 
 
-![One sample repetition to estimate the contribution of `cat-banned` to the prediction when added to the coalition of `park-nearby` and `area-50`.](images/shapley-instance-intervention.jpg)
+![One Monte Carlo sample to estimate the marginal contribution of `cat-banned` to the prediction when added to the coalition of `park-nearby` and `area-50`.](images/shapley-instance-intervention.jpg)
 
 This estimate depends on the values of a single, randomly drawn apartment that served as a "donor" for the cat and floor feature values.
 This is not a good estimate of the marginal contribution, since it relied on only 1 Monte Carlo sample.
-We can obtain better estimates by repeating this sampling step and averaging the contributions.
+We can obtain better estimates by repeating this sampling step and averaging the marginal contributions.
 
-Let's formalize this a bit.
-This is how we estimate the value function for a coalition of features $S$:
+Let's get more formal.
+We estimate the value of a coalition of features $S$ with:
 
 $$\hat{v}(S) = \frac{1}{n}\sum_{k=1}^n \left( f(x^{(i)}_S, x^{(k)}_{C}) - f(x^{(k)}) \right) $$
 
 The $n$ is number of data samples that are sampled from the data.
 The little hat on the $\hat{v}$ just expresses that this is an estimate of the value function $v$.
-And the marginal contribution of a feature $j$ added to a coalition $S$ becomes:
 
-$$\ \hat{\Delta}_{S,j} = hat{v}(S \cup \{j\})  - \hat{v}(S) =  \frac{1}{n}\sum_{k=1}^n \left( f(x^{(i)}_{S \cup  \{j\}}, x^{(k)}_{C \backslash \{j\}}) - f(x^{(i)}_S, x^{(k)}_{C}) \right) $$
+The marginal contribution of a feature $j$ added to a coalition $S$ becomes:
 
+\begin{align*}
+\hat{\Delta}_{S,j} & = \hat{v}(S \cup \{j\})  - \hat{v}(S)  \\
+                   &=  \frac{1}{n}\sum_{k=1}^n \left( f(x^{(i)}_{S \cup  \{j\}} \cup x^{(k)}_{C \backslash \{j\}}) - f(x^{(i)}_S \cup x^{(k)}_{C}) \right) \\
+\end{align*}
 
 Monte Carlo allows us to replace the integral $\int$ with a sum $\sum$ and the distribution $\mathbb{P}$ with data samples.
 I personally love Monte Carlo, because I think it makes integrations over distributions more tangible.
@@ -112,9 +116,7 @@ Monte Carlo integration allows us to actually compute the integral for unknown d
 In the section before, we spoke about how to estimate the marginal contribution with the help of Monte Carlo integration.
 To estimate the actual SHAP value of a feature  we have to estimate the marginal contributions for all possible coalitions.
 
-The following figure shows all coalitions of feature values that are needed to determine the exact SHAP value for `cat-banned`.
-The first row shows the coalition without any feature values.
-The second, third, and fourth rows show different coalitions with increasing coalition size, separated by "|" in @fig-coalitions.
+@fig-coalitions shows all coalitions of feature values that are needed to determine the exact SHAP value for `cat-banned`.
 
 ![All 8 coalitions needed for computing the exact SHAP value of the `cat-banned` feature value.](images/shapley-coalitions.jpg){#fig-coalitions}
 
@@ -137,23 +139,15 @@ The SHAP value formula becomes:
 
 $$ \hat{\phi}^{(i)}_j =  \sum_{S\subseteq\{1,\ldots,p\} \backslash \{j\}}\frac{|S|!\left(p-|S|-1\right)!}{p!} \hat{\Delta}_{S,j}$$
 
-For your convenience, the marginal contribution again:
+## How to handle large numbers of coalitions
 
-$$ \hat{\Delta}_{S,j} = \frac{1}{n}\sum_{k=1}^{n}\left(f(x^{(i)}_{S \cup \{j\}}, x^{(k)}_{C \backslash \{j\}})- f(x^{(i)}_S, x^{(k)}_C)\right)  $$
-
-The SHAP value is a weighted average of all the marginal contributions to all possible coalitions.
 The computation time increases exponentially with the number of features, because there are $2^p$ possible coalitions, where $p$ is the number of features.
-One solution to keep the computation time manageable is to compute contributions for only a few samples of the possible coalitions.
-
-## Sample coalitions if there are too many
-
-Going through all the coalitions isn't feasible when the number of features and therefore the number of coalitions gets too large.
-That's when we have to rely on estimation techniques that don't require going through all coalitions.
+When $p$ gets large we have to rely on estimation techniques that don't require going through all coalitions.
 
 There are two solutions:
 
-- For some cases, we can make use of the structure of the model. For example for purely additive models, like linear regression models (without interaction terms) it's enough to compute 1 marginal contribution per feature. Also for other models such as neural networks there are so-called model-specific estimation methods that avoid a full iteration through the coalitions.
-- Instead of iterating through all coalitions, you can also sample coalitions. There are surprisingly many different ways how to sample coalitions, which you will see in the later table. 
+- For some cases, we can make use of the structure of the model. For example for purely additive models, like linear regression models without interaction terms, it's enough to compute one marginal contribution per feature. Also for other models such as neural networks there model-specific estimation methods that avoid iterating through all coalitions.
+- Instead of iterating through all coalitions, you can also sample coalitions. There are surprisingly many different ways how to sample coalitions, which you will see in the later table.
 
 The estimation methods differ in:
 
@@ -165,7 +159,7 @@ One rather flexible and fast method is the permutation estimator which we take a
 
 ## Estimation via permutation
 
-The estimation via permutations works by creating a random permutation of the feature values of an instance and then doing a forward and a backward pass of coalitions.
+Estimation via permutation works by creating a random permutation of the feature values of an instance and then doing a forward and a backward pass of coalitions.
 The best way to learn about the permutation estimation is through an example: Let's consider four feature values: $x_{\text{park}}, x_{\text{cat}}, x_{\text{area}}$, and $x_{\text{floor}}$.
 I'm dropping the i's here to save some ink, so $x^{(i)}_{\text{park}}$ is just $x_{\text{park}}$.
 
@@ -191,43 +185,42 @@ This was the forward pass and next we iterate backwards:
 This approach changes only one feature at a time, which minimizes the number of model calls, as the first term of a marginal contribution transitions into the second term of the subsequent one.
 For instance, the coalition $\{x_{\text{cat}}, x_{\text{area}}\}$ is utilized for computing the marginal contribution of $x_{\text{park}}$ to $\{x_{\text{cat}}, x_{\text{area}}\}$ and of $x_{\text{area}}$ to $\{x_{\text{cat}}\}$.
 The marginal contribution is estimated with Monte Carlo integration.
-Note how with this version we not only get information about one of the features, but with forwards + backward pass we get two marginal contributions per features.
+Note how with this version we not only get information about one of the features, but with forwards + backward pass we get two marginal contributions per feature.
 And by repeating the permutation sampling we get even better estimates.
-The more often it is repeated, the more marginal contributions are estimated and the closer the final estimation of the SHAP values will be.
+The more permutations we sample and iterate over, the more marginal contributions are estimated and the closer the final estimates of the SHAP values will be to the exact SHAP value.
 
-But how do we get from here to SHAP values?
-Actually, it's with a really simple formula.
+But how do we get from here marginal contributions based on the permutations to SHAP values?
+Actually, it's a simpler formula than the original SHAP formula.
 The SHAP formula has this complicated fraction that we multiple the sum of marginal contributions with.
 But with the permutation estimation we don't sum over coalitions, we sum over permutations.
 And if you remember in the [Theory Chapter](#theory), we motivated the weights of the coalitions by how often they appear when we write down all possible coalitions.
-But you can also define it via permutations.
-Let $m$ enumerate permutations of the features with $o(k)$ being the k-the distribution, then SHAP can be estimated with:
+But you can also define the SHAP value via permutations.
+Let $m$ enumerate permutations of the features with $o(k)$ being the k-the permutation, then SHAP can be estimated with:
 
 $$\hat{\phi}_j^{(i)} = \frac{1}{m} \sum_{k=1}^m \hat{\Delta}_{o(k), j}$$
 
 I gotta explain $\hat{\Delta}_{o(k), j}$:
-We have an permutation $o(k)$.
+We have permutation $o(k)$.
 In this k-th permutation, the feature $j$ stands at a certain position.
-Let's say $o(k)$ is $(x_{\text{cat}}, x_{\text{area}}, x_{\text{park}}, x_{\text{floor}})$ and $j$ is park, then we have $\hat{Delta}_{o(k), j} = \hat{v}(\{\text{cat, area, park}\}) - \hat{v}(\{\text{cat, area}\})$.
+Let's say $o(k)$ is $(x_{\text{cat}}, x_{\text{area}}, x_{\text{park}}, x_{\text{floor}})$ and $j$ is park, then we have $\hat{\Delta}_{o(k), j} = \hat{v}(\{\text{cat, area, park}\}) - \hat{v}(\{\text{cat, area}\})$.
 But what is $m$?
-If we want to sum over all coalitions, it's $m = p!$.
+If we want to sum over all coalitions, then $m = p!$.
 But the entire motivation for the permutation estimation was that we don't want to compute all possible coalitions / permutations.
-If you view the equation above, the $m$ can actually also be just a sample of all possible permutations.
-To get a rough idea of how many permutation: 10 is for example the default in the `shap` package.
+The good news: $m$ can be a smaller number than all possible permutations and you can use a sample of permutations with the formula above.
+But since we do forwards and backwards passes, the formula looks actually like this:
 
-But since we do forwards and backwards passes, the formula is actually:
+$$\hat{\phi}_j^{(i)} = \frac{1}{2m} \sum_{k=1}^m (\hat{\Delta}_{o(k), j} + \hat{\Delta}_{-o(k), j})$$
 
-$$\hat{phi}_j^{(i)} = \frac{1}{2m} \sum_{k=1}^m (\hat{\Delta}_{o(k), j} + \hat{\Delta}_{-o(k), j})$$
-
-Where $-o(k)$ is the backwards version of the permutation.
+The permutation $-o(k)$ is the backwards version of the permutation.
 
 The estimation via permutation with forward and backward passes are also known as antithetic sampling and performs quite well compared to other sampling estimators of SHAP values[@mitchell2022sampling].
 The algorithmically simpler version would be to sample random permutations and not do this forwards + backwards step.
-One reason that we already talked about is that we get to reuse the resulting coalitions and save a bit of computation.
+One pro argument for antithetic sampling is that we get to reuse the resulting coalitions to save a bit of computation.
 
-But this permutation procedure has an additional bonus: it ensures that the efficiency axiom is always satisfied, meaning when you add up the SHAP values they will exactly result in the prediction (minus the average prediction).
+The permutation procedure has an additional bonus: it ensures that the efficiency axiom is always satisfied, meaning when you add up the SHAP values they will exactly result in the prediction (minus the average prediction).
 Other estimation method would only ensure the efficiency axiom in expectation.
 Nonetheless, the individual SHAP values remain estimates and the more permutations you draw the better the estimates will be.
+To get a rough idea of how many permutation you might need: 10 is for example the default in the `shap` package.
 
 ## Overview of SHAP estimators
 
@@ -266,9 +259,9 @@ If you use `shap` you rarely have to care about explainers, because the default 
 
 To give you an idea of how the 'auto'-option picks estimation methods:
 
-- If possible, the 'auto' option picks a model-specific version, for example the tree estimator when the model is a random forest. But only for the following cases: linear, additive, and tree-based.
-- Else, if there are 10 or fewer features, the exact estimation is used.
-- For more features, the permutation estimator is used. 
+- If possible, the 'auto' option picks a model-specific version, for example the tree explainer when the model is a random forest. But only for the following cases: linear, additive, and tree-based.
+- Else, if there are 10 or fewer features, the exact explainer is used.
+- For more features, the permutation explainer is used. 
 - If model inputs are image or text data, usually the partition explainer is used.
 
 ::: {.callout-tip}

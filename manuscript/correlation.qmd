@@ -106,16 +106,47 @@ If you have the option to change the features, we can leverage a wider range of 
 Reducing correlated features and the overall number of features can significantly benefit model fitting.
 For each of these steps, you can assess how much they reduce or potentially enhance model performance, aiding in your decision-making for possible trade-offs.
 
-## Solution: Combined explanation of correlated features
+## Solution: Combined explanation of correlated features with Partition explainer
 
 Instead of using the `Independent` explainer, opt for the `Partition` explainer.
-By default, the `Partition` explainer groups features based on correlation, but you can also define your own feature groupings.
+The Partition explainer generates a feature hierarchy presented as a tree.
+While any metric could be used to produce the hierarchy, it should be some correlation-based metric that hierarchically clusters the features, like Pearson correlation.
 
-The Partition explainer generates a feature hierarchy based on a provided distance matrix or custom groupings.
 Within this hierarchy, SHAP values are calculated recursively.
-This alters the complexity from $\mathcal{O}(2^p)$ to $\mathcal{O}(p^2)$ (when the clustering tree is balanced), where $p$ is the number of input features for the model.
+This procedure is actually it's own game, called Owen's game and we get Owen's value back.
+But it's tightly connect to Shapley values, as we will see in the following example.
+Let's say for the apartment example we have the following binary tree of correlations:
 
-This specific type of game is called the Owen game.
+
+```{mermaid}
+graph TB
+    A[X]
+    S[size, cat, park]
+    F[floor]
+    C[park]
+    P[size,cat]
+    Q[cat]
+    R[size]
+    A --> S
+    A --> F
+    S --> C
+    S --> P
+    P --> Q
+    P --> R
+```
+
+- Cat and size are most strongly correlated.
+- Both are slightly correlated with the park feature.
+- The floor feature is correlated with neither of the features.
+
+
+To compute Owen values, aka hierarchical Shapley values, we start on top and have two feature groups: {size,cat,park} and {floor}.
+We treat both groups as players and compute their SHAP values $\phi_{\text{size,cat,park}}$ and $\phi{floor}$.
+In the next recursion, we go down and now split up the $\phi_{\text{size,cat,park}}$ among the groups {park} and {size, cat}, again like we would compute SHAP, but with possibly groups as players.
+And then, go down two {cat} and {size}.
+
+Owens game alters the complexity from $\mathcal{O}(2^p)$ to $\mathcal{O}(p^2)$ (when the clustering tree is balanced), where $p$ is the number of input features for the model.
+
 The benefit is that for groups of correlated features, we obtain a single SHAP value for interpretation.
 
 ## Solution: Conditional sampling

@@ -1,38 +1,38 @@
-# Theory of Shapley values {#theory}
+# Theory of Shapley Values {#theory}
 
 ::: {.callout-tip appearance="simple"}
 
 By the end of this chapter, you will be able to:
 
-- Describe theory and application of Shapley values
+- Describe the theory Shapley values
 - Calculate Shapley values for simple games
-- Understand the axioms of Shapley values, namely efficiency, symmetry, dummy, and additivity
+- Understand the axioms of Shapley values: efficiency, symmetry, dummy, and additivity
 
 :::
 
 To understand SHAP, we first have to discuss the theory behind Shapley values from game theory.
-That's why we start with games, coalitions and payouts and make the transition to machine learning only afterwards.
+That's why we start with games, coalitions and payouts and make the transition to machine learning later.
 
+In this chapter we will gradually define how, in a coalition of players, a fair payout can look like and finally arrive at (Spoiler alert) Shapley values.
 
 ## Who's Gonna Pay For That Taxi?
 
-Forget about machine learning -- for now and let's look at a concrete example that can be seen as a coalitional game: sharing a taxi ride.
-
-Alice, Bob, and Charlie had dinner together and get a taxi to get home.
+Let's look at a concrete example that can be seen as a coalitional game: sharing a taxi ride.
+Alice, Bob, and Charlie had dinner together and get a taxi ride home.
 Total cost: \$51. 
 The problem: How should they split up the costs in a fair way?
 
 The taxi ride can be seen as a coalitional game:
 Alice, Bob, and Charlie form a coalition and get a certain payout.
 In this case the payout is negative (costs), but that doesn't change that we can treat this as a coalitional game.
-To answer that question of what a fair distribution of the costs are, we first ask simpler questions:
-How much would the ride cost for an arbitrary coalition of passengers.
+To answer what a fair distribution of the costs are, we first ask simpler questions:
+How much would the ride cost for an arbitrary coalition of passengers?
 For example, how much would Alice pay for a taxi if she would ride alone?
 How much would Alice and Bob pay if they shared the taxi?
 Let's say it would be \$15.
-Alice and Bob live together, but adding Bob to the ride bumps the cost to \$25, because he insists of getting a more spacious, more luxury taxi, which adds a flat \$10 to the ride costs.
-Adding Bob to the Alice and Charlie makes the cost go up to \$51 since the Bob lives a bit further away. 
-We can do this for all possible combinations and end up with the following table:
+Alice and Bob live together, but adding Bob to the ride bumps the cost to \$25, because he insists on getting a more spacious, more luxurious taxi, which adds a flat \$10 to the ride costs.
+Adding Charlie to Alice and Bob increases the cost to \$51 since Bob lives a bit further away. 
+We define the taxi ride costs for all possible combinations and end up with the following table:
 
 
 | Passengers           | Cost | Note                                  |
@@ -46,13 +46,13 @@ We can do this for all possible combinations and end up with the following table
 | {Bob, Charlie}       |   $51 | Bob is a creature of luxury and Charlie lives a bit further away|
 | {Alice, Bob, Charlie}|   $51 | The full fare with all 3 of them      |
 
-The coalition $\emptyset$ is a coalition without any players in it.
-This seems like a step in the right direction: With this table we get a first idea how much each person contributes to the cost of the ride.
+The coalition $\emptyset$ is a coalition without any players in it. An empty taxi.
+The table seems like a step in the right direction: We get a first idea of how much each person contributes to the cost of the ride.
 
 ## Calculating Marginal Contributions For The Taxi Costs
 
-But we have to get one step further by calculating the so-called marginal contributions of each person to each combination.
-For example, how much additional cost does Alice contribute in the taxi ride together with Bob?
+We can go one step further by calculating the so-called marginal contributions of each passenger to each coalition.
+For example, how much additional cost does Alice incur when she is added to a taxi with Bob already in it?
 
 
 ::: {.callout-note}
@@ -87,11 +87,11 @@ We are going to do this for all possible marginal contributions:
 
 Again, we are one step further in calculating a fair share of the ride costs.
 Can we just average these marginal contributions per passenger?
-We could, but that would make every marginal contribution get equal weight.
+We could, but that would give every marginal contribution an equal weight.
 You can however, make the argument that adding, for example, Alice to an empty taxi is more informative than adding Alice to a taxi with Bob.
 But how much more informative?
 One way to answer this question is by looking at all possible permutations of Alice, Bob, and Charlie.
-There are $3!=6$ possibilities of ordering the passengers:
+There are $3!=3*2*1=6$ possibly permutations of passengers:
 
 - Alice, Bob, Charlie
 - Alice, Charlie, Bob
@@ -130,20 +130,19 @@ And that's already it, this is how to compute Shapley values [@shapley1953value]
 
 We could have made different decisions in how we "fairly" attribute the costs to the passengers.
 For example, we could have weighted the marginal contributions differently.
-We could have just divided the costs by 3.
-Or we could use solutions that relies on the order of passengers: Alice alone would pay \$15, when we add Bob it's +\$10, so that's his share and Charlie pays the rest.
+We could have divided the costs by 3.
+Or we could use solutions that rely on the order of passengers: Alice alone would pay \$15, when we add Bob it's +\$10, so that's his share and Charlie pays the rest.
 However, all of these different choices would lead us to solutions that are no longer Shapley values.
 Let's formalize the taxi example in terms of game theory and explore the Shapley value theory that makes Shapley values a unique solution.
-
 
 
 ## How to calculate Shapley values
 
 The coming sections will use a lot of game theoretic terms.
-Most of them we have already been used in the example above, but here is an overview to solidify them and as further reference.
+Most of them we have already been used in the example above, but here is an overview as reference.
 
-| Term  | Mathematical symbol | Taxi example |
-|-------|---------------------|--------------|
+| Term  | Math term| Taxi example |
+|-------|------|--------------|
 | Player | $1, \ldots, |N|$ | Passenger, for example Alice |
 | Coalition of all players| $N$ |  {Alice, Bob, Charlie}|
 | Coalition | S | Any combination of passengers from $\emptyset$ to {Alice, Bob, Charlie}.|
@@ -166,8 +165,8 @@ $$ {#eq-shapley}
 The value function $v: P(N) \mapsto \mathbb{R}$ maps from all possible coalitions of N players to a real number which is the payout for this coalition.
 The whole formula is quite a handful, so let's break it down.
 
-- $v(S \cup \{j\}) - v(S)$: Let's focus on the core of this equation first. We have already encountered this term: this is the marginal contribution of player $j$ to coalition $S$. If $j$ is Alice, and $S=\{Bob\}$ then this part expresses how much more expensive the ride becomes when Alice joins Bob.
-- $\sum_{S \subseteq N \backslash \{j\}}$: The entire formula is a sum over all possible subset that exclude $j$. So if we calculate the Shapley value for Alice, we sum over the following coalitions: $\emptyset$, $\{Bob\}$, $\{Charlie\}$, and $\{Bob, Charlie\}$.
+- $v(S \cup \{j\}) - v(S)$: Let's focus on the core of this equation first. We have already encountered this term: this is the marginal contribution of player $j$ to coalition $S$. If $j$ is Alice and $S=\{Bob\}$, then this part expresses how much more expensive the ride becomes when Alice joins Bob.
+- $\sum_{S \subseteq N \backslash \{j\}}$: The entire formula is a sum over all possible coalitions without $j$. If we calculate the Shapley value for Alice, we sum over the coalitions: $\emptyset$, $\{Bob\}$, $\{Charlie\}$, and $\{Bob, Charlie\}$.
 - $\frac{|S|!(N-|S|-1)!}{N!}$: This term tells us how much to weight a marginal contribution. $\emptyset$ and $N \backslash \{j\}$ get the highest weights. The $|N|!$ in the denominator ensures that the sum of the weights equals 1.
 
 The scary looking formula isn't so scary after all!
@@ -176,7 +175,7 @@ The scary looking formula isn't so scary after all!
 
 ## Shapley value formula summarized
 
-The Shapley value is a weighted average of the marginal contributions of a player across all possible coalitions.
+The Shapley value is the weighted average of a player's marginal contributions to all possible coalitions.
 
 :::
 
@@ -185,11 +184,10 @@ The Shapley value is a weighted average of the marginal contributions of a playe
 Okay, now we have the formula, but where did it even come from?
 Lloyd Shapley derived it [@shapley1953value], but he didn't just pull it out of thin air.
 He formulated axioms of what a fair distribution could look like and from these axioms he derived the formula.
-And Lloyd Shapley also showed that based on these axioms, his Shapley value formula has a unique solution.
+Lloyd Shapley also showed that based on these axioms, the Shapley value formula has a unique solution.
 
-Let's talk about these axioms as they are quite fundamental.
-These axioms are **Efficiency**, **Symmetry**, **Dummy**, and **Additivity**.
-An axiom is a statement which is regarded as accepted or self-evidently true. 
+Let's talk about these axioms, which are titled **Efficiency**, **Symmetry**, **Dummy**, and **Additivity**.
+An axiom is a statement that is regarded as accepted or self-evidently true. 
 You may interpret the axioms as definition of fairness when it comes to payouts in team play.
 
 ### Efficiency
@@ -197,8 +195,8 @@ You may interpret the axioms as definition of fairness when it comes to payouts 
 The efficiency axioms says that the sum of the contributions must **exactly** add up to the payout.
 This makes a lot of sense to me.
 Imagine Alice, Bob, and Charlie would pick some method to compute their share of the taxi ride, but the individual contributions wouldn't add up to the cost of the taxi ride.
-The three of them would find such a method rather useless.
-To express this axiom formally:
+The three of them would find such a method rather useless, as would the taxi driver.
+To express the efficiency axiom formally:
 
 
 $$\sum_{j \in N}\phi_j = v(N)$$
@@ -206,12 +204,12 @@ $$\sum_{j \in N}\phi_j = v(N)$$
 ### Symmetry
 
 If two players are equivalent, then they should receive the same contribution.
-Equivalent means that their marginal contributions are the same.
+Equivalent means that all their marginal contributions are the same.
 For example, if Bob wouldn't require the luxury version of the taxi, then Bob would have exactly the same marginal contributions as Alice.
-The symmetry axioms says that, in such a case, both should pay exactly the same in the end.
+The symmetry axioms says that, in such a case, both should pay exactly the same.
 Sounds fair.
 
-We can also express this in more mathematical terms for two players $j$ and $k$:
+We can also express symmetry in more mathematical terms for two players $j$ and $k$:
 
 If $v(S \cup \{j\}) = v(S \cup \{k\})$ for all $S \subseteq N \backslash \{j, k\}$, then $\phi_j = \phi_{k}$.
 
@@ -223,8 +221,8 @@ Introducing Dora, Charlie's dog.
 And let's consider the dog as an extra player.
 Let's also assume that there is no additional cost involved adding Charlie to any ride.
 That would mean that all marginal contributions of Charlie would be \$0.
-The dummy axiom says that in such a case where all marginal contributions are zero then the Shapley value should also be zero.
-That makes a lot of sense, both because it seems like a fair rule, but also since Charlie has no money.
+The dummy axiom says when all marginal contributions are zero, the Shapley value should also be zero.
+That makes a lot of sense: it seems like a fair rule and Charlie has no money anyways.
 
 To put it more formally:
 

@@ -180,7 +180,7 @@ The concept behind SHAP feature importance is straightforward:
 Features with large absolute SHAP values are important.
 To determine global importance, we average the **absolute** SHAP values per feature across the data:
 
-$$I_j=\frac{1}{n}\sum_{i=1}^n{}|\phi^{(i)}_j^{(i)}|$$
+$$I_j=\frac{1}{n}\sum_{i=1}^n |\phi^{(i)}_j|$$
 
 Next, we sort the features by decreasing importance and plot them.
 The following figure displays the SHAP feature importance for the random forest previously trained to predict cervical cancer.

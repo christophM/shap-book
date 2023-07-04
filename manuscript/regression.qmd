@@ -1,4 +1,4 @@
-# Regression with LightGBM
+# Regression with xgboost
 
 CONTINUE HERE
 
@@ -6,33 +6,32 @@ CONTINUE HERE
 
 By the end of this chapter, you will be able to:
 
-- Interpret SHAP for a complex model 
+- Interpret SHAP for a complex model with interactions and non-linear effects
+- Use the Partition explainer to handle correlated features
+- Analyze the model for subsets of the data
 
 :::
 
-
-
-In this chapter, we will revisit the wine data and fit a tree-based model.
+In this chapter, we will revisit the wine data and fit a tree-based model, namely an xgboost model.
 This means the model potentially includes numerous interactions and non-linear functions, resulting in a more complex interpretation compared to previous chapters.
 But, on the good side, we can utilize the fast `shap.TreeExplainer`.
 
-## Fitting the LightGBM model
+## Fitting the xgboost model
 
-If you haven't installed LightGBM yet, install it as follows:
+If you haven't installed xgboost yet, install it as follows:
 
 ```{python}
 #| eval: false
-pip install lightgbm
+pip install xgboost
 ```
 
-LightGBM is a gradient boosting framework based on decision trees.
+xgboost is a gradient boosting framework based on decision trees.
 It's fast, efficient, and generally performs well.
-Using a histogram-based approach to represent feature values, it excels with large datasets.
-But enough advertisement, let's train the LightGBM model.
+But enough advertisement, let's train the xgboost model.
 
 ```{python}
 import pandas as pd
-import lightgbm as lgb
+import xgboost as xgb
 import shap
 from sklearn.model_selection import train_test_split
 
@@ -47,12 +46,8 @@ X_train, X_test, y_train, y_test = train_test_split(
   X, y, test_size=0.2, random_state=42
 )
 
-# Create LightGBM dataset
-train_data = lgb.Dataset(X_train, label=y_train)
-test_data = lgb.Dataset(X_test, label=y_test)
-
 # Train the model
-model = lgb.LGBMRegressor()
+model = xgb.XGBRFRegressor()
 model.fit(X_train, y_train)
 ```
 
@@ -96,7 +91,7 @@ shap.plots.waterfall(shap_values[0])
 
 The results differ from both the linear and the GAM models, but the interpretation process remains similar.
 However there is on big difference:
-The LightGBM model contains interactions between the features.
+The xgboost model contains interactions between the features.
 But since there's only one SHAP value per feature value (and not one for every interaction), it means that interactions between feature values are split between the SHAP values.
 
 ## Global model interpretation
@@ -178,7 +173,7 @@ Observations:
   - When density is low, increasing residual sugar values are associated with larger SHAP values.
   - If density is high, different residual sugar values doesn't show much changes in SHAP values.
 
-
+<!--
 ## Analyzing interactions in more detail
 
 Let's use the SHAP interaction values to drill a bit deeper into the interaction between  alcohol and volatile acidity.
@@ -237,16 +232,124 @@ plt.show()
 
 Keep in mind that interaction are not necessarily split intuitively as we uncovered in the [Interaction Chapter](#interaction).
 Sorry, would love to give you more definitive answers, but SHAP just gives us a glimpse into the model.
-
+-->
 
 ## Analyzing correlated features
 
-TODO: CONTINUE HERE
+As we discussed in the [Correlation Chapter](#correlation), correlated features need extra attention.
+Let's now investigate how features are correlated and how to handle them.
+For that we start with a correlation plot that shows us the Pearson correlation between each of the features.
+The Pearson correlation coefficient is defined as
 
-TODO: Also add correlation plot
+$$r_{xy} = \frac{\sum_{i=1}^{n}(x^{(i)}-\bar{x})(z^{(i)}-\bar{z})}{\sqrt{\sum_{i=1}^{n}(x^{(i)}-\bar{x})^2}\sqrt{\sum_{i=1}^{n}(z^{(i)}-\bar{z})^2}}$$
+
+and it ranges from -1 for a perfect negative correlation to +1 for a perfect positive correlation, with 0 indicating no correlation at all.
+$x$ and $z$ are two features, and $\bar{x}$ and $\bar{z}$ are their means.
 
 
+```{python}
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
 
+# Compute the correlation matrix
+corr = X_train.corr()
+
+# Generate a mask for the upper triangle
+mask = np.triu(np.ones_like(corr, dtype=bool))
+
+# Set up the matplotlib figure
+f, ax = plt.subplots(figsize=(11, 9))
+# Generate a diverging colormap
+cmap = sns.diverging_palette(230, 20, as_cmap=True)
+
+# Draw the heatmap with the mask and correct aspect ratio
+sns.heatmap(corr, mask=mask, cmap=cmap, vmax=.3, center=0,
+    square=True, linewidths=.5, cbar_kws={"shrink": .5},
+    annot=True, fmt=".1f")
+plt.show()
+```
+
+This shows us, for example, that density has a high correlation with residual sugar (0.8) and total sulfur dioxide.
+Volatile acidity is a feature that isn't strongly correlated with any of the other features.
+Alcohol is strongly negative correlated with density.
+And so on.
+
+
+To actually compute the Owen values, aka the clustered SHAP values, we have to cluster the features based on these correlations.
+One way to do it is to rely on hierarchical clustering that is implemented in `shap`.
+Hierarchical clustering doesn't give us distinct clusters, but rather a tree with the hierarchy of correlated features.
+Meaning features are merged to clusters, starting from the ones with the highest correlation.
+
+```{python}
+import matplotlib.pyplot as plt
+from scipy.cluster import hierarchy
+
+clustering = shap.utils.hclust(X_train, metric = "correlation")
+
+plt.figure(figsize=(10, 7))  
+plt.title("Dendrograms")  
+dend = hierarchy.dendrogram(clustering, labels=X_train.columns)
+
+# Rotate labels for better readability
+plt.xticks(rotation=90)
+
+# Increase label size for better visibility
+plt.tick_params(axis='x', which='major', labelsize=10)
+plt.ylabel('Correlation Distance')
+
+plt.show()
+```
+
+As we saw in the correlation plot, residual sugar and density are combined first, then merged with the cluster of free sulfur dioxide and total sulfur dioxide.
+And so on.
+
+This clustering hierarchy is input to the Partition masker and explainer to produce SHAP values where, for the estimation, the hierarchy of features is respected:
+
+```{python}
+masker = shap.maskers.Partition(X_train, clustering = clustering)
+explainer2 = shap.PartitionExplainer(model.predict, masker)
+shap_values2 = explainer2(X_test)
+```
+
+Now we've got our new SHAP values.
+And the most interesting question is:
+Are the results different from when we were ignoring the feature correlation?
+Let's start on a summary statistic, the SHAP importance, to get the big picture of changes: 
+
+```{python}
+fig = plt.figure(figsize=(12,6))
+ax0 = fig.add_subplot(121)
+shap.plots.bar(shap_values, show=False)
+ax1 = fig.add_subplot(122)
+shap.plots.bar(shap_values2, clustering_cutoff=0, show=False)
+plt.tight_layout()
+plt.show()
+```
+
+While the importances aren't exactly the same, they don't differ substantially.
+But maybe, on an individual level the explanations are quite different?
+Let's compare the SHAP explanation of the first data instance:
+
+```{python}
+fig = plt.figure(figsize=(12,6))
+ax0 = fig.add_subplot(121)
+shap.plots.waterfall(shap_values[0], show=False)
+ax1 = fig.add_subplot(122)
+shap.plots.waterfall(shap_values2[0], show=False)
+plt.tight_layout()
+plt.show()
+```
+
+Again, there are slight differences in the SHAP values, but nothing that would change our takeaways.
+Where does that leave us and our interpretation?
+It's actually great that the explanations don't differ.
+Because it means that when ignoring the dependencies and the unavoidable extrapolation happened, the resulting SHAP values weren't biased.
+At least compared to when we don't extrapolate.
+
+In the [shap docs](https://shap.readthedocs.io/en/latest/example_notebooks/api_examples/explainers/Exact.html) (accessed July 2023) it's also mentioned that:
+
+> Note that there is a strong similarity between the explanation from the Independent masker above and the Partition masker here. In general the distinctions between these methods for tabular data are not large, though the Partition masker allows for much faster runtime and potentially more realistic manipulations of the model inputs (since groups of clustered features are masked/unmasked together).
 
 ## Model-understanding for data subsets
 
