@@ -44,7 +44,8 @@ point = (-1.7, -1.7)
 ```
 
 I'm interested in the SHAP value for feature $X_1$.
-I will demonstrate both what SHAP values do and how background data sampling should appear when respecting the conditional distribution of the data.
+I will demonstrate how SHAP values sample from the marginal distribution and compare that to what sampling from the conditional distribution would look like.
+
 ```{python}
 #| label: fig-sampling
 #| fig-cap: "Marginal and conditional sampling"
@@ -73,22 +74,24 @@ plt.ylabel('x2')
 plt.show()
 ```
 
-The plot on the right illustrates that when we ignore the correlation between $X_1$ and $X_2$ and sample $X_2$ independently from $X_1$, we create new data points outside of the distribution.
-This is what occurs with SHAP values.
-On the left, we can see what sampling from $P(X_2 | X_1)$ instead of $P(X_2)$ would look like.
-This conditional sampling will also be part of one of the solutions.
+The plot on the right illustrates sampling from the marginal distribution: we ignore the correlation between $X_1$ and $X_2$ and sample $X_2$ independently from $X_1$.
+Marginal sampling in this correlated case creates new data points outside of the distribution.
+This is what occurs with SHAP values as we have used them throughout the book.
+On the left, we can see conditional sampling.
+Conditional sampling means that we respect the distribution of $X_2$, given that we already know the value for $X_1$ and sample from $P(X_2 | X_1)$ instead of $P(X_2)$.
+Conditional sampling preserves the distribution while marginal sampling may hurt it when features are correlated.
 
 ## A philosophical problem
 
-Before delving into solution details, let's explore the issue further.
+Before discussing solutions, let's explore the correlation problem further.
 The problem of correlation and extrapolation is not just a technical challenge but also a philosophical one: do we want the interpretation to reflect the modeled relations or the data?
 
-Consider this: What does it **mean** when features are correlated, and what are the consequences for interpretation?
+Consider this: What does it **mean** when features are correlated and what are the consequences for interpretation?
 From an information theoretic perspective, correlation means that two features share information.
 If they share information, it makes sense that we cannot simply sample one of the features without considering the correlated feature.
 
 For example, let's say we have two strongly correlated features: rainfall yesterday and cloudiness yesterday.
-If it rained yesterday, we know it must have been cloudy - this is correlation.
+If it rained yesterday, we know it must have been cloudy - these features are correlated.
 How can we isolate the effect of rain while ignoring the cloudiness?
 
 ## Solution: Reduce correlation in the model
@@ -99,12 +102,12 @@ If you have the option to change the features, we can leverage a wider range of 
 
 - Employ feature selection methods, particularly those that eliminate correlated features.
 - Remove features with minimal variance.
-- Utilize dimensionality reduction techniques. But this might come with a loss of interpretability, for example, principal component analysis creates difficult to interpret features.
+- Utilize dimensionality reduction techniques. But this might come with a loss of interpretability, for example, principal component analysis creates features that are difficult to interpret.
 - Apply feature engineering to decrease correlation. For example, if you have the features "apartment rent" and "number of rooms", they will be correlated. Instead you can decorrelate them by turning the rent into "rent per square meter". 
 - Combine features: Perhaps you have the amount of rain in the morning and afternoon as separate features. Maybe daily rainfall is sufficient? Test it out.
 
 Reducing correlated features and the overall number of features can significantly benefit model fitting.
-For each of these steps, you can assess how much they reduce or potentially enhance model performance, aiding in your decision-making for possible trade-offs.
+For each of these steps, you can assess how they affect predictive performance, aiding in your decision-making for possible trade-offs.
 
 ## Solution: Combined explanation of correlated features with Partition explainer
 
@@ -113,8 +116,8 @@ The Partition explainer generates a feature hierarchy presented as a tree.
 While any metric could be used to produce the hierarchy, it should be some correlation-based metric that hierarchically clusters the features, like Pearson correlation.
 
 Within this hierarchy, SHAP values are calculated recursively.
-This procedure is actually it's own game, called Owen's game and we get Owen's value back.
-But it's tightly connect to Shapley values, as we will see in the following example.
+This procedure is actually it's own game, called Owen's game and we get Owen values back.
+Owen values are tightly connect to Shapley values, as we will see in the following example.
 Let's say for the apartment example we have the following binary tree of correlations:
 
 
@@ -144,10 +147,11 @@ To compute Owen values, aka hierarchical Shapley values, we start on top and hav
 We treat both groups as players and compute their SHAP values $\phi_{\text{size,cat,park}}$ and $\phi{floor}$.
 In the next recursion, we go down and now split up the $\phi_{\text{size,cat,park}}$ among the groups {park} and {size, cat}, again like we would compute SHAP, but with possibly groups as players.
 And then, go down two {cat} and {size}.
+The Partition explainer doesn't fully eliminate the correlation problem.
+As we go deeper down the correlation tree, we start to also break up stronger correlated features to recursively compute the Owen's value.
+However, it's reduced, since we only try to explain the group's SHAP value and permuted fewer features.
 
 Owens game alters the complexity from $\mathcal{O}(2^p)$ to $\mathcal{O}(p^2)$ (when the clustering tree is balanced), where $p$ is the number of input features for the model.
-
-The benefit is that for groups of correlated features, we obtain a single SHAP value for interpretation.
 
 ## Solution: Conditional sampling
 
@@ -177,11 +181,14 @@ The paper proposed more techniques, but these are the key ones.
 
 ::: {.callout-warning}
 
-Switching the sampling from marginal to conditional alters the game payout.
+Switching the sampling from marginal to conditional alters the value function to a conditional value function:
+
+$$v_{f,x^{(i)}}(S) = \int f(x^{(i)}_S \cup X_C)d\mathbb{P}_{X_{C}|X_S=x^{(i)}_S} - \mathbb{E}(f(X))$$
+
+This changes the game.
 For instance, the resulting SHAP values may appear to no longer adhere to the Dummy axiom, as unused features like $\beta_j=0$ in a linear model can suddenly have non-zero SHAP values.
-However, this doesn't actually violate the Dummy axiom, since based on the new payout using conditional distributions, they still qualify as SHAP values.
-And it only happens if features are correlated.
-Without correlation, marginal and conditional sampling work the same, because then $P(X_1) = P(X_1|X_2)$.
+However, conditional SHAP doesn't actually violate the Dummy axiom, since based on the new payout using conditional distributions, they still qualify as (conditional) SHAP values.
+Without correlation, marginal and conditional SHAP are the same, because then $P(X_1) = P(X_1|X_2)$.
 
 :::
 
@@ -189,9 +196,7 @@ If you want to use conditional sampling in `shap`, you can use the Linear explai
 The tree explainer has a similar option called `feature_pertubation='tree_path_dependent'` which relies on the splits in underlying tree-based model to make sure that the Monte Carlo samples for SHAP are not extrapolating.
 But I recommend against the tree-path option, since it doesn't actually model the conditional distribution but something in between and doesn't approximate the conditional SHAP values well [@aas2021explaining].
 
-As mentioned above, the game changes and features not utilized by the model can have non-zero SHAP values.
-
-Whether this is desirable depends on your interpretation goals.
+Whether a conditional SHAP interpretation is desirable depends on your interpretation goals.
 If your objective is to audit the model, marginal sampling might be more appropriate.
 If you want to better understand the data, conditional sampling could be the better option.
 This trade-off is also characterized as being true to the model (marginal sampling) or true to the data (conditional sampling) [@chen2020true].

@@ -104,55 +104,45 @@ And do they match what we would expect?
 First, let's explain the initial prediction of a data point:
 
 ```{python}
-shap.waterfall_plot(shap_values[0], max_display=10)
+shap.plots.waterfall(shap_values[0], max_display=10)
 ```
 
 ::: {.callout-note}
-A SHAP-specific note here: the explainer here is a Permutation explainer. But why isn't the Additive estimation method used here? Because in `shap` the additive estimation is only implemented for `interpret.glassbox.ExplainableBoostingClassifier`, but we are using the Regressor.
 
-And there is a difference to the results from the Linear explainer: we can directly use the `shap_values` as input to the waterfall plot.
+The explainer here is a Permutation explainer.
+Why isn't the Additive explainer method used here?
+Because in `shap` the additive estimation is only implemented for `interpret.glassbox.ExplainableBoostingClassifier`, but we are using the Regressor.
 
 :::
 
 This waterfall plot presents a different picture of what's happening, compared to the purely linear model.
 
 - For this wine, the most important features were alcohol and free sulfur dioxide, while in the linear model, it was residual sugar and free sulfur dioxide.
-- Generally, the prediction for the GAM is lower in this case (around 6.0).
+- The quality predicted by the GAM is lower with around 6.0 compared to 6.4. 
 - This example beautifully demonstrates how, although the global average prediction and the local prediction are quite similar, there are numerous SHAP values canceling each other out.
 
 ## SHAP recovers non-linear functions
 
-We know that it's an additive model.
-This means that to understand the effect a feature has, we can simply take one data point, modify that feature, and observe how this alters the prediction.
-Since it's an additive model, this curve will be the same for all data points, only with different intercepts, as the rest of the additive effects (which we keep fixed) vary.
-
+We know that the GAM is additive.
+This means that to understand the effect a feature has, we can look at features in isolation and don't have to think about interaction effects.
+Let's have a look at the SHAP dependence plot for alcohol:
 ```{python}
-# plot SHAP values against feature values
-import matplotlib.pyplot as plt
-import numpy as np
-feature_name = 'alcohol'
-feature_idx = np.where(X_test.columns == feature_name)
-sv = shap_values.values[:, feature_idx]
-plt.scatter(X_test[feature_name], sv, alpha=0.1)
-plt.xlabel(feature_name)
-plt.ylabel('SHAP value')
-plt.show()
+shap.plots.scatter(shap_values[:,"alcohol"], show=False)
 ```
 
-In the case of alcohol, we see a positive effect.
-The higher the alcohol content, the higher the predicted quality.
+
+In the case of alcohol, we see a positive relation between alcohol levels and the SHAP values.
+The higher the alcohol content, the higher the SHAP contribution.
 However, at very high and very low levels, the effect plateaus.
 
-Let's compare the SHAP values with the learned function for alcohol from the GAM.
-Since the tree-based GAM is a purely additive model, we can visualize the full effect of alcohol on the prediction by extracting this functional part from the GAM.
+Let's compare these SHAP values with the alcohol effect learned by the GAM.
+We can plot the SHAP values and add the alcohol curve directly extracted from the GAM.
 
 ```{python}
-feature_name = 'alcohol'
-feature_idx = np.where(X_test.columns == feature_name)
-sv = shap_values.values[:, feature_idx]
-plt.scatter(X_test[feature_name], sv, alpha=0.1)
-plt.xlabel(feature_name)
-plt.ylabel('SHAP value')
+import matplotlib.pyplot as plt
+import numpy as np
+
+shap.plots.scatter(shap_values[:,"alcohol"], show=False)
 
 # First get the index of the alcohol feature
 idx = model.explain_global().data()['names'].index('alcohol')
@@ -202,7 +192,6 @@ This difference is especially stark if the model is overfitting, because a featu
 :::
 
 Although the feature importance plot is useful, it provides no information beyond the importances.
-For a more informative plot, we will examine the summary plot next.
 
 
 

@@ -5,31 +5,30 @@
 By the end of this chapter, you will be able to:
 
 - Interpret SHAP for classification models
-- Decide whether to interpret the model on the level of probability or log odds
+- Decide whether to interpret the probabilities or the log odds
 - Handle categorical features
 - Use alternatives to the waterfall plot: the bar plot and the force plot
+- Describe the cluster plot and the heatmap plot 
 
 :::
-
 
 This chapter shows how to use and interpret SHAP with logistic regression.
 Differences from linear regression include:
 
 - Two outcomes instead of one.
-- Outcome is a probability [^no-probability].
-- Non-linear function with option to scale to linear using log odds.
+- Outcome is either a probability [^no-probability] or log odds
+- A non-linear function at least when output is a probability
 
-Logistic regression is a special case of multi-class classification and what you learn in this chapter applies to multi-class classifiers as well.
-In general, for binary classification, we have two outputs: one probability output for the first class and one for the second.
+Logistic regression can be used for binary classification tasks.
+It provides two outputs: one probability output for the first class and one for the second.
 However, since one class probability already defines the other's probability, you can work with just one of the probabilities.
 Nonetheless, having two classes is a special case of having $k$ classes.
 From the SHAP perspective, classification is similar to regression, except the scale is the score output, not regression.
 
 ## The adult dataset
 
-For the classification task, we will use the Adult dataset.
-The UCI Adult dataset is widely used in machine learning tasks.
-It contains demographic and socioeconomic data of individuals from the 1994 U.S. Census Bureau database, aiming to predict whether an individual's income is greater than or equal to \$50,000 per year.
+For the classification task, we will use the Adult dataset from the UCI repository.
+The dataset contains demographic and socioeconomic data of individuals from the 1994 U.S. Census Bureau database, aiming to predict whether an individual's income is greater than or equal to \$50,000 per year.
 The dataset includes features such as age, education level, work class, occupation, marital status, and more.
 With approximately 32,000 observations, it contains both categorical and numerical features.
 Fortunately, the `shap` package includes the adult dataset, simplifying its use in our example.
@@ -49,7 +48,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 ```
 
 In the next step, we train the model and compute the SHAP values.
-If you have followed the previous chapters, you will notice something new here:
+Compared to the linear regression example, you will notice something new here:
 
 ```{python}
 from sklearn.compose import ColumnTransformer
@@ -87,13 +86,14 @@ shap_values = ex(X_test.iloc[0:100])
 ```
 
 The novelties: 
+
 - We only use a subset of the training data as background dataset. This can help with computation speed at the cost of less accurate SHAP value estimates.
-- Also, we apply SHAP not only to the model, but the entire pipeline. This is because we don't want the inputs to the model as basis for interpretation, because these are one-hot encoded and scaled features. Instead, we want the more interpretable "raw" features as basis of interpretation.
+- We apply SHAP not to the model, but to the entire pipeline. This allows us to compute SHAP values for the original features instead of their processed versions.
 
 The adult dataset contains both categorical and numerical features.
 Both are transformed before inputting them into the logistic regression model:
 
-- Numerical features are standardized: $x_{j,std}^{(i)} = (x_j^{(i)} - \bar{x_j}) / sd(x_j)$,
+- Numerical features are standardized: $x_{j,std}^{(i)} = (x_j^{(i)} - \bar{x}_j) / sd(x_j)$,
 - Categorical features are one-hot encoded: A feature with 1 column and 3 categories becomes 3 columns. e.g. category "3" may be encoded as (0,0,1).
 
 After these two steps, our dataset has approximately 470 columns.
@@ -101,24 +101,24 @@ The numerical features, such as age, are no longer on an easily interpretable sc
 
 However, the logistic regression model now works with these inputs.
 This means that the coefficients are based on this transformed dataset.
-If we were to use SHAP values directly on the logistic regression model, we would get 470 Shapley values.
+If we were to use SHAP values directly on the logistic regression model, we would get 470 SHAP values.
 
-Fortunately, there's a more clever approach:
+Fortunately, there's a more interpretable approach:
 We can combine the preprocessing and logistic regression into a pipeline and treat it as our model.
-This is similar to functions:
+This procedure is similar to nesting mathematical functions:
 
-- Our model is $Y = f(\tilde{X})$, where $\tilde{X}$ is the preprocessed data.
-- We have our preprocessing steps, which we'll call $g$, and we can express the preprocessed data as $\tilde{X} = g(X)$.
+- Our model is $y = f(\tilde{x})$, where $\tilde{x}$ is the preprocessed data.
+- We have our preprocessing steps, which we'll call $g$, and we can express the preprocessed data as $\tilde{x} = g(x)$.
 - The less desirable option would be to use SHAP values on $f$.
-- The better option is to define a new function $\tilde{f}(X) = f(g(X))$, where the input is $X$ and not $\tilde{X}$.
-- We use SHAP values applied to $\tilde{f}$ instead of $f$.
+- The better option is to define a new function $\tilde{f}(x) = f(g(x))$, where the input is $x$ and not $\tilde{x}$. $\tilde{f}$ represent the pipeline.
+- We apply and interpret SHAP values for $\tilde{f}$ instead of $f$.
 
 This allows us to interpret the features in their original form.
 
-::: {.callout-warning}
+::: {.callout-tip}
 
-When preprocessing your data, consider which preprocessing steps you want to include as part of your model when calculating SHAP values.
-In some cases, like standardization, it makes sense to include them in the model, while in other cases, like transformations that increase interpretability, it makes sense to exclude them.
+When preprocessing your data, consider which preprocessing steps you want to include as part of your pipeline when computing SHAP values.
+In cases such as feature standardization it makes sense to include them in the pipeline, while transformations that increase interpretability should be outside.
 
 :::
 
@@ -163,9 +163,10 @@ Let's start with the bar plot.
 shap.plots.bar(shap_values[data_index,:,class_index])
 ```
 
-I will skip the interpretation here, since we have already done it before and it's the same information, just presented differently.
+I will skip the interpretation here, since it's exactly the same as the waterfall plot.
+The only difference in the two plots is how the information is arranged, with the bar plot lacking the information of $\mathbb{E}(f(X))$ and $f(x^{(i)}$.
 
-Then we can also use the force plot:
+Also the force plot is just a different arrangement of the SHAP values:
 
 ```{python}
 #| eval: False
@@ -175,21 +176,22 @@ shap.plots.force(shap_values[data_index,:,class_index])
 
 ![Force Plot](images/force-plot.png)
 
-Note that the force plot is with Javascript and you can hover over the plot to reveal more insights.
-It also means that you can embed it, for example, in a Jupyter notebook, but not in a PDF file.
-What you actually see above is a screenshot of a force plot.
-Why is it called force plot?
-Because the SHAP values are plotted as forces, here arrows, that can either push to increase the prediction or decrease it.
+The force plot is interactive and based on Javascrip.
+You can hover over the plot to reveal more insights.
+Well, not in this static format you are currently reading, but if you create one yourself and embed it, for example, in a Jupyter notebook or website.
+What you see above is a screenshot of a force plot.
+The plot is called force plot because the SHAP values are plotted as forces, here arrows, that can either push to increase the prediction or decrease it.
 If you compare it to the waterfall plot, it's like a horizontal arrangement of the arrows.
 
-Personally, I like the waterfall plot the most since it not only is easy enough to read, but also show the efficiency axiom, that the sum of all SHAP values is equal to the difference of f(x) and E[f(x)].
+Personally, I prefer the waterfall plot since it's easier to read than the force plot and it contains more information than the bar plot.
 
 ## Interpreting log odds
 
-For logistic regression, it is common to interpret the model in terms of log odds rather than probability.
+For logistic regression, it's common to interpret the model in terms of log odds rather than probability.
 
 To do this, the explainer has a `link` argument, which defaults to the identity link $l(x) = x$.
 A useful choice for classification is the logit link: $l(x) = log\left(\frac{x}{1 - x}\right)$.
+We can use this logit link to transform the output of the logistic regression model and compute SHAP values on this new scale: 
 
 ```{python}
 ex_logit = shap.Explainer(
@@ -198,31 +200,25 @@ ex_logit = shap.Explainer(
 sv_logit = ex_logit(X_test.iloc[0:100])
 class_index = 0
 
-sv = shap.Explanation(
-  values = sv_logit.values[data_index,:,class_index],
-  base_values = sv_logit.base_values[data_index,class_index],
-  feature_names=X.columns,
-  data=X_test.iloc[data_index]
-)
-
-shap.waterfall_plot(sv)
+shap.plots.waterfall(sv_logit[data_index,:,class_index])
 ```
 
-Interpretation:
-A marital status of 0 (married) contributes +1.47 to the log odds of >50k versus <=50k compared to the average prediction.
-The advantage of log odds is that the model is linear at this level, allowing for simpler solutions.
+When the outcome of a logistic regression model is defined in terms of log odds, then the features affect this linearly.
+In other words, the logistic regression model is a linear model on the level of the log odds. 
 
-However, one of SHAP values' strengths is its applicability at the probability level.
-Log odds can be difficult to interpret.
+What it means for the interpretation:
+A marital status of 0 (married) contributes +1.47 to the log odds of >50k versus <=50k compared to the average prediction.
+But one of SHAP values' strengths is its applicability at the probability level and log o odds can be difficult to interpret.
+When should you use log odds and when probabilities?
 
 ::: {.callout-note}
 
-If you're concerned with the probability outcome, avoid using the logit link and opt for the identity link (which is the default behavior).
+If you're concerned with the probability outcome, use the identity link (which is the default behavior).
 The logit space is more appropriate if you're interested in "evidence" in an information-theoretic sense, even if the effect in probability space isn't substantial.
 
 :::
 
-Example:
+Let's dive a bit deeper into where the distinction between log odds an probabilities matter:
 A shift from 80% to 90% is large in probability space, while a change from 98% to 99.9% is relatively small.
 
 In probability space, the differences are 0.10 versus 0.019.
@@ -237,25 +233,21 @@ This occurs because the logit compresses near 0 and 1, causing changes in the mi
 So, which one should you choose?
 If you mostly care about probabilities, and a jump from 50% to 51% is as important to you as from 99% to 100%, opt for the default and use the identity link.
 However, if changes in extreme probabilities near 0 and 1 are more crucial for the application, go with logits.
+You can also see the difference in step sizes visualized in the following @fig-logits.
 
-You can also see the difference in step sizes visualized in the following Figure.
-
-![Probabilities versus Logits](images/logits.jpg)
+![Probabilities versus Logits](images/logits.jpg){#fig-logits}
 
 ## Understanding the data globally
 
-To finish up the model interpretation, let's have a look at the global importances and effects with the summary plot:
+To finish up the model interpretation, let's have a look at the global importances and effects with the summary plot.
+Here we interpret the model in the probability space again.
 
 ```{python}
-shap.summary_plot(
-  shap_values.values[:,:,1],
-  features = X_test.iloc[0:100,:],
-  feature_names=X.columns
-)
+shap.plots.beeswarm(shap_values[:,:,class_index])
 ```
 
-We can observe that Marital Status and Education are the two most important features (on the log odds scale).
-For some individuals, Capital Gain has very large effects, indicating that high values of capital gain lead to high SHAP values and, consequently, a high probability of earning more than 50k.
+We observe that Marital Status and Education are the two most important features (on the log odds scale).
+For some individuals, Capital Gain has large effects, indicating that high values of capital gain lead to small SHAP values.
 
 
 ## Clustering SHAP values 
@@ -281,28 +273,49 @@ Here for the first 21 data points:
 shap.plots.force(sv_logit[0:20:,:,0])
 ```
 
+
 ![Clustering Plot](images/clustering-plot-1.png)
 
-You can also change the ordering.
+::: {.callout-note}
+
+## Cluster plot
+
+- The cluster plot is a collection of vertical force plots
+- Data instances are spread across the x-axis, the SHAP values across the y-axis
+- Color indicates the direction of SHAP values
+- The large the area for a feature, the larger the SHAP values across the data (and the more important this feature was).
+- By default, the data instances are ordered by their similarity in SHAP values
+
+:::
+
+You can also hover and get more information, change what you see on the x-axis and try many other orderings.
+The cluster plot is exploratory tool.
+
+You can also change the ordering, for example by the prediction:
 
 ![Clustering Plot](images/clustering-plot-2.png)
 
-You can also hover and get more information, change what you see on the x-axis and try many other orderings.
-I see this plot as an exploratory tool.
 
 ## The heatmap plot
 
-Another type of plot is the heatmap plot.
-It's another form of showing all individual SHAP values, but without aggregating them like in the dependence or importance plot.
-The heatmap plot shows in each row one of the features and the SHAP values are plotted in the form of a heatmap.
-The special thing is that on top there is a curve for the predicted value, so you can relate how predicted outcomes and SHAP values for certain features fit together. 
-The ordering of the instances, the "columns" in this plot if you will, is based on clustering, same as in the multi-forceplot above.
+The heatmap plot is another global interpretation plot.
+The heatmap plot shows all SHAP values, but without aggregating them like in the dependence or importance plot.
 
 ```{python}
-shap.plots.heatmap(sv_logit[:,:,0])
+shap.plots.heatmap(sv_logit[:,:,class_index])
 ```
 
-Some of the features are automatically summarized, a plotting behavior which you can control by setting the `max_display` argument.
+::: {.callout-note}
 
+## Heatmap plot
+
+- One row on the y-axis per feature and instances are spread across the x-axis
+- Color indicates the SHAP value
+- Instances are ordered based on clustered SHAP values
+- The curve on top shows the predicted value for the data
+
+:::
+
+Some of the features are automatically summarized, a plotting behavior which you can control by setting the `max_display` argument.
 
 [^no-probability]: While the output is a number between 0 and 1, classifiers are often not so well calibrated, so be careful with interpreting the output as a probability in the real world.

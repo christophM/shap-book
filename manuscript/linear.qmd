@@ -1,46 +1,18 @@
 # SHAP for Linear Models {#linear}
 
-
 ::: {.callout-tip appearance="simple"}
 
 By the end of this chapter, you will be able to:
 
+- Calculate SHAP for linear models
 - Install and use `shap`
 - Interpret and visualize SHAP values for linear regression models 
-- Interpret the overall model behavior with the help of the summary plot and the dependence plot
+- Analyze the model with summary and dependence plots
 
 :::
 
 Let's begin with a simple example.
-"Simple", because we'll start with a linear regression model which is said to be already interpretable, allowing us to compare SHAP values with our intuitive understanding of the model.
-
-## Estimating SHAP for linear models
-
-Our goal in this section is to define SHAP values when the underlying model is a linear regression model.
-We want to understand how each feature affects the prediction of a data point.
-In a linear model, calculating the individual effects is straightforward.
-Here's what a linear model prediction looks like for one data instance:
-
-$$f(x^{(i)})=\beta_0+\beta_{1}x^{(i)}_{1}+\ldots+\beta_{p}x^{(i)}_{p}$$
-
-where x is the instance for which we want to compute the contributions.
-Each $x^{(i)}_j$ is a feature value, with j = 1,...,p.
-The $\beta_j$ is the weight corresponding to feature j.
-
-The contribution $\phi^{(i)}_j$ of the j-th feature on the prediction $f(x^{(i)}_j)$ is:
-
-$$\phi^{(i)}_j(f)=\beta_{j}x^{(i)}_j-E(\beta_{j}X_{j})=\beta_{j}(x^{(i)}_j - E(X_{j}))$$
-
-Where $E(\beta_jX_{j})$ is the mean effect estimate for feature j, the contribution is the difference between the feature effect and the average effect.
-Nice!
-Now we know how much each feature contributed to the prediction.
-If we sum all the feature contributions for one instance, the result is the following:
-
-\begin{align*}\sum_{j=1}^{p}\phi^{(i)}_j(f)=&\sum_{j=1}^p(\beta_{j}x^{(i)}_j-E(\beta_{j}X_{j}))\\=&(\beta_0+\sum_{j=1}^p\beta_{j}x^{(i)}_j)-(\beta_0+\sum_{j=1}^{p}E(\beta_{j}X_{j}))\\=&f(x)-E(f(X))\end{align*}
-
-This is the predicted value for the data point x minus the average predicted value.
-Feature contributions can be negative.
-Alright, let's see these in action with a wine quality prediction.
+"Simple", because we'll start with a linear regression model which is said to be already interpretable, allowing us to compare SHAP values with the coefficients of the model.
 
 ## The wine data
 
@@ -89,16 +61,26 @@ The other features have different scales, but as we will discover, this is not a
 
 ## Fitting a linear regression model
 
-Now that we have our wine dataset, we want to predict the quality of a wine based on its chemical features.
-Since we've decided to use a linear regression model, let's proceed with that.
-Before that, though, let's split the data into training and test data.
+Now that we have our wine dataset, we want to predict the quality of a wine based on its physico-chemical features.
+Here's what a linear model looks like for one data instance:
+
+$$f(x^{(i)})=\beta_0+\beta_{1}x^{(i)}_{1}+\ldots+\beta_{p}x^{(i)}_{p}$$
+
+where $x^{(i)}$ is the instance for which we want to compute the contributions.
+Each $x^{(i)}_j$ is a feature value, with $j = 1,\ldots,p$.
+The $\beta_j$ is the weight in the linear regression model corresponding to feature j.
+
+Before fitting the linear model, let's split the data into training and test data.
 
 ```{python}
 from sklearn.model_selection import train_test_split
+
 # Extract the target variable (wine quality) from the data
 y = wine['quality']
+
 # Remove the target variable from the data
 X = wine.drop('quality', axis=1)
+
 X_train, X_test, y_train, y_test = train_test_split(
   X, y, test_size=0.2, random_state=42
 )
@@ -119,8 +101,8 @@ To evaluate its performance, we calculate the mean absolute error (MAE) on the t
 ```{python}
 from sklearn.metrics import mean_absolute_error
 
-y_pred = model.predict(X_test)
 # Calculate the mean absolute error 
+y_pred = model.predict(X_test)
 mae = mean_absolute_error(y_test, y_pred)
 
 # Print the mean absolute error
@@ -132,14 +114,13 @@ print(f"MAE: {mae:.2f}")
 from IPython.display import display, Markdown
 display(Markdown("""This indicates that, on average, the prediction deviates by {mae} from the actual value.""".format(mae=round(mae, 2))))
 ```
-This appears sufficient for now.
-Next, we aim to comprehend how the model generates a prediction.
 
+Next, we aim to comprehend how the model generates a prediction.
 For a given wine, how is the predicted quality connected to the input features?
 
 ## Interpreting the coefficients
 
-First, let's examine the coefficients and then compare them to the corresponding SHAP values.
+First, let's examine the coefficients and later compare them to the corresponding SHAP values.
 
 ```{python}
 #| output: asis
@@ -171,14 +152,42 @@ Is that a lot?
 That depends on the range of $x_j$.
 If 4 is the lowest possible value of $x^{(i)}_j$, then 2 is actually the smallest possible contribution, but if $x^{(i)}_j$ follows a Normal distribution centered at 0, then a contribution of 4 is more than expected.
 An easy fix is to center the effect $\beta_j x^{(i)}_j$ around the expected effect $E(\beta_j X_j)$.
-It's not coincidence that the result is also the SHAP value $\phi^{(i)}_j$ for a feature in a linear model:
+As we will see in the coming section that coincides with how the SHAP values are defined.
 
-$\phi_{ji}(f) = \beta_j x^{(i)}_j- E(\beta_jX_j) = \beta_{j} (x^{(i)}_j- E(X_j))$.
+## Theory: SHAP for linear models
 
+For linear regression models without interaction terms, the computation of SHAP values is simplified since the model has no interactions and only linear relations between feature and target.
+The SHAP value $\phi^{(i)}_j$ of the j-th feature on the prediction $f(x^{(i)}_j)$ can be computed as:
+
+$$\phi^{(i)}_j=\beta_{j}x^{(i)}_j-\mathbb{E}(\beta_{j}X_{j})=\beta_{j}(x^{(i)}_j - \mathbb{E}(X_{j}))$$
+
+Where $\mathbb{E}(\beta_jX_{j})$ is the expected effect estimate for feature j, the contribution is the difference between the feature effect and the average effect.
+Here is why SHAP has such a simple form for linear models:
+When we compute the marginal contribution $v(S \cup \{j\}) - v(S)$, then all parts of the linear function cancel each other out, except for the ones with feature $j$.
+In $v(S \cup \{j\}$ only $\beta_j x^{(i)}_j$ remains and in $v(S)$ only $\beta_j \mathbb{E}(X_j)$ remains.
+All marginal contributions are the same, since there are no feature interactions, so it doesn't matter to which coalition we add feature $j$.
+
+For the estimation, we simply replace the expectation with the mean:
+
+$$\phi^{(i)}_j = \beta_{j}\left(x^{(i)}_j - \frac{1}{n}\sum_{k=1}^n(x^{(k)}_{j})\right)$$
+
+Nice!
+Now we know how much each feature contributed to the prediction.
+Let's check if the efficiency axiom holds:
+
+\begin{align*}
+\sum_{j=1}^{p}\phi^{(i)}_j(f)=&\sum_{j=1}^p(\beta_{j}x^{(i)}_j-\mathbb{E}(\beta_{j}X_{j}))\\
+=&(\beta_0+\sum_{j=1}^p\beta_{j}x^{(i)}_j)-(\beta_0+\sum_{j=1}^{p}\mathbb{E}(\beta_{j}X_{j}))\\
+=&f(x)-\mathbb{E}(f(X))
+\end{align*}
+
+This is the predicted value for the data point x minus the average predicted value.
+Feature contributions can be negative.
+Alright, let's see these in action with a wine quality prediction.
 
 ## Installing `shap`
 
-To use the dataset and apply SHAP to the model, we need to install the `shap` library.
+The computation of SHAP for linear models is simple enough to implement it ourselves, but we go the easier way and install the `shap` library, which also comes with a lot of plotting functionality and other utilities.
 
 ::: {.callout-note}
 
@@ -214,7 +223,7 @@ pip install shap==0.41.0
 ```
 
 
-### If you use virtualenv
+### If you use virtualenv {-}
 
 If you're using virtualenv or venv, activate the environment first.
 Assuming the environment is called venv:
@@ -224,7 +233,7 @@ source venv/bin/activate
 pip install shap
 ```
 
-### If you use conda
+### If you use conda {-}
 
 If you're using conda, use these commands to install `shap`:
 
@@ -271,18 +280,17 @@ shap.Explainer(model, X_train, algorithm='linear')
 And to finally compute SHAP values we call the `.shap_values` method from the explainer.
 
 ```{python}
-shap_values = explainer.shap_values(X_test)
+shap_values = explainer(X_test)
 ```
 
 ::: {.callout-note}
 
-<!-- TODO: Reread -->
 
-When building a prediction model, you separate training and testing data to avoid overfitting and getting a fair evaluation.
-While the same risk doesn't exist in the same way for SHAP, it's considered best practice to use the training data for the Explainer (= for the background data) and compute the explanations for new data.
-Separation avoids "replacing" feature values for a data point with its own value, because it both appears in background data and data points to be explained.
+When building a prediction model, you separate training and testing data to avoid overfitting and to get a fair evaluation.
+While overfitting risk doesn't exist in the same way for SHAP, it's considered best practice to use the training data for the Explainer (= for the background data) and compute the explanations for new data.
+Separation avoids "replacing" feature values for a data point with its own values.
 Separation also means that we compute explanations for fresh data that the model hasn't seen yet.
-But, full disclosure: I haven't seen much research on that, so take it with a grain of salt.
+But, full disclosure: I haven't seen much research on dataset choices, so take it with a grain of salt.
 
 :::
 
@@ -290,17 +298,16 @@ Now, let's examine the SHAP values.
 
 It's gonna look a bit ugly but it's informative to inspect the `Explanation` object.
 
-```{python}
-print(shap_values)
-```
-
 This Explanation object contains `.values`, `.base_values`, and `.data` fields.
 The `.values` represent the feature SHAP values, `.base_values` is the average prediction (the same for each data point), and `.data` contains the feature values.
 Each element in these arrays corresponds to one data point in `X_test`, which we submitted to compute the SHAP values.
 
+```{python}
+print(shap_values.values)
+```
+
 However, having only the raw SHAP values isn't very helpful.
 The true power of the shap library lies in the various visualizations it offers.
-
 
 ## Interpreting SHAP values
 
@@ -308,33 +315,21 @@ We still haven't seen the SHAP values.
 So, let's take the first data instance and visualize its SHAP values:
 
 ```{python}
-#shap.plots.waterfall(shap_values[0])
-```
+shap.plots.waterfall(shap_values[0])
 
-
-```{python}
-
-exp = shap.Explanation(
-  values=shap_values[0],
-  base_values=explainer.expected_value,
-  data=X_test.values[0],
-  feature_names=wine.columns
-)
-
-shap.waterfall_plot(exp)
 ```
 
 ::: {.callout-note}
 
 ## The Waterfall Plot
 
-- It's named "waterfall" because each step resembles flowing water. However, sometimes the water can flow in both directions, as SHAP values can be either negative or positive.
+- The plot is named "waterfall" because each step resembles flowing water. The water can flow in both directions, as SHAP values can be either negative or positive.
 - The y-axis displays the individual features, including the values for selected data instance.
 - The feature values are ordered by the magnitudes of their SHAP values.
 - The x-axis is on the scale of SHAP values which is the same scale on which the prediction is.
 - Each bar represents the SHAP value for that specific feature value.
 - Positive SHAP values point to the right.
-- The x-axis also indicates the overall expected prediction $E[f(X)]$ and the actual prediction of the instance $f(x)$.
+- The x-axis also indicates the overall expected prediction $\mathbb{E}(f(X))$ and the actual prediction of the instance $f(x^{(i)})$.
 - The bars start at the bottom from the expected prediction and add up to the actual prediction.
 
 :::
@@ -345,106 +340,95 @@ from IPython.display import display, Markdown
 
 i = 0
 y = model.predict(X_test)[i]
-bv = exp.base_values
+bv = shap_values.base_values[0]
 diff = y - bv
 
 feature1 = "density"
 ind = X_test.columns.get_loc(feature1)
 fv1 = X_test.iloc[i, ind]
-sv1 = exp.values[ind]
+sv1 = shap_values.values[i,ind]
 
 feature2 = "residual sugar"
 ind = X_test.columns.get_loc(feature2)
 fv2 = X_test.iloc[i, ind]
-sv2 = exp.values[ind]
+sv2 = shap_values.values[i,ind]
 
 feature3 = "alcohol"
 ind = X_test.columns.get_loc(feature3)
 fv3 = X_test.iloc[i, ind]
-sv3 = exp.values[ind]
+sv3 = shap_values.values[i,ind]
 
 display(Markdown("""
-Interpretation: The predicted value of f(x)={y} for instance {i} differs from the expected average prediction of {base_value} by {diff}.
+Interpretation: The predicted value of {y} for instance {i} differs from the expected average prediction of {base_value} by {diff}.
 
-- {feature1} equals {fv1}, contributed {sv1}
-- {feature2} equals {fv2}, contributed {sv2}
-- {feature3} equals {fv3}, contributed {sv3}
+- {feature1}={fv1} contributed {sv1}
+- {feature2}={fv2} contributed {sv2}
+- {feature3}={fv3} contributed {sv3}
 - ...
 
 The sum of all SHAP values equals the difference between the prediction ({y}) and expected value ({base_value}).
 """.format(base_value=round(bv, 2), y=np.round(y, 2), i=i, diff=np.round(diff, 2),
-           feature1=feature1, fv1=round(fv1, 2), sv1=round(sv1, 2),
-           feature2=feature2, fv2=round(fv2, 2), sv2=round(sv2, 2),
-           feature3=feature3, fv3=round(fv3, 2), sv3=round(sv3, 2))))
+           feature1=feature1, fv1=round(fv1, 2), sv1=np.round(sv1, 2),
+           feature2=feature2, fv2=round(fv2, 2), sv2=np.round(sv2, 2),
+           feature3=feature3, fv3=round(fv3, 2), sv3=np.round(sv3, 2))))
 ```
-
-Observations:
-
-- The most crucial feature was residual sugar (=10.8), with a SHAP value of 0.27, signifying it had an increasing effect on the quality.
-- Overall, the prediction was higher than the average, indicating good quality wine.
-- Most feature values of this wine were assigned a positive SHAP value.
-- pH of 3.09 is the feature value with the largest negative SHAP value.
-This plot provides a nice overview, but it somewhat omits crucial information that one often desires.
-For instance, in the case of residual sugar, we know it increased the prediction, but we cannot determine from the waterfall plot alone what happens to the prediction if the value of residual sugar (10.8) increased or decreased.
-We could infer this from the coefficient, but this will change in the next chapter when we discuss additive models.
 
 :::{.callout-tip}
 
 ## Interpretation Template *(replace [] with your data)*
 
-Prediction [$f(x)$] for instance [$i$] differs from the average prediction [$E[f(X)]$] by [$f(xi) − E[f(X)]$] and [feature name = feature value] contributed [$\phi^{(i)}_j$] towards that difference.
+Prediction [$f(x)$] for instance [$i$] differs from the average prediction [$\mathbb{E}(f(X))$] by [$f(xi) − \mathbb{E}(f(X))j$] and [feature name = feature value] contributed [$\phi^{(i)}_j$] towards that difference.
 
 :::
+
+
+
+
+Some further observations:
+
+- The most crucial feature was residual sugar (=10.8), with a SHAP value of 0.27, signifying it had an increasing effect on the quality.
+- Overall, the prediction was higher than the average, indicating good quality wine.
+- Most feature values of this wine were assigned a positive SHAP value.
+- pH of 3.09 is the feature value with the largest negative SHAP value.
 
 Let's check out another data point:
 
 
 ```{python}
-exp = shap.Explanation(
-  values=shap_values[1],
-  base_values=explainer.expected_value,
-  data=X_test.values[1],
-  feature_names=wine.columns
-)
-shap.waterfall_plot(exp)
+shap.waterfall_plot(shap_values[1])
 ```
 
+This wine has a similar predicted rating as the one before, but the contributions to this prediction are different.
+With the wine's density and alcohol values, we have 2 strong positive contributions, but also two strong negative factors with volatile acidity and residual sugar. 
 
-TODO: Short interpretation or call to interpret for the reader.
 
-There are alternative visualizations to this plot, which we will explore in the later [Plots Chapter](#plots).
-This plot only explains a single instance.
-But how can we understand the model's overall behavior?
-
+The waterfall plot lacks context for interpretation.
+For instance, in the case of residual sugar, we know it increased the prediction for the first wine, but we can't determine from the waterfall plot alone if low or high residual sugar levels are associated with small or large SHAP values.
 
 ## Global model understanding
 
-We compute SHAP values to explain individual predictions.
+We computed SHAP values to explain individual predictions.
 However, we can also compute SHAP values for more data points, ideally even for the entire (test) dataset.
-By visualizing the SHAP values over all features and multiple data points, we can discover patterns of how the model made predictions.
+By visualizing the SHAP values over all features and multiple data points, we can discover patterns of how the model makes predictions.
 This provides a global model interpretation.
-
 
 ::: {.callout-note}
 
 ## Global versus local interpretation
 
-SHAP values allows a local interpretation -- how features affected a prediction.
-Global interpretations are about how the model behaves *on average*.
+SHAP values allow a local interpretation -- how features contribute to a prediction.
+Global interpretations are about *average model behavior*.
 This includes how features affect the prediction, how important each feature was for the prediction and how features interact.
-Importance is determined by the averaged absolute SHAP values for a feature.
-
-There's a third option: explain the model behavior for a subset or group of data.
-We will explore this option in the [Regression Chapter](#regression).
 
 :::
 
 
 In the previous step, we computed the SHAP values for the test data, which are now stored in the `shap_values` variable.
-From this, we can create a summary plot that offers further insights into the model.
+From this variable we can create a summary plot that offers further insights into the model.
+
 
 ```{python}
-shap.summary_plot(shap_values, X_test, feature_names=wine.columns)
+shap.plots.beeswarm(shap_values)
 ```
 
 ::: {.callout-note}
@@ -453,18 +437,14 @@ shap.summary_plot(shap_values, X_test, feature_names=wine.columns)
 
 - Also called bee swarm plot
 - The x-axis represents the SHAP values, the y-axis shows the features, and the color indicates the feature's value.
-- One row per feature and the order of the features is determined by their importance
-- Importance is defined as the sum of absolute SHAP values: $I_j = \sum_{i=1}^n \phi^{(i)}_j^{(i)}$
-- Each point represents the SHAP value of a feature for a specific data instance.
-- In total, there are a $p \cdot n$ dots  in the summary plot (typically with lots of overplotting).
+- One row per feature
+- The feature order is based on importance, defined as the average of absolute SHAP values: $I_j = \frac{1}{n}\sum_{i=1}^n \phi^{(i)}_j$
+- Each dot represents the SHAP value of a feature for a data point, in total $p \cdot n$ dots
 
 :::
 
-
-
-This plot automatically ranks the features by importance.
+The summary plot automatically ranks the features by importance.
 Density, residual sugar, and alcohol are the most important features for predicting wine quality, according to SHAP values.
-The importance ordering is determined by the average absolute SHAP values across the test data (in this case).
 
 The coloring also shows us that the relationships are monotonic for all features:
 Increasing (or decreasing) a feature always increases the prediction, and only in one direction.
@@ -476,9 +456,9 @@ Since we know that the model is a linear regression model, we also know that thi
 
 - Look at the ranking of the features. The higher up the feature, the larger the shap importance.
 - Then for each feature you are interested in:
-  - Look at the distribution of the points. This tells you about the different ways the feature values can influence the prediction. A high spread for example tells you that there is a wide range of influence.
-  - Look at the color trend for a feature: This gives you a first hint whether the relationship is monotonic or shows some patterns.  
-  - Look for color clusters that may hint at clusters in the data.
+  - Look at the distribution of the SHAP values. This tells you about the different ways the feature values can influence the prediction. A high spread, for example, tells you that there is a wide range of influence.
+  - Look at the color trend for a feature: This gives you a first hint whether the relationship is monotonic or shows some more complex relations.  
+  - Look for color clusters which may indicate interesting clusters in the data.
 
 :::
 
@@ -487,48 +467,30 @@ Since we know that the model is a linear regression model, we also know that thi
 ## Comparing coefficients and SHAP values
 
 Now, let's introduce a new kind of plot - the SHAP dependence plot.
-With this plot, we can hopefully confirm that the SHAP values also show a linear relationship with the target for features we know have a linear relation:
+With the dependence plot we can hopefully confirm that the SHAP values also show a linear relationship with the target for features we know have a linear relation:
+
 
 ```{python}
-shap.dependence_plot(
-  'alcohol', shap_values, X_test,
-  feature_names=wine.columns,
-  interaction_index=None
-)
+shap.plots.scatter(shap_values[:, 'alcohol'])
 ```
 
 ::: {.callout-note}
 
 ## The dependence plot
 
-- Mathematically, the plot contains the following points: $\{(x^{(i)}_j^{(i)},\phi^{(i)}_j)\}_{i=1}^n$
-- x-axis is the feature value and y-axis the SHAP value
-- Each dot is a data point
+- Also called scatter plot.
+- Mathematically, the plot contains the following points: $\{(x^{(i)}_j,\phi^{(i)}_j)\}_{i=1}^n$.
+- The x-axis displays the feature value and y-axis the SHAP value.
 -  SHAP dependence plots offer an alternative to [partial dependence plots](https://christophm.github.io/interpretable-ml-book/pdp.html) and [accumulated local effects](https://christophm.github.io/interpretable-ml-book/ale.html).
 - Enhancing the dependence plot by highlighting feature interactions can improve its effectiveness.
-- The dependence plot is a summary plot for a single feature where, instead of using color to represent the feature value, the values are distributed across the x-axis
+- The dependence plot like the summary plot for a single feature where instead of using color to represent the feature value, the values are distributed across the x-axis.
 
 :::
 
 
 This plot illustrates the global dependence modeled by the linear regression between alcohol and the corresponding SHAP values for alcohol.
-It's evident that as alcohol content increases, so does the corresponding SHAP values.
-
-Here are a few more explanations about the dependence plot:
-
-- I set the interaction index argument to avoid attempting to detect interactions with other features, as it's a linear model without any interaction terms and detecting interactions wouldn't make sense.
-- If we don't provide the feature names, we need to use an index in the first position of the features we're interested in.
-
-```{python}
-shap.dependence_plot(
-  'alcohol', shap_values, X_test,
-  feature_names=wine.columns
-)
-```
-
-
-We can observe that the SHAP value increases linearly with each increment in the feature.
-This increase corresponds to the slope in:
+It's evident that as alcohol content increases, the corresponding SHAP value increases linearly.
+This increase corresponds to the slope in the linear regression model:
 
 ```{python}
 feature = 'alcohol'
@@ -537,8 +499,4 @@ coefs.coefficient[ind]
 ```
 
 Eye-balling the dependence plot confirms the same slope, since the plot goes from (8, -0.6) to (14, 0.8), which is a slope of $(0.8 - (-0.6))/(14 - 8) \approx 0.23$
-
-In a way, linear regression is always an easy example, at least when you don't explicitly add interaction terms.
-The assumption that everything is linear makes interpretation so easy.
-So in the next chapter, we will juice it up a little and allow non-linear functions.
 

@@ -77,7 +77,7 @@ The correct way to write it therefore would be as $v_{f, x^{(i)}}(S)$, but for s
 
 The SHAP value function for a given model $f$ and data instance $x^{(i)}$ is defined as:
 
-$$v_{f,x^{(i)}}(S) = \int f(x^{(i)}_S \cup X_C)dX_{C} - \mathbb{E}(f(X))$$
+$$v_{f,x^{(i)}}(S) = \int f(x^{(i)}_S \cup X_C)d\mathbb{P}_{X_{C}} - \mathbb{E}(f(X))$$
 
 This value function holds the answer to the question of how to simulate absent features.
 The second part $\mathbb{E}(f(X))$ is quickly explained:

@@ -1,18 +1,16 @@
 # Regression with xgboost
 
-CONTINUE HERE
-
 ::: {.callout-tip appearance="simple"}
 
 By the end of this chapter, you will be able to:
 
 - Interpret SHAP for a complex model with interactions and non-linear effects
-- Use the Partition explainer to handle correlated features
-- Analyze the model for subsets of the data
+- Use the Partition explainer for correlated features
+- Leverage SHAP to analyze subsets of the data
 
 :::
 
-In this chapter, we will revisit the wine data and fit a tree-based model, namely an xgboost model.
+In this chapter, we will revisit the wine data and fit a tree-based model, an xgboost model.
 This means the model potentially includes numerous interactions and non-linear functions, resulting in a more complex interpretation compared to previous chapters.
 But, on the good side, we can utilize the fast `shap.TreeExplainer`.
 
@@ -30,6 +28,7 @@ It's fast, efficient, and generally performs well.
 But enough advertisement, let's train the xgboost model.
 
 ```{python}
+#| eval: False
 import pandas as pd
 import xgboost as xgb
 import shap
@@ -50,6 +49,47 @@ X_train, X_test, y_train, y_test = train_test_split(
 model = xgb.XGBRFRegressor()
 model.fit(X_train, y_train)
 ```
+
+
+```{python}
+import pandas as pd
+import lightgbm as lgb
+from sklearn.model_selection import train_test_split, RandomizedSearchCV, GridSearchCV
+
+# Load the dataset
+wine = pd.read_csv("wine.csv")
+
+y = wine["quality"]
+X = wine.drop(columns=["quality"])
+
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(
+  X, y, test_size=0.2, random_state=42
+)
+
+# Define the parameter grid
+param_dist = {
+    'n_estimators': [100, 200, 500],
+    'learning_rate': [0.0001, 0.001, 0.01, 0.1, 0.2, 0.3],
+}
+
+# Initialize the model
+model = lgb.LGBMRegressor()
+
+grid_search = GridSearchCV(estimator=model, param_grid=param_dist, cv=3, scoring='neg_mean_squared_error', verbose=0)
+
+# Fit the grid search
+grid_search.fit(X_train, y_train)
+
+# Get the best parameters
+best_params = grid_search.best_params_
+
+# Train the model with the best parameters
+model = lgb.LGBMRegressor(**best_params)
+model.fit(X_train, y_train)
+
+```
+
 
 Again, we evaluate the performance of our solution, hoping for better results than with just the GAM:
 
@@ -77,7 +117,7 @@ Now let's interpret the model:
 import shap
 # Compute the SHAP values for the sample
 explainer = shap.Explainer(model, X_train)
-shap_values = explainer(X_test)
+shap_values = explainer(X_test, check_additivity=False)
 ```
 
 
