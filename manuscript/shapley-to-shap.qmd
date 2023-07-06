@@ -1,58 +1,49 @@
-# Going from Shapley Values to SHAP
-
+# From Shapley Values to SHAP
 
 ::: {.callout-tip appearance="simple"}
 
 By the end of this chapter, you will be able to:
 
-- Describe a prediction as a coalitional game
-- Explain how SHAP values are defined
-- Interpret Shapley value axioms in terms of machine learning predictions
+- Describe a prediction as a coalitional game.
+- Explain how SHAP values are defined.
+- Interpret Shapley value axioms in terms of machine learning predictions.
 
 :::
 
-
-We have been on a deep dive into Shapley values from coalitional game theory.
-But how do Shapley values connect to machine learning explanations?
-The connection might not seem apparent.
-At least it didn't for me when I learned about SHAP for the first time.
+We have been learning about Shapley values from coalitional game theory.
+But how do these values connect to machine learning explanations?
+The connection might not seem apparent -- it certainly didn't to me when I first learned about SHAP.
 
 ## A machine learning example
 
-Let's consider the following scenario:
+Consider the following scenario:
 You have trained a machine learning model $f$ to predict apartment prices.
-For a specific apartment $x^{(i)}$, the model predicts $f(x^{(i)})=300,000$ and you need to explain this prediction.
-The apartment has an area of 50 m^2^ (538 square feet), is located on the 2nd floor, has a park nearby, and cats are banned.
-These are the features that the model made the prediction from.
+For a specific apartment $x^{(i)}$, the model predicts $f(x^{(i)})=300,000$.
+Your task is to explain this prediction.
+The apartment has an area of 50 m^2^ (538 square feet), is located on the 2nd floor, has a nearby park, and cats are banned.
+These features are what the model used to make the prediction.
 
 ![The predicted price for a 50 $m^2$ 2nd floor apartment with a nearby park and cat ban is €300,000. Our goal is to explain how each of these feature values contributed to the prediction.](images/shapley-instance.jpg)
 
-The average prediction for all apartments in the data is €310,000, putting the predicted  price of the specific apartment slightly below average.
-How much has each feature value contributed to the prediction compared to the average prediction?
+The average prediction for all apartments in the data is €310,000, which places the predicted price of this specific apartment slightly below average. How much did each feature value contribute to the prediction compared to the average prediction?
 
-In the apartment example, the feature values `park-nearby`, `cat-banned`, `area-50`, and `floor-2nd` worked together to achieve the prediction of €300,000.
-In the data, the row with the features and the prediction would look like this, where the header of the column is the name of the feature and the row below the value for our apartment:
+In the apartment example, the feature values `park-nearby`, `cat-banned`, `area-50`, and `floor-2nd` collectively led to a prediction of €300,000.
+The row with these features and prediction in the data would look like this, where the header of the column is the feature's name and the row below indicates the value for our apartment:
 
 | Park| Cat | Area | Floor | Predicted Price   |
 |-------------|------------|------|-------|---------|
 | Nearby | Banned | 50   | 2nd   | €300,000|
 
-Our goal is to explain the difference between the actual prediction (€300,000) and the average prediction (€310,000), which amounts to a difference of -€10,000.
+Our goal is to explain the difference between the actual prediction (€300,000) and the average prediction (€310,000), which is a difference of -€10,000.
 
-To give you an idea of what an answer might look like:
-`park-nearby` contributed €30,000; `area-50` contributed €10,000; `floor-2nd` contributed €0; and `cat-banned` contributed -€50,000.
-The contributions add up to -€10,000, which is the final prediction minus the average predicted apartment price.
-We know from the Shapley theory chapter that Shapley values can deliver such a fair attribution of a payout -- we only have to translate concepts from game theory to concepts from machine learning predictions.
+Here's an example of what an answer might look like: `park-nearby` contributed €30,000; `area-50` contributed €10,000; `floor-2nd` contributed €0; and `cat-banned` contributed -€50,000. The contributions add up to -€10,000, which is the final prediction minus the average predicted apartment price. From the Shapley theory chapter, we know that Shapley values can provide a fair attribution of a payout. We just need to translate concepts from game theory to machine learning prediction concepts.
 
-## We can see a prediction as coalitional game
+## Viewing a prediction as a coalitional game
 
-A prediction can be seen as a coalitional game by assuming that each feature value of the instance is a "player" in a game with a payout, which involves the predicted value.
-We'll call this version of Shapley values adapted to machine learning predictions "SHAP".
-Let's translate the terms from game theory to machine learning predictions one by one with the following table:
-
+A prediction can be viewed as a coalitional game by considering each feature value of an instance as a "player" in a game. The "payout" involves the predicted value. We refer to this version of Shapley values adapted for machine learning predictions as "SHAP". Let's translate the terms from game theory to machine learning predictions one by one with the following table:
 
 | Game Theoretic Concept | Machine Learning | Math term |
-|--------|-------------------|------------|------|
+|--------|-------------------|------------|
 | Player | Feature index | $j$|
 | Coalition | Set of features | $S \subseteq \{1, \ldots, p\}$ |
 | Not in coalition | Features not in coalition $S$ | $C: C = \{1, \ldots, p\} \setminus S$ |
@@ -61,29 +52,28 @@ Let's translate the terms from game theory to machine learning predictions one b
 | Total payout | Prediction for $x^{(i)}$ minus average prediction | $f(x^{(i)}) - \mathbb{E}(f(X))$ |
 | Value function| Prediction for feature values in coalition S minus expected | $v_{f,x^{(i)}}(S)$|
 | SHAP value | Contribution of feature $j$ towards payout |  $\phi^{(i)}_j$ |
-
-I know, you might have questions about these terms, but they will be addressed soon.
-The value function is a quite central piece to SHAP and we will get to that matter.
-And it's entangled with the question of how we simulate absent features.
+You may have questions about these terms, but we will address them shortly.
+The value function is central to SHAP, and we will discuss it in detail.
+This function is closely related to the simulation of absent features.
 
 ::: {.callout-note}
 
-The value function depends on a certain model $f$ and a certain data point to be explained $x^{(i)}$ and maps a coalition $S$ to it's value.
-The correct way to write it therefore would be as $v_{f, x^{(i)}}(S)$, but for shortness I will sometimes use $v(S)$.
+The value function relies on a specific model $f$ and a particular data point to be explained $x^{(i)}$, and maps a coalition $S$ to its value.
+Although the correct notation is $v_{f, x^{(i)}}(S)$, I will occasionally use $v(S)$ for brevity.
 
 :::
 
 ## The SHAP value function
 
-The SHAP value function for a given model $f$ and data instance $x^{(i)}$ is defined as:
+The SHAP value function, for a given model $f$ and data instance $x^{(i)}$, is defined as:
 
 $$v_{f,x^{(i)}}(S) = \int f(x^{(i)}_S \cup X_C)d\mathbb{P}_{X_{C}} - \mathbb{E}(f(X))$$
 
-This value function holds the answer to the question of how to simulate absent features.
-The second part $\mathbb{E}(f(X))$ is quickly explained:
-It ensures that the value of an empty coalition $v(\emptyset)$ receives a value of 0.
+This function provides an answer to the simulation of absent features.
+The second part $\mathbb{E}(f(X))$ is straightforward:
+It ensures the value of an empty coalition $v(\emptyset)$ equals 0.
 
-Verify yourself:
+Confirm this for yourself:
 
 \begin{align}
 v(\emptyset) &=& \int f(X_{1},\ldots,X_{p})d\mathbb{P}_{X}-E_X(f(X)) \\
@@ -91,53 +81,52 @@ v(\emptyset) &=& \int f(X_{1},\ldots,X_{p})d\mathbb{P}_{X}-E_X(f(X)) \\
              &=& 0 \\
 \end{align}
 
+The first part of the equation, $\int f(x^{(i)}_S, X_C)dX_{C}$, is where the magic occurs.
+The model prediction function $f$, which is central to the value function, takes the feature vector $x^{(i)} \in \mathbb{R}^p$ as input and generates the prediction $\in \mathbb{R}$.
+However, we only know the features in set $S$, so we need to account for the features not in $S$, which we index with $C$.
 
-The first part of the equation, $\int f(x^{(i)}_S, X_C)dX_{C}$ is where the magic happens.
-The model prediction function $f$, which is at the center of the value function takes the feature vector $x^{(i)} \in \mathbb{R}^p$ as input and produces the prediction $\in \mathbb{R}$.
-But we only know the features in set $S$, so we have to do something for the features not in $S$, which we index with $C$.
-
-The trick that SHAP uses is to treat the features that we don't know as random variables and integrate over the distribution of these random variables. 
+SHAP's approach is to treat the unknown features as random variables and integrate over their distribution.
 This concept of integrating over the distribution of a random variable is called marginalization.
 
 ::: {.callout-tip}
 
 ## Marginalization
 
-While integration of a function typically involves calculating the area under the curve, integration with respect to a distribution implies weighting certain portions under the curve more heavily, based on their likelihood within the integral.
+Integration of a function typically involves calculating the area under the curve.
+However, when integrating with respect to a distribution, certain portions under the curve are weighted more heavily based on their likelihood within the integral.
 
 :::
 
-This means that present features will be treated as values that we can directly input into the model $f$ and absent features are treated as random variables.
+This means that known features are treated as values that we can directly input into the model $f$, while absent features are treated as random variables.
 In mathematical terms, I distinguish a random variable from an observed value by capitalizing it:
 
 | Feature value   | Random variable            |
-|---------|---------|
-| $x^{(i)}_j$      | $X_j$                        |
-| $x^{(i)}_S$      | $X_S$                        |
-| $x^{(i)}_C$      | $X_C$                        |
-| $x^{(i)}$      | $X$                          |
+|-----------------|----------------------------|
+| $x^{(i)}_j$     | $X_j$                      |
+| $x^{(i)}_S$     | $X_S$                      |
+| $x^{(i)}_C$     | $X_C$                      |
+| $x^{(i)}$       | $X$                        |
 
-Let's go back to the apartment example:
+Let's revisit the apartment example:
 
-| Park| Cat | Area | Floor | Predicted Price   |
-|-------------|------------|------|-------|---------|
-| Nearby | Banned | 50   | 2nd   | €300,000|
+| Park         | Cat     | Area | Floor | Predicted Price |
+|--------------|---------|------|-------|-----------------|
+| Nearby       | Banned  | 50   | 2nd   | €300,000        |
 
 Informally, the value function for the coalition of park, floor would be:
 
 $$v(\{\text{park}, \text{floor}\}) = \int f(x_{park},X_{cat}, X_{area}, x_{floor})d\mathbb{P}_{X_{cat,area}}-E_X(f(X)),$$
 
-with $x_{park}=\text{nearby}$, $x_{floor}=2$, and $E_X(f(X))=300.000$.
+where $x_{park}=\text{nearby}$, $x_{floor}=2$, and $E_X(f(X))=300.000$.
 
-- Park and floor are "present" features: we put their corresponding values into $f$.
-- Cat and area are "absent" features: we treat them as random variables and integrate over them. 
+- The features 'park' and 'floor' are "present", so we input their corresponding values into $f$.
+- The features 'cat' and 'area' are "absent", and thus are treated as random variables and integrated over. 
 
+## Marginal contribution
 
-## Now the marginal contribution
-
-We are slowly working our way up to the SHAP value.
-We just had a look at the value function and the next step is the marginal contribution:
-How much does a feature $j$ contribute to a coalition of features $S$?
+We are gradually working our way up to the SHAP value.
+We've examined the value function, and the next step is to determine the marginal contribution.
+This is the contribution of feature $j$ to a coalition of features $S$.
 
 The marginal contribution of $j$ to $S$ is:
 
@@ -152,26 +141,16 @@ v(S \cup \{j\}) - v(S) &= \int f(x^{(i)}_S \cup X_C) d\mathbb{P}_{X_{C}} - \math
 \end{align*}
 
 
-For the apartment example the contribution of cat to a coalition of {park, floor} would be:
+For instance, the contribution of 'cat' to a coalition of {park, floor} would be:
 
 $$v(\{\text{cat}, \text{park}, \text{floor}\}) - v(\{\text{park}, \text{floor})$$ 
 
-The resulting marginal contribution describes how much the value of the coalition {park, floor} changes when we would additionally "know" the cat feature.
-Because that's a way to interpret the marginal contribution:
-Present features are known, absent feature values are unknown, so the marginal contribution tells you how much the value changes from knowing $j$ in addition to already knowing $S$.
+The resulting marginal contribution describes the change in the value of the coalition {park, floor} when the 'cat' feature is included.
+Another way to interpret the marginal contribution is that present features are known, absent feature values are unknown, so the marginal contribution illustrates how much the value changes from knowing $j$ in addition to already knowing $S$.
 
 ## Putting it all together
 
-Putting all the terms together into Shapley value equation, we get the SHAP equation:
-
-<!--
-3 line version
-\begin{align*}
-\phi^{(i)}_j &= \sum_{S\subseteq{1,\ldots,p} \backslash {j}} \frac{|S|!\left(p-|S|-1\right)!}{p!} \\
-&\quad \times \left(\int f(x^{(i)}_{S \cup{j}}, X_{C \backslash j})d\mathbb{P}{X_{C \backslash {j}}}\right.\\
-&\quad\quad - \left. \int f(x^{(i)}_S, X_C)d\mathbb{P}{X_{C}} \right)
-\end{align*}
--->
+Combining all the terms into the Shapley value equation, we get the SHAP equation:
 
 \begin{align*}
 \phi^{(i)}_j &= \sum_{S\subseteq{1,\ldots,p} \backslash {j}} \frac{|S|!\left(p-|S|-1\right)!}{p!} \\
@@ -180,35 +159,34 @@ Putting all the terms together into Shapley value equation, we get the SHAP equa
 
 
 The SHAP value $\phi^{(i)}_j$ of a feature value is the average marginal contribution of a feature value $x^{(i)}_j$ to all possible coalitions of all features.
+And that concludes it.
+This formula is similar to the one in the [Shapley Theory Chapter](#theory), but the value function is adapted to explain a machine learning prediction.
+The formula, once again, is an average of marginal contributions, each contribution being weighted based on the size of the coalition.
 
-And that's it.
-It's the same formula as in the [Shapley Theory Chapter](#theory), but with the value function adapted to explaining a machine learning prediction.
-The formula is again an average of marginal contributions and each contribution is again weighted based on size of coalition.
+## Interpreting SHAP values through axioms
 
-## The axioms help us interpret SHAP values
+The axioms form the foundation for defining Shapley values.
+As SHAP values are Shapley values with a specific value function and game definition, they adhere to these axioms.
+This has been demonstrated by @strumbelj2010efficient, @strumbelj2014explaining, and @lundberg2017unified.
+Given that SHAP follows the principles of Efficiency, Symmetry, Dummy, and Additivity, we can deduce how to interpret SHAP values or at least obtain a preliminary understanding.
+Let's explore each axiom individually and determine their implications for the interpretation of SHAP values.
 
-The axioms formed the basis for defining Shapley values.
-Since SHAP values *are* Shapley values, but with a specific value function and game definition, we know that they fulfill the axioms.
-@strumbelj2010efficient, @strumbelj2014explaining and @lundberg2017unified showed this.
-Since SHAP adheres to Efficiency, Symmetry, Dummy and Additivity, we can infer how to interpret SHAP values or at least get a first idea.
-Let's go through the axioms one by one and identify what they imply for the interpretation of SHAP values.
+### Efficiency: SHAP values correspond to the (centered) prediction
 
-### Efficiency: SHAP values add up to the (centered) prediction {-}
-
-The SHAP values must add up to the difference between the prediction for $x^{(i)}$ and the expected prediction:
+SHAP values must total to the difference between the prediction for $x^{(i)}$ and the expected prediction:
 
 $$\sum_{j=1}^p\phi^{(i)}_j = f(x^{(i)}) - \mathbb{E}(f(X))$$
 
 Implications:
-The efficiency axiom is quite common in explainable AI, and it's also followed by methods like LIME.
-The efficiency axiom has an anchoring effect, ensuring that the attributions are on the scale of the output and that we may interpret the results as contributions towards the prediction.
-Gradients, for example,  another way to explain model predictions, don't add up to the prediction and are therefore, IMHO, more difficult to interpret.
+The efficiency axiom is prevalent in explainable AI and is adhered to by methods like LIME.
+This axiom guarantees that attributions are on the scale of the output, allowing us to interpret the results as contributions to the prediction.
+Gradients, another method for explaining model predictions, do not sum up to the prediction, hence in my opinion, are more challenging to interpret.
 
-### Symmetry: The order of features doesn't matter {-}
+### Symmetry: Feature order is irrelevant {-}
 
-The contributions of two feature values j and k should be the same if they contribute equally to all possible coalitions.
+If two feature values j and k contribute equally to all possible coalitions, their contributions should be equal.
 
-If
+Given
 
 $$v_{f,x^{(i)}}(S \cup \{j\}) = v_{f,x^{(i)}}(S \cup \{k\})$$
 
@@ -221,16 +199,16 @@ then
 $$\phi^{(i)}_j = \phi^{(i)}_{k}$$
 
 Implications:
-The symmetry axiom implies that, for example, the order of features doesn't matter.
-If two features contribute equally, they receive the same SHAP value.
-Other methods, such as the breakdown method [@staniak2018explanations] or counterfactual explanations violate the symmetry axiom, because two features can have the same impact on the prediction without receiving the same attribution.
-Symmetry is a requirement to accurately interpret the ordering of the SHAP values, for example when we use it to rank features via SHAP importance (sum of absolute SHAP values per feature).
+The symmetry axiom implies that the order of features doesn't matter.
+If two features contribute equally, they will receive the same SHAP value.
+Other methods, such as the breakdown method [@staniak2018explanations] or counterfactual explanations, violate the symmetry axiom because two features can impact the prediction equally without receiving the same attribution.
+Symmetry is essential for accurately interpreting the order of SHAP values, for instance, when ranking features using SHAP importance (sum of absolute SHAP values per feature).
 
-### Dummy: Features that don't change the prediction get a SHAP value of 0  {-}
+### Dummy: Features not influencing the prediction receive a SHAP value of 0  {-}
 
-A feature j that does not change the predicted value – regardless of which coalition of feature values it's added to – should have a SHAP value of 0.
+A feature j that does not alter the predicted value, regardless of the coalition of feature values it is added to, should have a SHAP value of 0.
 
-If
+Given
 
 $$v_{f,x^{(i)}}(S \cup \{j\}) = v_{f,x^{(i)}}(S)$$
 
@@ -243,29 +221,28 @@ then
 $$\phi^{(i)}_j = 0$$
 
 Implications: 
-The dummy axiom ensures that features not used by the model receive an attribution of zero. 
-This is a straightforward implication.
-For example, if  a sparse linear regression model was trained, we can be certain that a feature with a $\beta_j = 0$ will have a SHAP value of zero for all data points.
+The dummy axiom ensures that unused features by the model receive a zero attribution.
+This is an obvious implication.
+For instance, if a sparse linear regression model was trained, we can be sure that a feature with a $\beta_j = 0$ will have a SHAP value of zero for all data points.
 
-### Additivity: Additive predictions are also additive in their SHAP values {-}
+### Additivity: Additive predictions correspond to additive SHAP values
 
-For a game with combined payouts $v_1+v_2$, the respective SHAP values are as follows:
+For a game with combined payouts $v_1+v_2$, the respective SHAP values are:
 
 $$\phi^{(i)}_{j}(v_1)+\phi^{(i)}_j(v_2)$$
 
 Implications:
-Suppose you trained a random forest, which means that the prediction is an average of many decision trees. 
-The Additivity property guarantees that you can calculate a feature's SHAP value for each tree individually and average them to receive the SHAP value for the random forest.
-Also for an additive ensemble of models, the SHAP value is the sum of individual SHAP values.
+Consider a scenario where you've trained a random forest, meaning the prediction is an average of numerous decision trees. 
+The Additivity property ensures that you can compute a feature's SHAP value for each tree separately and average them to obtain the SHAP value for the random forest.
+For an additive ensemble of models, the SHAP value equals the sum of the individual SHAP values.
 
 ::: {.callout-note}
 
-There exists an alternative formulation of the Shapley axioms in which the Dummy and Additivity axioms are replaced with a Linearity axiom; however, both formulations ultimately lead to the Shapley values.
+An alternative formulation of the Shapley axioms exists where the Dummy and Additivity axioms are replaced with a Linearity axiom; however, both formulations eventually yield the Shapley values.
 
 :::
 
-This chapter provided us with the theoretic SHAP values.
-But we have a big problem: 
-In reality, we don't have a closed form expression for $f$ and we don't know the distributions of $X_C$.
-That means we can't calculate the SHAP values, but, fortunately, we can estimate them.
-
+This chapter has provided theoretical SHAP values.
+However, we face a significant problem: 
+In practice, we lack a closed form expression for $f$ and we are unaware of the distributions of $X_C$.
+This means we are unable to calculate the SHAP values, but, fortunately, we can estimate them.

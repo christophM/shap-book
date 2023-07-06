@@ -42,6 +42,8 @@ consistent.
 - never cut jokes
 - output 1 line per sentence (same as input)
 - Each sentence is on a new line
+- There must be an empty line before and after headers (## and ###)
+- There must be an empty line before and after markdown tables
 
 """
 
