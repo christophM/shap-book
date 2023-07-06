@@ -1,47 +1,53 @@
 # Extensions of SHAP {#extensions}
 
-This chapter highlights some extensions for SHAP values, focusing on adaptations for specific models or data structures while still maintaining their purpose in explaining predictions.
+This chapter outlines some extensions of SHAP values, with a focus on adaptations for specific models or data structures, while preserving their role in explaining predictions.
 
 ## L-Shapley and C-Shapley for data with a graph structure
 
-Although SHAP values in the `shap` library are designed for i.i.d data, many structured data types feature interconnected elements forming a graph. To address this, @chen2018shapley introduced L-Shapley (local) and C-Shapley (connected) for data with a graph structure. These constrained forms of Shapley values are particularly useful in explaining image and text classifiers.
+Although the SHAP values in the `shap` library are intended for i.i.d data, many structured data types consist of interconnected elements that form a graph.
+To accommodate this, @chen2018shapley introduced L-Shapley (local) and C-Shapley (connected) for data with a graph structure.
+These constrained versions of Shapley values are especially helpful in explaining image and text classifiers.
 
-For text, L-Shapley considers only neighboring words instead of interactions between all words. For example, when calculating the Shapley value of the 6th word in a text, only neighboring words are considered for word absence, assuming that words further away have minimal interaction. C-Shapley, on the other hand, focuses on n-grams with $n\leq4$, avoiding coalitions between distant words.
+For text, L-Shapley only takes into account neighboring words, rather than all word interactions.
+For instance, when calculating the Shapley value of the 6th word in a text, only neighboring words are considered for word absence, based on the assumption that distant words have minimal interaction.
+C-Shapley, conversely, focuses on n-grams with $n\leq4$, preventing coalitions between distant words.
 
 ## Group SHAP for grouped features
 
-Group SHAP [@lin2022model] is a straightforward approach that groups features together and computes a single SHAP value per group rather than for each feature value. This method is less computationally expensive and offers a potential solution to the correlation problem. The `shap` library's Partition explainer allows this by providing custom groupings.
+Group SHAP [@lin2022model] is a simple method that groups features together and calculates a single SHAP value for each group instead of each feature value.
+This approach is less computationally taxing and provides a potential solution to the correlation issue.
+The `shap` library's Partition explainer facilitates this by allowing custom groupings.
 
 ## n-Shapley values
 
-The n-Shapley values [@bordt2022shapley] connect SHAP values with GAMs (generalized additive models), where n represents the interaction depth considered during Shapley value computation, depending on the GAM's training.
-A "vanilla" GAM features no interaction (n=1), but interactions can be added.
-The paper demonstrates the relationship between n-Shapley values and functional decomposition, providing the [nshap package in Python](https://github.com/tml-tuebingen/nshap) for implementation.
-If the model being explained is a GAM, SHAP recovers all non-linear components, as discussed in the [Additive Chapter](#additive).
+The n-Shapley values [@bordt2022shapley] link SHAP values with GAMs (generalized additive models), with n signifying the interaction depth considered during the Shapley value calculation, depending on the GAM's training.
+A standard GAM includes no interaction (n=1), but interactions can be incorporated.
+The paper illustrates the relationship between n-Shapley values and functional decomposition, providing the [nshap package in Python](https://github.com/tml-tuebingen/nshap) for implementation.
+If the model being explained is a GAM, SHAP recovers all non-linear components, as outlined in the [Additive Chapter](#additive).
 
 ## Shapley Interaction Index
 
-SHAP values fairly allocate predictions to individual players, but what about interactions between players?
-By design, these interactions are divided among participating players.
-However, it can be useful to quantify the interaction effect directly.
-Shapley Taylor [@sundararajan2020shapley] and Faith-Shap [@tsai2023faith] are two such examples of such interaction indices.
+While SHAP values allocate predictions to individual players fairly, what happens with interactions between players?
+Intrinsically, these interactions are split among the participating players.
+However, measuring the interaction effect directly can be beneficial.
+Shapley Taylor [@sundararajan2020shapley] and Faith-Shap [@tsai2023faith] are two examples of such interaction indices.
 
 ## Causality and SHAP Values
 
-Without further assumptions, SHAP values don't represent causal attributions.
-While they describe how the model output is affected, this doesn't necessarily translate to observable effects in reality.
-Ensuring causal effects requires additional assumptions.
+Without additional assumptions, SHAP values don't represent causal attributions.
+Although they attribute features to the model prediction, this doesn't necessarily correspond to observable effects in reality.
+Additional assumptions are required to ensure causal effects.
 
-Several extensions have been proposed for causal interpretation, such as Causal Shapley Values [@heskes2020causal], Shapley Flow [@wang2021shapley], and Asymmetric Shapley Values [@frye2020asymmetric].
-These approaches typically utilize directed acyclic graphs to identify (or assume) causal structures or apply the do-calculus.
-Occasionally, they modify or expand the original Shapley axioms, which can alter the resulting Shapley game.
+Several extensions for causal interpretation have been proposed, including Causal Shapley Values [@heskes2020causal], Shapley Flow [@wang2021shapley], and Asymmetric Shapley Values [@frye2020asymmetric].
+These methods typically use directed acyclic graphs to identify (or assume) causal structures or apply the do-calculus.
+Occasionally, they modify or extend the original Shapley axioms, which can change the resulting Shapley game.
 
 ## Counterfactual SHAP
 
-As discussed in the [Limitations Chapter](#limitations), SHAP values are not necessarily the best option for counterfactual explanations.
-A counterfactual explanation is a contrastive explanation, explaining why the current prediction was made instead of a counterfactual outcome.
-This is important, for example, in recourse situations when someone affected by a decision wants to challenge a prediction, such as a creditworthiness classifier.
-Counterfactual SHAP (or CF-SHAP) [@albini2022counterfactual] brings this approach to SHAP values through careful background data selection.
+As mentioned in the [Limitations Chapter](#limitations), SHAP values may not be the best choice for counterfactual explanations.
+A counterfactual explanation is a contrastive explanation that clarifies why the current prediction was made instead of a counterfactual outcome.
+This is crucial in recourse situations when someone affected by a decision wants to challenge a prediction, such as a creditworthiness classifier.
+Counterfactual SHAP (or CF-SHAP) [@albini2022counterfactual] introduces this approach to SHAP values through careful selection of background data.
 
 
 ## Explanation Shifts[^carlos]
@@ -63,10 +69,9 @@ Equal treatment is implemented within the [explanationspace](https://explanation
 
 ## And many more
 
-This overview is not exhaustive.
-At the time of writing, there were approximately 12k papers citing the original SHAP paper [@lundberg2017unified].
-Among those, around 10k also had "shap" or "shapley" in their title or abstract.
-While many of these are review or application papers, a significant portion are extensions of SHAP values, making it impossible to cover them all here.
+This summary is not comprehensive.
+At the time of writing, approximately 12k papers cited the original SHAP paper [@lundberg2017unified], with around 10k of these also mentioning "shap" or "shapley" in their title or abstract.
+Although many of these are review or application papers, a notable number extend SHAP values, making it unfeasible to cover all of them here.
 
 
-[^carlos]: This paragraph and the following one about fairness were written by Carlos Mougan, the researcher behind these extended uses of SHAP (and slightly edited by me).
+[^carlos]: The preceding paragraph and the one about fairness were authored by Carlos Mougan, the researcher responsible for these extended uses of SHAP (and slightly edited by me).

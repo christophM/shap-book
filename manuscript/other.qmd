@@ -1,50 +1,50 @@
-# Other Uses of Shapley Values in Machine Learning
+# Other Applications of Shapley Values in Machine Learning
 
-This chapter explores how Shapley values can be applied to various tasks in machine learning beyond prediction explanations.
-While the [Extensions Chapter](#extensions) focused on extensions for explaining predictions, this chapter presents other machine learning and data science tasks that can benefit from Shapley values.
-This chapter draws on the overview paper by @rozemberczki2022shapley.
+This chapter explores the various applications of Shapley values in tasks within the machine learning field beyond prediction explanations.
+While the [Extensions Chapter](#extensions) focused on extensions for explaining predictions, this chapter introduces other tasks in machine learning and data science that can benefit from the use of Shapley values.
+The information in this chapter is based on the overview paper by @rozemberczki2022shapley.
 
-## Feature importance based on loss function
+## Feature importance determination based on loss function
 
-SAGE [@covert2020understanding] is a model-agnostic method that quantifies the predictive power of individual features while accounting for feature interactions.
-In this approach, the model training is considered the "game," individual features are the "players," and the overall performance is the "payout."
-SAGE differs from SHAP importance plots as it evaluates features at a global level, rather than combining individual effects.
-The interpretation is based on the loss function, not on the (absolute) prediction output.
-SAGE can be used to understand sub-optimal models and identify corrupted or incorrectly encoded features.
-Similarly, @redell2019shapley proposed fairly distributing the R-squared of a model using Shapley values.
+SAGE [@covert2020understanding] is a model-agnostic method for quantifying the predictive power of individual features while taking into account feature interactions.
+In this approach, model training is seen as the "game," individual features are the "players," and the overall performance is the "payout."
+SAGE differs from SHAP importance plots as it assesses features at a global level, instead of combining individual effects.
+The interpretation is based on the loss function, rather than the absolute prediction output.
+SAGE can be utilized to understand sub-optimal models and identify corrupted or incorrectly encoded features.
+In a similar manner, @redell2019shapley proposed a fair distribution of a model's R-squared using Shapley values.
 
 ## Feature selection
 
-Closely related to SAGE is feature selection, which involves identifying the best features for model performance.
-Shapley values can be applied to the modeling process, as suggested by @guyon2003introduction and @fryer2021shapley.
-By repeatedly training the model with different features, the importance of each feature for performance can be estimated.
-However, @fryer2021shapley argue that Shapley values may not be ideal for this task, as they are better suited for attribution rather than selection.
-Despite this limitation, each feature is treated as a player, with model performance as the payoff.
-Unlike SHAP values for prediction, the contribution of each feature is evaluated globally for the model.
-The ultimate goal is to determine how much each feature contributes to model performance.
+Feature selection, a process closely related to SAGE, involves identifying the features that best enhance model performance.
+Shapley values can be incorporated into the modeling process, as suggested by @guyon2003introduction and @fryer2021shapley.
+By repeatedly training the model using different features, it is possible to estimate each feature's importance to performance.
+However, @fryer2021shapley argue that Shapley values may not be ideally suited for this task, as they excel in attribution rather than selection.
+Despite this limitation, each feature is treated as a player, with the model performance being the payoff.
+Unlike SHAP values for prediction, the contribution of each feature is evaluated globally for the entire model.
+The ultimate goal is to ascertain each feature's contribution to the model's performance.
 
 ## Data valuation
 
-Data valuation is the process of evaluating the importance of each input data in a machine learning model.
-Shapley values can be employed to solve this problem, as demonstrated by "Data Shapley"[@ghorbani2019data].
-In this approach, data points in the training set are considered players, and the payoff is determined by the evaluation metrics or model's goodness of fit on the test data.
-This method is akin to deletion diagnostics such as Cook's Distance.
-An application of Data Shapley can be found in a paper by Bloch et al.[@bloch2021data], where they used it to select patient data for an Alzheimer detection model.
+Data valuation refers to the process of evaluating the importance of each input data in a machine learning model.
+Shapley values can be used to address this problem, as illustrated by "Data Shapley"[@ghorbani2019data].
+In this approach, data points in the training set are considered players, and the payoff is determined by evaluation metrics or the model's goodness of fit on the test data.
+This method is similar to deletion diagnostics such as Cook's Distance.
+An application of Data Shapley is presented in a paper by Bloch et al.[@bloch2021data], where it was used to select patient data for an Alzheimer detection model.
 
 ## Model valuation in ensembles
 
-In an ensemble of multiple models, the ensemble's performance should ideally surpass that of each individual model.
-Each model is considered a player, and the payout is determined by the ensemble's overall performance.
+In an ensemble of multiple models, the overall performance of the ensemble ideally exceeds that of each individual model.
+Each model is considered a player, and the payout is determined by the ensemble's total performance.
 
 ## Federated learning
 
-Federated learning aims to train a machine learning model on private data distributed across multiple entities, such as hospitals.
-In this scenario, each hospital is a player contributing to the model's training.
-Federated learning enables training models across multiple private datasets while maintaining privacy.
-The payout is determined by the model's goodness of fit or other performance metrics, which estimate each entity's contribution.
+Federated learning is a method to train a machine learning model on private data distributed across multiple entities, such as hospitals.
+In this context, each hospital is a player that contributes to the training of the model.
+Federated learning facilitates training models across various private datasets while maintaining privacy.
+The payout is determined by the model's goodness of fit or other performance metrics, which estimate the contribution of each entity.
 
 ## And many more
 
-The list is not exhaustive, and you might even extend it.
+This list is far from exhaustive, and it is possible to expand it even further.
 Shapley values are a versatile method.
-Whenever you need to distribute a numerical outcome among entities, consider using Shapley values—whether in machine learning, data science, or beyond.
+Whenever you need to distribute a numerical outcome among several entities, consider using Shapley values, whether in machine learning, data science, or other fields.

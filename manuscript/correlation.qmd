@@ -4,27 +4,22 @@
 
 By the end of this chapter, you will be able to:
 
-- Describe the challenge of correlated features for SHAP
-- Pick solutions to reduce the correlation problem
+- Describe the challenge of correlated features for SHAP.
+- Select solutions to reduce the correlation problem.
 
 :::
 
+SHAP values encounter a subtle yet significant issue when dealing with correlated features. Simulating the absence of features by replacing them with sampled values from the background data can generate unrealistic data points. These implausible data points are then used to produce explanations, resulting in several problems:
 
-SHAP values have a subtle but significant issue when dealing with correlated features:
-simulating feature absence by replacing them with sampled values from the background data can produce unrealistic data points.
-These unrealistic data points are then used to generate explanations, which is problematic for several reasons:
+- Including unlikely or unrealistic data points in the explanation may not be desirable.
+- Physically impossible data points (e.g., a 2-meter tall person weighing 10 kg) may present a conceptual issue.
+- The model may not have been trained on data in these areas and might yield unexpected results.
 
-- Involving unrealistic or unlikely data points in the explanation may not be desirable.
-- There could be a conceptual issue with physically impossible data points (e.g., a 2-meter tall person weighing 10 kg).
-- The model may not have been trained on data in these areas and might produce unexpected results.
-
-In this chapter, we will first dive into the problem in more detail using a small simulation, followed by discussing possible solutions.
+In this chapter, we will first delve into the problem in more detail using a small simulation, followed by a discussion of possible solutions.
 
 ## Correlated features cause extrapolation
 
-To illustrate this issue, I simulated two strongly correlated features, $X_1$ and $X_2$.
-Suppose a machine learning model is later trained on this data.
-We will not train a model, but rather examine how sampling background data can be problematic.
+To illustrate this issue, I simulated two highly correlated features, $X_1$ and $X_2$. Assuming a machine learning model is later trained on this data, we won't train a model but will instead explore how sampling background data can be problematic.
 
 ```{python}
 import numpy as np
@@ -37,14 +32,13 @@ n = 100 # number of samples
 x1, x2 = np.random.multivariate_normal(mean, cov, n).T
 ```
 
-Next, let's create a data point for which we will simulate drawing from the background data.
+Next, let's create a data point for which we will simulate the drawing from the background data.
 
 ```{python}
 point = (-1.7, -1.7)
 ```
 
-I'm interested in the SHAP value for feature $X_1$.
-I will demonstrate how SHAP values sample from the marginal distribution and compare that to what sampling from the conditional distribution would look like.
+I'm interested in the SHAP value for feature $X_1$. I will demonstrate how SHAP values sample from the marginal distribution and compare that to what sampling from the conditional distribution would look like.
 
 ```{python}
 #| label: fig-sampling
@@ -74,50 +68,49 @@ plt.ylabel('x2')
 plt.show()
 ```
 
-The plot on the right illustrates sampling from the marginal distribution: we ignore the correlation between $X_1$ and $X_2$ and sample $X_2$ independently from $X_1$.
+The plot on the right shows sampling from the marginal distribution: we disregard the correlation between $X_1$ and $X_2$ and sample $X_2$ independently from $X_1$.
 Marginal sampling in this correlated case creates new data points outside of the distribution.
 This is what occurs with SHAP values as we have used them throughout the book.
-On the left, we can see conditional sampling.
+On the left, we see conditional sampling.
 Conditional sampling means that we respect the distribution of $X_2$, given that we already know the value for $X_1$ and sample from $P(X_2 | X_1)$ instead of $P(X_2)$.
-Conditional sampling preserves the distribution while marginal sampling may hurt it when features are correlated.
+Conditional sampling preserves the distribution, whereas marginal sampling may distort it when features are correlated.
 
 ## A philosophical problem
 
-Before discussing solutions, let's explore the correlation problem further.
+Let's dive deeper into the correlation problem before discussing solutions.
 The problem of correlation and extrapolation is not just a technical challenge but also a philosophical one: do we want the interpretation to reflect the modeled relations or the data?
+Consider this: what does it mean when features are correlated and what are the consequences for interpretation?
+From an information theory perspective, correlation implies that two features share information.
+If information is shared, we cannot simply sample one feature without considering the correlated feature.
 
-Consider this: What does it **mean** when features are correlated and what are the consequences for interpretation?
-From an information theoretic perspective, correlation means that two features share information.
-If they share information, it makes sense that we cannot simply sample one of the features without considering the correlated feature.
-
-For example, let's say we have two strongly correlated features: rainfall yesterday and cloudiness yesterday.
-If it rained yesterday, we know it must have been cloudy - these features are correlated.
-How can we isolate the effect of rain while ignoring the cloudiness?
+For instance, suppose we have two strongly correlated features: rainfall yesterday and cloudiness yesterday.
+If it rained yesterday, it must have been cloudy - these features are correlated.
+How can we then isolate the effect of rain while ignoring the cloudiness?
 
 ## Solution: Reduce correlation in the model
 
-While it may seem overly simplistic, avoiding the correlation problem can be achieved by eliminating correlated features.
+Although it may appear overly simplistic, avoiding the correlation problem can often be resolved by eliminating correlated features.
 This solution requires flexibility in training the model with a different set of features.
-If you have the option to change the features, we can leverage a wider range of techniques to reduce the number of features used:
+If you have the liberty to alter the features, we can leverage a range of techniques to reduce the number of features used:
 
-- Employ feature selection methods, particularly those that eliminate correlated features.
-- Remove features with minimal variance.
-- Utilize dimensionality reduction techniques. But this might come with a loss of interpretability, for example, principal component analysis creates features that are difficult to interpret.
-- Apply feature engineering to decrease correlation. For example, if you have the features "apartment rent" and "number of rooms", they will be correlated. Instead you can decorrelate them by turning the rent into "rent per square meter". 
-- Combine features: Perhaps you have the amount of rain in the morning and afternoon as separate features. Maybe daily rainfall is sufficient? Test it out.
+- Use feature selection methods, especially those that eliminate correlated features.
+- Eliminate features with minimal variance.
+- Implement dimensionality reduction techniques. However, this may lead to a loss of interpretability; for example, principal component analysis generates features that are difficult to interpret.
+- Apply feature engineering to decrease correlation. For instance, if you have the features "apartment rent" and "number of rooms", they will be correlated. You can decorrelate them by converting the rent into "rent per square meter". 
+- Combine features. Perhaps having the amount of rain in the morning and afternoon as separate features is unnecessary. Would daily rainfall be sufficient? Test it out.
 
-Reducing correlated features and the overall number of features can significantly benefit model fitting.
-For each of these steps, you can assess how they affect predictive performance, aiding in your decision-making for possible trade-offs.
+Reducing correlated features and the overall number of features can significantly enhance model fitting.
+You can assess how each of these steps impacts predictive performance, aiding in your decision-making for possible trade-offs.
 
 ## Solution: Combined explanation of correlated features with Partition explainer
 
-Instead of using the `Independent` explainer, opt for the `Partition` explainer.
+Rather than using the `Independent` explainer, opt for the `Partition` explainer.
 The Partition explainer generates a feature hierarchy presented as a tree.
-While any metric could be used to produce the hierarchy, it should be some correlation-based metric that hierarchically clusters the features, like Pearson correlation.
+While any metric could be used to produce the hierarchy, it should be a correlation-based metric that hierarchically clusters the features, like Pearson correlation.
 
 Within this hierarchy, SHAP values are calculated recursively.
-This procedure is actually it's own game, called Owen's game and we get Owen values back.
-Owen values are tightly connect to Shapley values, as we will see in the following example.
+This procedure is its own game, known as Owen's game, and we get Owen values back.
+Owen values are closely linked to Shapley values, as we will see in the following example.
 Let's say for the apartment example we have the following binary tree of correlations:
 
 ```{mermaid}
@@ -139,70 +132,64 @@ graph TB
 
 ```
 
-
 - Cat and size are most strongly correlated.
 - Both are slightly correlated with the park feature.
-- The floor feature is correlated with neither of the features.
+- The floor feature is not correlated with any of the features.
 
-
-To compute Owen values, aka hierarchical Shapley values, we start on top and have two feature groups: {size,cat,park} and {floor}.
-We treat both groups as players and compute their SHAP values $\phi_{\text{size,cat,park}}$ and $\phi{floor}$.
-In the next recursion, we go down and now split up the $\phi_{\text{size,cat,park}}$ among the groups {park} and {size, cat}, again like we would compute SHAP, but with possibly groups as players.
-And then, go down two {cat} and {size}.
+To compute Owen values, also known as hierarchical Shapley values, we start at the top with two feature groups: {size,cat,park} and {floor}.
+We treat both groups as players and compute their SHAP values $\phi_{\text{size,cat,park}}$ and $\phi_{floor}$.
+In the next recursion, we split up the $\phi_{\text{size,cat,park}}$ among the groups {park} and {size, cat}, again as if we were computing SHAP, but with possible groups as players.
+We then move down to {cat} and {size}.
 The Partition explainer doesn't fully eliminate the correlation problem.
-As we go deeper down the correlation tree, we start to also break up stronger correlated features to recursively compute the Owen's value.
-However, it's reduced, since we only try to explain the group's SHAP value and permuted fewer features.
+As we move deeper down the correlation tree, we start to also break up stronger correlated features to recursively compute the Owen's value.
+However, it's reduced, since we only try to explain the group's SHAP value and permute fewer features.
 
-Owens game alters the complexity from $\mathcal{O}(2^p)$ to $\mathcal{O}(p^2)$ (when the clustering tree is balanced), where $p$ is the number of input features for the model.
+Owen's game alters the complexity from $\mathcal{O}(2^p)$ to $\mathcal{O}(p^2)$ (when the clustering tree is balanced), where $p$ is the number of input features for the model.
 
 ## Solution: Conditional sampling
 
-As hinted in @fig-sampling, it's also possible to use conditional sampling.
+As suggested in @fig-sampling, conditional sampling can also be utilised.
 
-A brief example:
+Here's a brief example:
 
-- We have four features $X_1$ to $X_4$.
-- Compute the SHAP value for $X_1$.
-- During sampling, one of the coalitions we add $X_1$ to is $\{X_2\}$.
-- Compute the predictions for the teams $\{X_2\}$ and $\{X_1, X_2\}$.
-- The absent features are $\{X_1, X_3, X_4\}$ and $\{X_3, X_4\}$, which are sampled from the background data.
-- Sampling can be either from:
-  - $P(X_1, X_3, X_4)$ and $P(X_3, X_4)$ (marginal sampling), or
-  - $P(X_1, X_3, X_4 | X_2)$ and $P(X_3, X_4| X_1, X_2)$ (conditional sampling)
+- We have four features: $X_1$ through $X_4$.
+- Calculate the SHAP value for $X_1$.
+- During the sampling process, we add $X_1$ to the coalition $\{X_2\}$.
+- Compute the predictions for the coalitions $\{X_2\}$ and $\{X_1, X_2\}$.
+- The missing features are $\{X_1, X_3, X_4\}$ and $\{X_3, X_4\}$, and we sample these from the background data.
+- Sampling can be carried out in two ways:
+  - From $P(X_1, X_3, X_4)$ and $P(X_3, X_4)$ (marginal sampling), or
+  - From $P(X_1, X_3, X_4 | X_2)$ and $P(X_3, X_4| X_1, X_2)$ (conditional sampling)
 
-Conditional sampling avoids the extrapolation problem.
-@aas2021explaining suggested incorporating conditional sampling in KernelSHAP.
-However, conditional sampling is easier said than done, considering that supervised machine learning focuses on learning $P(Y|X_1, \ldots, X_p)$, and we now need to learn more complex distributions for multiple variables.
-Typically, simplifying assumptions for the conditional distributions are used to make sampling easier, as done by @aas2021explaining:
-
+Conditional sampling helps avoid extrapolation problems.
+@aas2021explaining suggested incorporating this method into KernelSHAP.
+However, implementing conditional sampling is not straightforward, given that supervised machine learning mainly learns $P(Y|X_1, \ldots, X_p)$, and we now need to learn complex distributions for numerous variables.
+Generally, we make simplifying assumptions for the conditional distributions to facilitate sampling, as suggested by @aas2021explaining:
 - Use multivariate Gaussians.
-- Employ Gaussian copulas.
-- Apply kernel estimators (if there are not too many dimensions).
+- Utilize Gaussian copulas.
+- Apply kernel estimators (if the dimensions are not too many).
 
-The paper proposed more techniques, but these are the key ones.
+The paper suggests more techniques, but these are the most significant.
 
 ::: {.callout-warning}
 
-Switching the sampling from marginal to conditional alters the value function to a conditional value function:
+Switching the sampling method from marginal to conditional changes the value function to a conditional value function:
 
 $$v_{f,x^{(i)}}(S) = \int f(x^{(i)}_S \cup X_C)d\mathbb{P}_{X_{C}|X_S=x^{(i)}_S} - \mathbb{E}(f(X))$$
 
-This changes the game.
-For instance, the resulting SHAP values may appear to no longer adhere to the Dummy axiom, as unused features like $\beta_j=0$ in a linear model can suddenly have non-zero SHAP values.
-However, conditional SHAP doesn't actually violate the Dummy axiom, since based on the new payout using conditional distributions, they still qualify as (conditional) SHAP values.
-Without correlation, marginal and conditional SHAP are the same, because then $P(X_1) = P(X_1|X_2)$.
+This shift changes the game.
+For example, the resulting SHAP values might seem to not adhere to the Dummy axiom, as unused features like $\beta_j=0$ in a linear model can suddenly have non-zero SHAP values.
+However, conditional SHAP does not actually violate the Dummy axiom, as they still qualify as (conditional) SHAP values based on the new payout using conditional distributions.
+Without correlation, marginal and conditional SHAP are identical, since then $P(X_1) = P(X_1|X_2)$.
 
 :::
 
-If you want to use conditional sampling in `shap`, you can use the Linear explainer with the option `feature_pertubation='correlation_dependent'`.
-The tree explainer has a similar option called `feature_pertubation='tree_path_dependent'` which relies on the splits in underlying tree-based model to make sure that the Monte Carlo samples for SHAP are not extrapolating.
-But I recommend against the tree-path option, since it doesn't actually model the conditional distribution but something in between and doesn't approximate the conditional SHAP values well [@aas2021explaining].
+If you want to employ conditional sampling in `shap`, use the Linear explainer with the `feature_pertubation='correlation_dependent'` option.
+The Tree explainer provides a similar option called `feature_pertubation='tree_path_dependent'`, which uses the splits in the underlying tree-based model to ensure SHAP is not extrapolating.
+However, I advise against using the tree-path option, as it does not accurately model the conditional distribution and does not approximate the conditional SHAP values well [@aas2021explaining].
 
-
-Whether a conditional SHAP interpretation is desirable depends on your interpretation goals.
-If your objective is to audit the model, marginal sampling might be more appropriate.
-If you want to better understand the data, conditional sampling could be the better option.
-This trade-off is also characterized as being true to the model (marginal sampling) or true to the data (conditional sampling) [@chen2020true].
-This concept is further discussed by @sundararajan2020many.
-
-
+Whether a conditional SHAP interpretation is useful depends on your interpretation objectives.
+If you want to audit the model, marginal sampling may be more suitable.
+If your goal is to better understand the data, conditional sampling might be the better choice.
+This trade-off is often described as being true to the model (marginal sampling) or true to the data (conditional sampling) [@chen2020true].
+@sundararajan2020many further discusses this concept.

@@ -4,66 +4,65 @@
 
 By the end of this chapter, you will be able to:
 
-- Use SHAP for additive regression models 
-- Interpret non-linear effects
-- Explain SHAP feature importance
+- Use SHAP for additive regression models.
+- Interpret non-linear effects.
+- Explain SHAP feature importance.
 
 :::
 
-In this next step, we allow the relationship between a feature and the target to be non-linear.
-However, we do not allow interactions between the features.
+In this step, we introduce the concept of non-linear relationships between a feature and the target, while excluding interactions between the features.
 
 ## Introducing the generalized additive model (GAM)
 
-Additive models with non-linear base functions are perfectly modeled with so-called generalized additive models, also known as GAMs.
+Generalized additive models (GAMs) are perfect for modeling additive models with non-linear base functions.
 
-A GAM models the target in the following way:
+A GAM models the target as follows:
 
 $$f(x) = \beta_0 + \beta_1 f_1(x_1) + \ldots + f_p(x_p)$$
 
-The difference from the simple linear model is that we allow the functions $f_j$ to be non-linear. 
-If these are the identity function for all features, namely $f_j(x_j) = x_j$, then we again arrive at the linear model.
-So, linear regression models are special cases of GAMs.
+Unlike the simple linear model, we allow the functions $f_j$ to be non-linear. 
+If for all features, $f_j(x_j) = x_j$, we arrive at the linear model.
+Thus, linear regression models are special cases of GAMs.
 
-But with GAMs, we can now have arbitrary functions for the features.
-A popular choice is spline functions, which allow for rather flexible shapes of functions that are still smooth and have a gradient.
-But it's also possible to use tree-based basis function, which have a fast implementation, as we do in this example.
-Additive models are a good way to further expand our understanding of SHAP values, since it allows us to study what happens with non-linear functions, but without interactions.
-While we could add interaction terms to a GAM, we won't for this chapter.
-With interactions, the interpretation becomes trickier.
+With GAMs, we can use arbitrary functions for the features.
+Popular choices include spline functions, which allow for flexible, smooth functions with a gradient.
+Tree-based basis functions, which have a fast implementation, are also an option.
+Additive models expand our understanding of SHAP values, as they allow us to examine non-linear functions without interactions.
+Although we could add interaction terms to a GAM, we will not do so in this chapter, as the interpretation becomes more complex.
 
 ## Fitting the GAM
 
-So, we go back to the same wine example and fit a GAM instead of a linear regression model.
+We return to the wine example and fit a GAM instead of a linear regression model.
 
-For this, we rely on the `interpret` Python library. You can install it with:
+We'll utilize the `interpret` Python library for this. You can install it with:
 
 ```{python}
 #| eval: false
 !pip install interpret
 ```
 
-First, we fit a model.
-It's an Explainable Boosting Regressor from the interpret package.
+Next, we fit a model.
+We're using the Explainable Boosting Regressor from the interpret package.
 
 ::: .{callout-note}
 
 The Explainable Boosting Machine (EBM) is a tree-based GAM.
-It has (optional) automated interaction detection, which we won't use for this example.
-So for our case, each tree in the ensemble can only use one feature, because otherwise, it would model interactions.
+It offers optional automated interaction detection, which we won't use in this example.
+In our case, each tree in the ensemble can only use one feature to avoid modeling interactions.
 
 :::
 
-This is the model we train:
+Here is the model we'll train:
+
 ```{python}
 #| output: false
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from interpret.glassbox import ExplainableBoostingRegressor
 
-wine = pd.read_csv("wine.csv")
-y = wine["quality"]
-X = wine.drop("quality", axis=1)
+wine = pd.read_csv('wine.csv')
+y = wine['quality']
+X = wine.drop('quality', axis=1)
 X_train, X_test, y_train, y_test = train_test_split(
   X, y, test_size=0.2, random_state=42
 )
@@ -72,7 +71,7 @@ model = ExplainableBoostingRegressor(interactions=0)
 model.fit(X_train, y_train)
 ```
 
-Once again, let's evaluate how well the model predicts the test data:
+Let's evaluate the model's predictions on the test data:
 
 ```{python}
 from sklearn.metrics import mean_absolute_error
@@ -83,9 +82,8 @@ mae = mean_absolute_error(y_test, y_pred)
 print(f"MAE: {mae:.2f}")
 ```
 
-The mean absolute error on the test data is better than for the linear regression model.
-That's great news.
-It means that by using a GAM and allowing feature effects to be non-linear, we were able to improve the predictions and some effects actually appeared to be non-linear.
+The mean absolute error on the test data is less than that of the linear regression model.
+This is promising, as it indicates that by using a GAM and allowing non-linear feature effects, we improved predictions and revealed some non-linear effects.
 
 ## Interpreting the GAM with SHAP
 
@@ -98,45 +96,42 @@ explainer = shap.Explainer(model.predict, X_train)
 shap_values = explainer(X_test)
 ```
 
-The question now is: What do the SHAP values look like?
-And do they match what we would expect?
+The question now is: How do we interpret the SHAP values?
+And do they align with our expectations?
 
-First, let's explain the initial prediction of a data point:
-
+First, let's elucidate the initial prediction of a data point:
 ```{python}
 shap.plots.waterfall(shap_values[0], max_display=10)
 ```
 
 ::: {.callout-note}
 
-The explainer here is a Permutation explainer.
-Why isn't the Additive explainer method used here?
-Because in `shap` the additive estimation is only implemented for `interpret.glassbox.ExplainableBoostingClassifier`, but we are using the Regressor.
+The explainer used here is a Permutation explainer.
+The Additive explainer method isn't used because the additive estimation in `shap` is only implemented for `interpret.glassbox.ExplainableBoostingClassifier`, and we are using the Regressor.
 
 :::
 
-This waterfall plot presents a different picture of what's happening, compared to the purely linear model.
+This waterfall plot provides a different perspective than the purely linear model.
 
-- For this wine, the most important features were alcohol and free sulfur dioxide, while in the linear model, it was residual sugar and free sulfur dioxide.
-- The quality predicted by the GAM is lower with around 6.0 compared to 6.4. 
-- This example beautifully demonstrates how, although the global average prediction and the local prediction are quite similar, there are numerous SHAP values canceling each other out.
+- For this particular wine, the most crucial features were alcohol and free sulfur dioxide, whereas, in the linear model, it was residual sugar and free sulfur dioxide.
+- The quality predicted by the GAM is approximately 6.0, lower than the 6.4 predicted by the linear model. 
+- This example clearly illustrates how the global average prediction and the local prediction can be similar, but numerous SHAP values cancel each other out.
 
 ## SHAP recovers non-linear functions
 
-We know that the GAM is additive.
-This means that to understand the effect a feature has, we can look at features in isolation and don't have to think about interaction effects.
-Let's have a look at the SHAP dependence plot for alcohol:
+We understand that the GAM is additive.
+This implies that we can inspect each feature in isolation to understand its effect without considering interaction effects.
+Let's examine the SHAP dependence plot for alcohol:
 ```{python}
 shap.plots.scatter(shap_values[:,"alcohol"], show=False)
 ```
 
 
-In the case of alcohol, we see a positive relation between alcohol levels and the SHAP values.
-The higher the alcohol content, the higher the SHAP contribution.
-However, at very high and very low levels, the effect plateaus.
+In the case of alcohol, there is a positive relationship between alcohol levels and the SHAP values.
+The SHAP contribution increases with the alcohol content, but it plateaus at extremely high and low levels.
 
 Let's compare these SHAP values with the alcohol effect learned by the GAM.
-We can plot the SHAP values and add the alcohol curve directly extracted from the GAM.
+We can plot the SHAP values and overlay the alcohol curve extracted directly from the GAM.
 
 ```{python}
 import matplotlib.pyplot as plt
@@ -157,42 +152,37 @@ plt.plot(x_data, y_data, color='red')
 plt.show()
 ```
 
-Again, as you can see, the SHAP values follow the same trajectory as when we would simply change one of the features (here alcohol).
-This gives us another boost in trust for understanding SHAP values.
-There's also a paper [@bordt2022shapley] showing that when the model is a GAM, then the non-linear components can be recovered by SHAP.
+As evident, the SHAP values follow the same trajectory as we would see when simply altering one of the features (here, alcohol).
+This reinforces our confidence in understanding SHAP values.
+There's a paper [@bordt2022shapley] that demonstrates that when the model is a GAM, the non-linear components can be recovered by SHAP.
 
-Similarly to the linear case, in the additive case, SHAP values track the feature effect well and are aligned to what we would expect.
+Like the linear case, in the additive case, SHAP values accurately track the feature effect and align with what we would predict.
 
-## Analyzing the feature importance
+## Analyzing feature importance
 
-There is another type of plot that `shap` offers: the importance plot.
-The concept behind SHAP feature importance is straightforward:
+`shap` offers another type of plot: the importance plot.
+The principle behind SHAP feature importance is simple:
 Features with large absolute SHAP values are important.
 To determine global importance, we average the **absolute** SHAP values per feature across the data:
 
 $$I_j=\frac{1}{n}\sum_{i=1}^n |\phi^{(i)}_j|$$
 
-Next, we sort the features by decreasing importance and plot them.
-The following figure displays the SHAP feature importance for the random forest previously trained to predict cervical cancer.
-This, by the way, is the same way that the summary plot sorts the features. 
+We then sort the features by decreasing importance and plot them.
+The following figure displays the SHAP feature importance for the random forest model previously trained to predict cervical cancer.
+This method of sorting features is also used in the summary plot. 
 
 ```{python}
 shap.plots.bar(shap_values)
 ```
 
 
-SHAP feature importance offers an alternative to [permutation feature importance](https://christophm.github.io/interpretable-ml-book/feature-importance.html).
-A significant difference exists between these importance measures:
+SHAP feature importance provides an alternative to [permutation feature importance](https://christophm.github.io/interpretable-ml-book/feature-importance.html).
+There's a significant difference between these importance measures:
 
 ::: {.callout-note}
-
-Permutation feature importance (PFI) is based on the decrease in model performance, while SHAP is based on the magnitude of feature attributions.
-This difference is especially stark if the model is overfitting, because a feature that in reality doesn't have a relation to the target will have an expected PFI of zero, but may have a non-zero SHAP importance.
+Permutation Feature Importance (PFI) is derived from the decline in model performance, whereas SHAP relies on the magnitude of feature attributions.
+This difference becomes particularly pronounced when the model is overfitting. A feature that doesn't actually correlate with the target will have an expected PFI of zero but may exhibit a non-zero SHAP importance.
 
 :::
 
-Although the feature importance plot is useful, it provides no information beyond the importances.
-
-
-
-
+While the feature importance plot is beneficial, it doesn't provide information beyond the importances.

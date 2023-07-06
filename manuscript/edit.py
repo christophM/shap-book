@@ -35,10 +35,9 @@ consistent.
 - Level 2 headers (##) sentence case. Except when it's within a "box", i.e. between ::: and :::
 - For strings in Python code examples use ' instead of "
 - Get rid of repetitions
-
-Things to keep the same:
-- keep tone and voice
-- don't change markdown syntax, e.g. keep [@reference]
+- words not to use: "delve", "utilize"
+- after and before a markdown list, there must be an empty line
+- keep tone and voice - don't change markdown syntax, e.g. keep [@reference]
 - ```{python} should always remain ```{python}
 - never cut jokes
 - output 1 line per sentence (same as input)

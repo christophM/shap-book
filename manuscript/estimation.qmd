@@ -1,23 +1,18 @@
 # SHAP Explainers {#estimation}
 
-TODO: Think about renaming it from Explainer to Estimation, bc. explainer is a `shap` term
-TODO: More cleanly separate between estimation method and `shap` implementation
+In this chapter, each explainer is separated into theory and implementation in SHAP.
+While this distinction may not be perfect, it's helpful for understanding.
 
-In each of the explainers covered in this chapter, I have attempted to distinguish between the theory and their implementation in SHAP.
-Admittedly, this distinction is not perfect, and I apologize for any confusion.
+You might wonder why we need so many algorithms.
+In the [Theory Chapter](#theory), we discussed that we could enumerate all coalitions and compute the marginal contributions for all possible feature coalitions.
+However, the number of coalitions can be overwhelming, particularly when dealing with many features.
+For instance, when computing the SHAP values for one feature in a model with two inputs, we have two coalitions to which we can add the feature: the empty coalition and the coalition containing the other feature.
+With three inputs, there are four coalitions, and with four inputs, there are eight coalitions.
+In general, there are $2^{(p-1)}$ coalitions to which we can add the feature value, where $p$ is the number of features in the predictive model.
 
-But why do we need so many algorithms anyway?
-In the [Theory Chapter](#theory), we already saw that we can enumerate all coalitions and then compute the marginal contributions for all possible feature coalitions.
-The problem is that there are simply too many coalitions, especially when we have many features.
-If we compute the SHAP values for one feature in the case of a model with just two inputs, we have two coalitions to which we can add the feature: the empty coalition and the one already containing the other feature.
-If we have 3 inputs, it's 4 coalitions.
-If we have 4 inputs, it's 8 coalitions.
-In fact, there are $2^{(p-1)}$ coalitions to which we can add the feature value, where $p$ is the number of features in the predictive model.
-
-There is another aspect that requires estimation or the use of "shortcuts".
-The absence of a feature must be simulated by replacing the feature with a background sample.
-However, if we were to do this only once, it would result in a poor estimate, as the coalition would heavily depend on the sampled background dataset.
-Therefore, we need to sample multiple times and average the results, effectively removing the effect of the particular sample.
+Another aspect necessitating estimation or the use of "shortcuts" is the simulation of a feature's absence by replacing the feature with a background sample.
+If we perform this only once, it results in an inaccurate estimate, as the coalition depends heavily on the sampled background dataset.
+To mitigate this, we need to sample multiple times and average the results, effectively reducing the influence of the specific sample.
 
 ## Exact Explainer: Computing all the coalitions
 
@@ -25,30 +20,29 @@ Therefore, we need to sample multiple times and average the results, effectively
 
 ## Exact Explainer
 
-Computes the exact SHAP value. Model-agnostic. Only meaningful for low-dimensional tabular data (<15 features).
+This method computes the exact SHAP value. It's model-agnostic and is only meaningful for low-dimensional tabular data (<15 features).
 
 :::
 
-The Exact Explainer computes all $2^p$ possible coalitions in theory, from which we can calculate all possible feature contributions for each feature, as seen in the [theory chapter](#theory).
-Moreover, it utilizes all of the background data, not just a sample of it.
-This means there are no elements of randomness in the computation.
-Although this can be quite costly, depending on the number of features and the size of the background data, the upside is that we use all available information and obtain the most accurate estimation of the SHAP values compared to other model-agnostic estimation methods.
+The Exact Explainer theoretically computes all $2^p$ possible coalitions, from which we can calculate all possible feature contributions for each feature, as discussed in the [theory chapter](#theory).
+It also utilizes all of the background data, not just a sample.
+This means the computation has no elements of randomness.
+Despite the high computational cost, which depends on the number of features and the size of the background data, this method uses all available information and provides the most accurate estimation of SHAP values compared to other model-agnostic estimation methods.
 
-We can use the exact method with the following code in `shap`:
+Here is how to use the exact method with the `shap` package:
 
 ```{python}
 #| eval: false
 explainer = shap.Explainer(model, background)
 ```
 
-However, `shap` limits the marginal contributions of features being added to coalitions of size 0, 1, p-2, and p-1, which means it covers interactions of a maximum size of 2.
+However, `shap` limits the marginal contributions of features to coalitions of size 0, 1, p-2, and p-1, which means it only covers interactions of a maximum size of 2.
 As the [documentation states](https://github.com/slundberg/shap/blob/master/shap/explainers/_exact.py), it should be used for less than 15 features.
-Due to this enumeration, the exact explainer can utilize "Gray code," an optimization method that doesn't work for other SHAP estimation methods.
-Gray code is a clever ordering of coalitions so that adjacent coalitions only differ in one feature value (team member) and can, therefore, be directly used to compute marginal contributions.
-This method is more efficient than enumerating all possible coalitions and then adding features to them, as Gray code reduces the number of model calls by more effectively using computations.
+Because of this enumeration, the exact explainer can utilize "Gray code," an optimization method not applicable to other SHAP estimation methods.
+Gray code is an effective ordering of coalitions where adjacent coalitions only differ in one feature value, which can be directly used to compute marginal contributions.
+This method is more efficient than enumerating all possible coalitions and adding features to them, as Gray code reduces the number of model calls through more effective computation.
 
-Exact SHAP values are often not feasible.
-One remedy for this issue is sampling.
+Exact SHAP values are often not feasible, but this issue can be addressed through sampling.
 
 ## Sampling Explainer: Sampling the coalitions
 
@@ -56,71 +50,68 @@ One remedy for this issue is sampling.
 
 ## Sampling Explainer
 
-Works by sampling coalitions. Model-agnostic.
+This method works by sampling coalitions. It's model-agnostic.
 
 :::
 
-One of the first versions of the sampling explainer was proposed by @strumbelj2014explaining and modified by @strumbelj2010efficient.
-The sampling process involves sampling in two dimensions: sampling from the background data and sampling the coalitions.
+The first versions of the sampling explainer were proposed by @strumbelj2014explaining and modified by @strumbelj2010efficient.
+The sampling process involves two dimensions: sampling from the background data and sampling the coalitions.
 
 To calculate the exact SHAP value, all possible coalitions (sets) of feature values must be evaluated with and without the j-th feature.
-However, as the number of features increases, the exact solution becomes problematic due to the exponential increase in the number of possible coalitions.
+However, the exact solution becomes problematic as the number of features increases due to the exponential increase in the number of possible coalitions.
 @strumbelj2014explaining proposed an approximation using Monte Carlo sampling:
 
 $$\hat{\phi}_{j}=\frac{1}{M}\sum_{m=1}^M\left(f(x^{m}_{+j})-f(x^{m}_{-j})\right)$$
-
-Where $f(x^{m}_{+j})$ is the prediction for x, but with a random number of feature values replaced by feature values from a random data point z, except for the respective value of feature j.
-For reasons of readability, I'm dropping the $(i)$ from $\phi^{(i)}_j$ for the following explanations.
-Monte Carlo sampling simply means sampling from the coalitions.
-The x-vector $x^{m}_{-j}$ is almost identical to $x^{m}_{+j}$, but the value $x_j^{m}$ is also taken from the sampled z.
-Each of these M new instances is a kind of "Frankenstein's Monster" assembled from two instances.
-Note that in the following algorithm, the order of features is not actually changed -- each feature remains at the same vector position when passed to the predict function.
-The order is only used as a "trick" here:
-By assigning the features a new order, we get a random mechanism that helps us assemble the "Frankenstein's Monster".
-For features that appear to the left of the feature $x_j$, we take the values from the original observations, and for the features on the right, we take the values from a random instance.
+$f(x^{m}_{+j})$ is the prediction for x wherein a random number of feature values are replaced by feature values from a random data point z, except for the value of feature j. 
+To enhance readability, I will omit the $(i)$ from $\phi^{(i)}_j$ in the following explanations. 
+Monte Carlo sampling refers to sampling from the coalitions. 
+The x-vector $x^{m}_{-j}$ bears a striking resemblance to $x^{m}_{+j}$, but the value $x_j^{m}$ is also derived from the sampled z. 
+Each of these M new instances is akin to "Frankenstein's Monster", assembled from two instances. 
+In the following algorithm, the order of features remains unchanged — each feature retains its position in the vector when passed to the predict function. 
+The order is merely used as a tactic: assigning a new order to the features enables us to assemble the "Frankenstein's Monster". 
+For features positioned to the left of feature $x_j$, we use the values from the original observations, and for features on the right, we use values from a random instance.
 
 **Approximate SHAP Estimation for Single Feature Value**:
 
-- Output: SHAP value for the value of the j-th feature
-- Required: Number of iterations M, instance of interest x, feature index j, data matrix X, and machine learning model f
-- For all m = 1,...,M:
-  - Draw a random instance z from the data matrix X
-  - Choose a random permutation o of the feature values
-  - Order instance x: $x_o=(x_{(1)},\ldots,x_{(j)},\ldots,x_{(p)})$
-  - Order instance z: $z_o=(z_{(1)},\ldots,z_{(j)},\ldots,z_{(p)})$
-  - Construct two new instances
-    - With j: $x_{+j}=(x_{(1)},\ldots,x_{(j-1)},x_{(j)},z_{(j+1)},\ldots,z_{(p)})$
-    - Without j: $x_{-j}=(x_{(1)},\ldots,x_{(j-1)},z_{(j)},z_{(j+1)},\ldots,z_{(p)})$
-  - Compute marginal contribution: $\phi_j^{m}=f(x_{+j})-f(x_{-j})$
-- Compute SHAP value as the average: $\phi_j(x)=\frac{1}{M}\sum_{m=1}^M\phi_j^{m}$
+- Output: SHAP value for the j-th feature value.
+- Required: Number of iterations M, instance of interest x, feature index j, data matrix X, and machine learning model f.
+- For every m = 1,...,M:
+  - Draw a random instance z from the data matrix X.
+  - Select a random permutation o of the feature values.
+  - Arrange instance x: $x_o=(x_{(1)},\ldots,x_{(j)},\ldots,x_{(p)})$.
+  - Arrange instance z: $z_o=(z_{(1)},\ldots,z_{(j)},\ldots,z_{(p)})$.
+  - Create two new instances:
+    - With j: $x_{+j}=(x_{(1)},\ldots,x_{(j-1)},x_{(j)},z_{(j+1)},\ldots,z_{(p)})$.
+    - Without j: $x_{-j}=(x_{(1)},\ldots,x_{(j-1)},z_{(j)},z_{(j+1)},\ldots,z_{(p)})$.
+  - Compute marginal contribution: $\phi_j^{m}=f(x_{+j})-f(x_{-j})$.
+- Compute SHAP value as the average: $\phi_j(x)=\frac{1}{M}\sum_{m=1}^M\phi_j^{m}$.
 
 First, select an instance of interest x, a feature j, and the number of iterations M. 
-For each iteration, randomly select an instance z from the data and generate a random order of the features. 
-Create two new instances by combining values from the instance of interest x and the sample z. 
-The instance $x_{+j}$ is the instance of interest, but all values in the order after feature j are replaced by feature values from the sample z. 
-The instance $x_{-j}$ is the same as $x_{+j}$, but additionally has feature j replaced by the value for feature j from the sample z. 
-Compute the difference in the prediction from the black box:
+During each iteration, randomly select an instance z from the data and generate a random order of features. 
+Construct two new instances using values from the instance of interest x and the sample z. 
+The instance $x_{+j}$ is the instance of interest, but all values in the order after feature j are substituted with feature values from the sample z. 
+The instance $x_{-j}$ is identical to $x_{+j}$, but also has feature j replaced by the value for feature j from sample z. 
+Compute the difference in the prediction from the black box model:
 
 $$\phi_j^{m}=f(x^m_{+j})-f(x^m_{-j})$$
 
-Average all these differences, resulting in:
+Average all these differences to yield:
 
 $$\phi_j(x)=\frac{1}{M}\sum_{m=1}^M\phi_j^{m}$$
 
-Implicitly, averaging weighs samples by the probability distribution of X.
-Repeat the procedure for each of the features to obtain all SHAP values.
+Implicitly, this averaging operation weights samples according to the probability distribution of X.
+Repeat this process for each feature to obtain all SHAP values.
 
-In `shap`, the explainer is implemented in:
+In `shap`, the explainer is implemented as follows:
 
 ```{python}
 #| eval: false
 explainer = shap.explainers.Sampling(model, background)
 ```
-- The default number of samples (`nsamples`) is `auto`, which is 1,000 times the number of features.
-- The sampling explainer only accepts the identity link (relevant for classifiers).
-
-However, the sampling explainer is not the most efficient way to estimate SHAP values, even though it's an improvement over the exact explainer when dealing with larger datasets.
-Next, let's discuss the permutation explainer.
+- The default number of samples (`nsamples`) is `auto`, which equates to 1,000 times the number of features.
+- The sampling explainer exclusively accepts the identity link (relevant for classifiers).
+The Sampling Explainer, while more effective than the Exact Explainer for larger datasets, is not the most efficient method for estimating SHAP values.
+Let's now discuss the Permutation Explainer.
 
 ## Permutation Explainer: Sampling permutations
 
@@ -128,229 +119,223 @@ Next, let's discuss the permutation explainer.
 
 ## Permutation Explainer
 
-Samples permutations of feature values and iterates through them forward and backwards. Model-agnostic.
+This explainer samples permutations of feature values and iterates through them in both directions. It is model-agnostic.
 
 :::
 
-The permutation explainer differs from the sampling explainer.
-Instead of sampling random coalitions of features, it samples entire permutations of features.
-These permutations are then iterated through in both directions.
-For example, let's consider four feature values: $x_1, x_2, x_3$, and $x_4$.
+The Permutation Explainer distinguishes itself from the Sampling Explainer by sampling entire permutations of features, rather than random coalitions of features.
+These permutations are then traversed in both directions.
+Consider, for instance, four feature values: $x_1, x_2, x_3$, and $x_4$.
 
-A random permutation might be: $(x_2, x_3, x_1, x_4)$.
-We start from the left and compute the marginal contributions:
+A random permutation could be: $(x_2, x_3, x_1, x_4)$.
+We begin from the left and calculate the marginal contributions:
 
-- Adding $x_2$ to $\emptyset$
-- Adding $x_3$ to $\{x_2\}$
-- Adding $x_1$ to $\{x_2, x_3\}$
-- Adding $x_4$ to $\{x_2, x_3, x_1\}$
+- Adding $x_2$ to $\emptyset$.
+- Adding $x_3$ to $\{x_2\}$.
+- Adding $x_1$ to $\{x_2, x_3\}$.
+- Adding $x_4$ to $\{x_2, x_3, x_1\}$.
 
-Next, we iterate in the opposite direction:
+Next, we traverse in the reverse direction:
 
-- Adding $x_4$ to $\emptyset$
-- Adding $x_1$ to $\{x_4\}$
-- Adding $x_3$ to $\{x_1, x_4\}$
-- Adding $x_2$ to $\{x_3, x_1, x_4\}$
+- Adding $x_4$ to $\emptyset$.
+- Adding $x_1$ to $\{x_4\}$.
+- Adding $x_3$ to $\{x_1, x_4\}$.
+- Adding $x_2$ to $\{x_3, x_1, x_4\}$.
 
-This approach changes only one feature at a time, similar to the technique used in the Exact explainer.
-This method minimizes the number of model calls, as the first term of a marginal contribution transitions into the second term of the subsequent one.
-For instance, the coalition $\{x_2, x_3\}$ is utilized for computing the marginal contribution of $\{x_1\}$ to $\{x_2, x_3\}$ and of $x_3$ to $\{x_2\}$.
+This method, like the Exact Explainer, changes only one feature at a time.
+It reduces the number of model calls as the first term of a marginal contribution transitions into the second term of the subsequent one.
+For example, the coalition $\{x_2, x_3\}$ is used to compute the marginal contribution of $\{x_1\}$ to $\{x_2, x_3\}$ and of $x_3$ to $\{x_2\}$.
 
-However, this permutation procedure also has an additional impact: it ensures that the efficiency axiom is always satisfied.
-This holds true not just on average, but exactly.
-Nonetheless, the individual SHAP values remain estimates.
-To obtain the SHAP values, multiple permutations must be sampled and run in both forward and backward directions.
-SHAP values are then reassembled by averaging the marginal contributions with their corresponding weights.
-Another cool aspect of the permutation procedure is that just one permutation is sufficient to obtain the exact SHAP values for models with up to second-order interaction effects.
-This may seem surprising at first.
-Let's consider the case of $x_3$, which appears in the second position in the order above.
-We compute two marginal contributions for this feature:
-We add $x_3$ to $\{x_2\}$ and also add it to $\{x_1, x_4\}$.
+Additionally, this permutation procedure guarantees that the efficiency axiom is always fulfilled.
+This is true not just on average, but exactly.
+However, the individual SHAP values remain as estimates.
+To derive the SHAP values, we must sample multiple permutations and run them in both forward and backward directions.
+SHAP values are then reconstructed by averaging the marginal contributions with their corresponding weights.
+Another unique feature of the permutation procedure is that a single permutation is enough to obtain the exact SHAP values for models with up to second-order interaction effects.
+This might initially seem surprising.
+Consider $x_3$, which appears second in the order above.
+We compute two marginal contributions for this feature: we add $x_3$ to $\{x_2\}$ and to $\{x_1, x_4\}$.
 
-### Interlude: Why one permutation is enough for 2-way interactions
+### Interlude: Why one permutation suffices for 2-way interactions
 
-Here's some intuition as to why this one permutation is enough, or rather, an example (feel free to skip this if you already believe that one permutation is enough for detecting 2-way interactions).
+Here's some intuition as to why this one permutation is sufficient, or rather, an example (feel free to skip this if you're already convinced that one permutation suffices for detecting 2-way interactions).
 
 Example:
-
-- Prediction function: $f(x) = 2 x_3 + 3 x_1 x_3$, a function with an interaction between features $x_1$ and $x_3$
-- Data point to explain: $(x_1 = 4, x_2 = 1, x_3 = 1, x_4 = 2)$
-- Background data consists of only one data point (for simplicity): $(x_1 = 0, x_2 = 0, x_3 = 0, x_4 = 0)$
-- We examine two permutations and demonstrate that for both permutations, we obtain the same marginal contributions for feature $x_3$
-- This does not prove that 2-way interactions are entirely recoverable by a permutation, but it provides some intuition as to why it works
-- Permutation 1: $(x_2, x_3, x_1, x_4)$
-  - This means we have two marginal contributions: $x_3$ to $\{x_2\}$ and $x_3$ to $\{x_1, x_4\}$. 
-  - We denote $f_{2,3}$ as the prediction where $x_2$ and $x_3$ values are taken from the data point to be explained and values for $x_1$ and $x_4$ from the background data.
-  - Therefore: $f_{2,3} = f(x_1=0, x_2=1, x_3=1, x_4=0) = 2 \cdot 1 + 3 \cdot 0 \cdot 1 = 2$
+- The prediction function is $f(x) = 2 x_3 + 3 x_1 x_3$, which includes an interaction between features $x_1$ and $x_3$.
+- We'll explain the data point $(x_1 = 4, x_2 = 1, x_3 = 1, x_4 = 2)$.
+- Our background data consists of only one data point for simplicity: $(x_1 = 0, x_2 = 0, x_3 = 0, x_4 = 0)$.
+- We'll examine two permutations and demonstrate that both result in the same marginal contributions for feature $x_3$.
+- Note, this doesn't prove that all 2-way interactions are recoverable by permutation, but it provides some insight into why it might work.
+- The first permutation: $(x_2, x_3, x_1, x_4)$.
+  - We have two marginal contributions: $x_3$ to $\{x_2\}$ and $x_3$ to $\{x_1, x_4\}$. 
+  - We denote $f_{2,3}$ as the prediction where $x_2$ and $x_3$ values come from the data point to be explained, and $x_1$ and $x_4$ values come from the background data.
+  - Thus: $f_{2,3} = f(x_1=0, x_2=1, x_3=1, x_4=0) = 2 \cdot 1 + 3 \cdot 0 \cdot 1 = 2$
 - The marginal contributions are $f_{2,3} - f_{2} = 2 - 0 = 2$ and $f_{1,3,4} - f_{1,4} = 14$.
-- Let's now consider a different permutation: $(x_1, x_2, x_3, x_4)$.
-  - This is the original ordering of features, but it is also a valid "permutation".
-  - For this, we have to compute different marginal contributions.
+- Now let's consider a different permutation: $(x_1, x_2, x_3, x_4)$.
+  - This is the original feature order, but it is also a valid permutation.
+  - For this, we'll compute different marginal contributions.
   - $f_{1,2,3} - f_{1,2} = 14$.
   - $f_{3,4} - f_{4} = 2$.
-  - And, lo and behold, these are the same marginal contributions as for the other permutation.
-- So, with only a 2-way interaction, we had two different permutations that we iterated forward and backward, and we obtained the same marginal contributions.
-- This means that by adding more permutations, we don't gain new information for the feature of interest.
-- Again, this is not a proof, but an idea of why this method works.
+  - And, unsurprisingly, these are the same marginal contributions as for the other permutation.
+- So, even with only a 2-way interaction, we had two different permutations that we iterated forward and backward, and we obtained the same marginal contributions.
+- This suggests that adding more permutations doesn't provide new information for the feature of interest.
+- This isn't a proof, but it gives an idea of why this method works.
 
-
-This type of sampling is also known as antithetic sampling and performs quite well compared to other sampling estimators of SHAP values[@mitchell2022sampling].
+This type of sampling is also known as antithetic sampling and performs well compared to other sampling estimators of SHAP values[@mitchell2022sampling].
 
 **End of interlude**
 
-Here's how you can use the Permutation Explainer in `shap`:
+Here's how to use the Permutation Explainer in `shap`:
 
 ```{python}
 #| eval: false
 explainer = shap.explainers.Permutation(model, background)
 ```
-- The permutation explainer is the default explainer for model-agnostic explanations. This means that if you set `algorithm=auto` when creating an `Explainer` (which is the default) and there is no model-specific SHAP estimator available for your model, the permutation explainer will be used.
-- In the current SHAP implementation, there are 10 default permutations that are iterated forward and backward.
-- The implementation also supports hierarchical data structures with partition trees, which are not implemented in the Kernel explainer (see later) or the sampling explainer.
-- Since the permutations are sampled, it is recommended to set a seed in the explainer for reproducibility of the results.
+- The Permutation Explainer is the default explainer for model-agnostic explanations. If you set `algorithm=auto` when creating an `Explainer` (which is the default) and there's no model-specific SHAP estimator for your model, the Permutation Explainer will be used.
+- The current SHAP implementation iterates 10 default permutations forward and backward.
+- This implementation also supports hierarchical data structures with partition trees, which aren't implemented in the Kernel Explainer (see later) or the Sampling Explainer.
+- Since the permutations are sampled, it's recommended to set a seed in the explainer for reproducibility.
 
 ## Linear Explainer: For linear models
 
-We now transition from the realm of model-agnostic explainers to explore model-specific explainers.
-These explainers take advantage of the internal structure of the model.
-In the case of the linear explainer, we utilize the linear equation typical for linear regression models.
+We'll now move from model-agnostic explainers to model-specific explainers.
+These explainers take advantage of the model's internal structure.
+For the Linear Explainer, we use the linear equation common to linear regression models.
 Linear regression models can be expressed in the following form:
 
 $$f(x) = \beta_0 + \beta_1 x_1 + \ldots + \beta_p x_p,$$
-
-where the $\beta$'s represent the weights or coefficients that the features are multiplied with to generate the prediction.
-The intercept $\beta_0$ is a special coefficient that determines the output when all feature values are zero.
-This implies that there are no interactions[^interactions] and no non-linear relations.
-In this case, the SHAP values are quite straightforward to compute, as we have seen in the [Theory Chapter](#theory).
-The SHAP values are then defined as:
+The $\beta$'s represent the weights or coefficients by which the features are multiplied to generate the prediction.
+The intercept $\beta_0$ is a unique coefficient that determines the output when all feature values are zero, implying that there are no interactions[^interactions] and no non-linear relations.
+The SHAP values are simple to compute in this case, as discussed in the [Theory Chapter](#theory).
+They are defined as:
 
 $$\phi^{(i)}_j = \beta_j \cdot (x_j - \mathbb{E}(X_j))$$
 
-This also works if you have a non-linear link function.
-This means that the model is not entirely linear, but the weighted sum is transformed before making the prediction.
-This class of models is called generalized linear models (GLMs).
-An example of a GLM is the logistic regression model, defined as:
+This formula also applies if you have a non-linear link function.
+It means that the model isn't entirely linear, as the weighted sum is transformed before making the prediction.
+This model class is known as generalized linear models (GLMs).
+Logistic regression is an example of a GLM, and it's defined as:
 
 $$f(x) = \frac{1}{1 + exp(-(\beta_0 + \beta_1 x_1 + \ldots + \beta_p x_p))}$$
 
-The general form of GLMs is:
+GLMs have the following general form:
 
 $$f(x) = g(\beta_0 + \beta_1 x_1 + \ldots + \beta_p x_p)$$
 
-At its core, the function is linear, but the result of the weighted sum is transformed in a non-linear way.
-SHAP can still utilize the coefficients in this case, and the linear explainer can still be used.
-However, it operates not on the level of the prediction, but on the level of the inverse of the function $g$, which is $g^{-1}$.
-In the case of logistic regression, this means that we interpret the results on the level of the log odds.
-Keep in mind that this adds a bit of complexity to the interpretation.
+Even though the function is fundamentally linear, the result of the weighted sum is non-linearly transformed.
+In this case, SHAP can still use the coefficients, and the linear explainer remains applicable.
+However, it operates not on the level of the prediction but on the level of the inverse of the function $g$, or $g^{-1}$.
+For logistic regression, it means that we interpret the results at the level of log odds.
+Remember that this adds some complexity to the interpretation.
 
-Notes on implementation:
+Here are some notes on implementation:
 
 ```{python}
 #| eval: false
 shap.explainers.Linear(model, background)
 ```
 
-- To use the link function, you can set `link` in the explainer. The default is the identity link. Learn more about this in the [Classification Chapter](#classification).
-- The implementation in SHAP also allows accounting for feature correlations when `feature_perturbation` is set to "correlation_dependent".
-However, this will lead to a different "game" and therefore different SHAP values. Read more about that in the [Correlation Chapter](#correlation).
+- To use the link function, set `link` in the explainer. The default is the identity link. Learn more in the [Classification Chapter](#classification).
+- The SHAP implementation allows for accounting for feature correlations when `feature_perturbation` is set to "correlation_dependent".
+However, this will result in a different "game" and thus different SHAP values. Read more in the [Correlation Chapter](#correlation).
 
-## Additive Explainer: For additive models
+## Additive explainer: For additive models
 
 ::: {.callout-note}
-Model-specific explainer that makes use of the fact that features don't interact in additive models.
+This model-specific explainer takes advantage of the lack of feature interaction in additive models.
 :::
 
 The additive explainer is a generalization of the linear explainer.
-Now, we still maintain that no interactions between features are allowed, but we permit the effect of a feature to be non-linear.
+While it still assumes no interactions between features, it allows the effect of a feature to be non-linear.
 This model class is represented as follows:
 
 $$f(x) = \beta_0 + f_1(x_1) + \ldots + f_p(x_p)$$
 
-This is also called a generalized additive model (GAM).
-Each $f_j$ is a (potentially) non-linear function of a feature.
-Typical examples include splines to model a smooth, non-linear relationship between a feature and the target.
-However, we can still utilize the fact that there are no interactions between the features.
+This is also known as a generalized additive model (GAM).
+Each $f_j$ is a potentially non-linear function of a feature.
+Examples include splines to model a smooth, non-linear relationship between a feature and the target.
+However, we can still use the fact that there are no interactions between the features.
 In other words, the additive explainer assumes that the model only has first-order effects.
 
-How does the knowledge of additivity (absence of interactions) help with the computation of SHAP values?
-It actually helps a lot.
-When considering marginal contributions and coalitions, an absence of interaction means that the effect of a feature values on the prediction is independent of the features already in the coalition.
-The marginal contribution of a feature is always the same.
-Thus, to compute the SHAP values of a feature, it's sufficient to add it to just one coalition, which could be the coalition where all other features are absent, for example.
-This means we require exactly $(p+1) \cdot n_{bg}$ calls to the model, where $n_{bg}$ represents the size of the background data, or more specifically, the amount we sample from it.
-The SHAP value for feature $X_j$ can be computed as:
-
+How does the absence of interaction (additivity) assist with the computation of SHAP values?
+It helps significantly.
+When considering marginal contributions and coalitions, an absence of interaction means that the effect of a feature value on the prediction is independent of the features already in the coalition.
+The marginal contribution of a feature is always constant.
+Thus, to compute the SHAP values of a feature, it's enough to add it to just one coalition, for example, the coalition where all other features are absent.
+This means we require exactly $(p+1) \cdot n_{bg}$ calls to the model, where $n_{bg}$ represents the size of the background data, or specifically, the amount we sample from it.
+The SHAP value for feature $X_j$ can be computed as follows:
 $$\phi^{(i)}_j = f(x_j^{(i)}, \tilde{x}_{-j}^{(i)}) -  \frac{1}{n_{bg}} \sum_{i=1}^n f(x_j, \tilde{x}_{-j}^{(i)}),$$
 
-where $\tilde{x}$ comes from the background data.
-This formula is similar to the linear explainer, where we have $\phi^{(i)}_j = \beta_j x_j - \frac{1}{n_{bg}} \sum_{i=1}^{n_{bg}} \beta_j \tilde{x}_j^{(i)}$.
-The first term represents the effect of feature value $x_j$, while the second part centers it at the expected effect of feature $X_j$.
-However, since we have different models (linear versus additive), we need to make different assumptions about the shape of the effect.
+Here, $\tilde{x}$ is derived from the background data.
+This equation is similar to the one used in the linear explainer, where $\phi^{(i)}_j = \beta_j x_j - \frac{1}{n_{bg}} \sum_{i=1}^{n_{bg}} \beta_j \tilde{x}_j^{(i)}$.
+The first term denotes the effect of feature value $x_j$, while the second term centers it at the expected effect of feature $X_j$.
+However, different assumptions about the shape of the effect are required due to the use of different models (linear versus additive).
 
-Similar to the linear explainer, the additive explainer can also be extended to non-linear link functions:
+Like the linear explainer, the additive explainer can also be extended to non-linear link functions:
 
 $$f(x) = g(\beta_0 + f_1(x_1) + \ldots + f_p(x_p))$$
 
-If a link function is used, the interpretation is again on the linear predictor level, which is not on the scale of the prediction but on the inverse of the link function $g^{-1}$.
+When a link function is used, interpretation happens at the level of the linear predictor, which isn't on the scale of the prediction but on the inverse of the link function $g^{-1}$.
 
-Implementation details:
+The implementation details are as follows:
 
 ```{python}
 #| eval: false
 shap.explainers.Additive
 ```
-- Only compatible with Tabular Masker.
-- Can be combined with clustered features.
+- It is only compatible with the Tabular Masker.
+- Can be used in conjunction with clustered features.
 
-## Kernel Explainer: The deprecated OG[^og-meaning]
+## Kernel explainer: The deprecated original
 
-Kernel SHAP works by sampling coalitions and estimating the SHAP values with a weighted linear regression.
+The Kernel SHAP method estimates the SHAP values by sampling coalitions and conducting a weighted linear regression.
 
 ::: {.callout-note}
 
-## Kernel Explainer
+## Kernel explainer
 
-The Kernel Explainer is no longer widely used in SHAP. It's still available, but the Permutation Explainer is a much better choice. This section remains primarily for historical reasons.
-The Kernel explainer was the original implementation of SHAP, proposed in @lundberg2017unified, emphasizing connections to other attribution methods like LIME [@ribeiro2016should] and DeepLIFT [@shrikumar2017learning].
+The Kernel Explainer is no longer widely used in SHAP, although it's still available. 
+Instead, the Permutation Explainer is now the preferred option. 
+This section remains for historical reasons. 
+The Kernel Explainer was the original SHAP implementation, proposed in @lundberg2017unified, and it drew parallels with other attribution methods such as LIME [@ribeiro2016should] and DeepLIFT [@shrikumar2017learning].
 
 :::
 
-The Kernel explainer consists of five steps:
+The Kernel Explainer comprises five steps:
 
 - Sample coalitions $z_k' \in \{0, 1\}^M, \quad k \in \{1, \ldots, K\}$ (1 = feature present in coalition, 0 = feature absent).
-- Obtain a prediction for each $z_k'$ by first converting $z_k'$ to the original feature space, and then applying model $f: f(h_x(z_k'))$.
-- Compute the weight for each $z_k'$ using the SHAP kernel.
+- Calculate a prediction for each $z_k'$ by converting $z_k'$ to the original feature space and then applying model $f: f(h_x(z_k'))$.
+- Determine the weight for each $z_k'$ using the SHAP kernel.
 - Fit a weighted linear model.
 - Return SHAP values $\phi^{(i)}_j$, which are the coefficients from the linear model.
 
-We can create a random coalition by repeatedly flipping a coin until we have a chain of 0's and 1's.
-For example, the vector (1,0,1,0) represents a coalition of the first and third features.
+A random coalition is created by repeatedly flipping a coin until we have a sequence of 0's and 1's.
+For instance, the vector (1,0,1,0) denotes a coalition of the first and third features.
 The K sampled coalitions become the dataset for the regression model.
 The target for the regression model is the prediction for a coalition.
-("Hold on!," you say, "The model has not been trained on these binary coalition data and cannot make predictions for them.")
-To transform coalitions of feature values into valid data instances, we need a function $h_x(z')=z$ where $h_x:\{0,1\}^M\rightarrow\mathbb{R}^p$.
-The function $h_x$ maps 1's to the corresponding value from the instance x that we want to mask, and 0 for which to keep from the original instance.
+("Wait a minute!," you might say, "The model hasn't been trained on these binary coalition data and thus can't make predictions for them.")
+To convert coalitions of feature values into valid data instances, we need a function $h_x(z')=z$ where $h_x:\{0,1\}^M\rightarrow\mathbb{R}^p$.
+The function $h_x$ maps 1's to the corresponding value from the instance x that we wish to explain and 0's to values from the original instance.
 
-To attain SHAP-compliant weighting, Lundberg et al. propose the SHAP kernel:
+For SHAP-compliant weighting, Lundberg et al. propose the SHAP kernel:
 $$\pi_{x}(z')=\frac{(M-1)}{\binom{M}{|z'|}|z'|(M-|z'|)}$$
+Here, M represents the maximum coalition size, and $|z'|$ signifies the number of features present in instance z'.
+Lundberg and Lee illustrate that using this kernel weight for linear regression yields SHAP values.
+LIME, a method that functions by fitting local surrogate models, operates similarly to Kernel SHAP.
+Were you to employ the SHAP kernel with LIME on the coalition data, LIME would also generate SHAP values!
 
-Here, M is the maximum coalition size and $|z'|$ represents the number of present features in instance z'.
-Lundberg and Lee demonstrate that linear regression with this kernel weight results in SHAP values.
-LIME, an interpretation method that works by fitting local surrogate models, works similar to Kernel SHAP.
-If you were to use the SHAP kernel with LIME on the coalition data, LIME would also estimate SHAP values!
+## More strategic sampling of coalitions
 
-<!-- Sampling trick -->
-We can be more strategic about the sampling of coalitions:
-The smallest and largest coalitions account for most of the weight.
-By allocating some of the sampling budget K to include these high-weight coalitions instead of random sampling, we can obtain better SHAP value estimates.
-We begin with all possible coalitions containing 1 and M-1 features, resulting in a total of 2M coalitions.
-If there is enough budget remaining (current budget is K - 2M), we can include coalitions featuring 2 and M-2 elements, and so on.
-For the remaining coalition sizes, we sample using readjusted weights.
+We can adopt a more strategic approach to sampling coalitions:
+The smallest and largest coalitions contribute most to the weight.
+By allocating a portion of the sampling budget K to include these high-weight coalitions, as opposed to random sampling, we can achieve better SHAP value estimates.
+We start with all possible coalitions containing 1 and M-1 features, resulting in a total of 2M coalitions.
+If the budget permits (current budget is K - 2M), we can include coalitions featuring 2 and M-2 elements, and so on.
+For the remaining coalition sizes, we sample using recalibrated weights.
 
+## Building a weighted linear regression model
 
-<!-- Linear Model -->
-We have the data, the target, and the weights;
-everything we need to build our weighted linear regression model:
+We possess the data, the target, and the weights; everything necessary to construct our weighted linear regression model:
 
 $$g(z')=\phi_0+\sum_{j=1}^M\phi^{(i)}_jz_j'$$
 
@@ -358,99 +343,96 @@ We train the linear model g by optimizing the following loss function L:
 
 $$L(f,g,\pi_{x})=\sum_{z'\in{}Z}(f(h_x(z'))-g(z'))^2\pi_{x}(z')$$
 
-where Z is the training data.
-This is the familiar sum of squared errors that we typically optimize for linear models.
+Here, Z is the training data.
+This equation represents the familiar sum of squared errors that we typically optimize for linear models.
 The estimated coefficients of the model, the $\phi^{(i)}_j$'s, are the SHAP values.
 
-Since we are in a linear regression setting, we can also make use of standard tools for regression.
-For example, we can add regularization terms to make the model sparse.
-If we add an L1 penalty to the loss L, we can create sparse explanations.
+As we are in a linear regression context, we can utilize standard tools for regression.
+For instance, we can incorporate regularization terms to make the model sparse.
+By adding an L1 penalty to the loss L, we can create sparse explanations.
 
 Implementation details in `shap`:
 
-- Actually, regularization is used, which offers the advantage of reducing variance and noise, but the drawback of introducing bias to the SHAP value estimates.
-- The permutation explainer is better optimized.
-- The kernel explainer has become more or less obsolete and has been replaced by the permutation explainer.
+- Regularization is employed, which helps reduce variance and noise, but introduces bias to the SHAP value estimates.
+- The permutation explainer is more efficiently optimized.
+- The kernel explainer has been largely superseded by the permutation explainer.
 
-## Tree Explainer: For tree-based models
+## Tree Explainer: Designed for tree-based models
 
 ::: {.callout-note}
 ## Tree Explainer
 
-An explainer specific to tree-based models like decision trees, random forests, and gradient boosted trees.
+This explainer is specific to tree-based models such as decision trees, random forests, and gradient boosted trees.
 :::
 
-The Tree Explainer is one of the reasons why SHAP is so popular.
-While other explainers can be relatively slow, the Tree Explainer is a fast, model-specific estimator designed for tree-based models.
-The explainer works for decision trees, random forests, and gradient boosted trees such as LightGBM and XGBoost.
-Especially for tabular data, boosted trees are considered state-of-the-art, and having a fast way to compute SHAP values puts the method in a favorable position.
-Additionally, it is an exact method, meaning you obtain the correct SHAP values instead of just an estimate, at least with respect to the coalitions.
-It remains an estimate with respect to the background data, since the background data itself is a sample.
+The Tree Explainer contributes significantly to the popularity of SHAP.
+While other explainers may be relatively slow, the Tree Explainer is a fast, model-specific estimator designed for tree-based models.
+It is compatible with decision trees, random forests, and gradient boosted trees such as LightGBM and XGBoost.
+Boosted trees are particularly effective for tabular data, and having a quick method to compute SHAP values positions the technique advantageously.
+Moreover, it is an exact method, meaning you obtain the correct SHAP values rather than mere estimates, at least with respect to the coalitions.
+It remains an estimate in relation to the background data, given that the background data itself is a sample.
 
-
-The Tree Explainer leverages the tree structure to compute SHAP values, and there are two versions: Interventional and Tree-Path Dependent Explainers.
+The Tree Explainer utilizes the tree structure to compute SHAP values, and it comes in two versions: Interventional and Tree-Path Dependent Explainers.
 
 ### Interventional Tree Explainer
 
-The Interventional Explainer computes the usual SHAP values, but leverages the tree structure for the computation.
-The estimation works by recursively going through the tree(s).
-Here is a rough blueprint of the algorithm for one data point to be explained and one background data point.
-Keep in mind that this explanation is for a single tree; the approach for an ensemble will be discussed later.
+The Interventional Explainer calculates the usual SHAP values but takes advantage of the tree structure for the computation.
+The estimation is performed by recursively traversing the tree(s).
+Here is a basic outline of the algorithm for explaining one data point and one background data point.
+Bear in mind that this explanation applies to a single tree; the strategy for an ensemble will be discussed subsequently.
+- We start with a background data point, which we'll refer to as z, and the data point we want to explain, known as x.
+- The process begins at the top of the tree, tracing the paths for x and z.
+- However, we don't just trace the paths of x and z as they would merely terminate at two or possibly the same leaf nodes.
+- Instead, at each crossroad, we ask: what if the decision was based on the feature values of x and z?
+- If they differ, both paths are pursued.
+- This combined path tracing is done recursively.
+- Ah, recursion — always a mind boggler! 
+- Upon reaching the terminal nodes, or leaves, predictions from these leaf nodes are gathered and weighted based on how many feature differences exist in relation to x and z.
+- These weights are recursively combined.
 
-- You have a background data point, let's call it z, and the data point to explain, let's call it x.
-- Now, the procedure starts at the top of the tree and begins following the paths for x and z.
-- However, we don't just follow the paths of x and z, because they would simply end up in two (or even the same) leaf nodes.
-- Instead, at each conjunction, the procedure asks: what if I made the decision based on the feature values of x, and what if it was based on z?
-- If both differ, both paths are followed.
-- This hybrid following of the paths occurs recursively.
-- Ah, recursion – always messes with my brain!
-- Upon reaching the end nodes, also called leaves, the predictions from those leaf nodes are taken and weighted. The weight involves the count of how many features differ with respect to x and z.
-- These weights are combined recursively.
+Here's a simpler explanation: 
+We form a coalition of feature values, which includes present players (feature values from x) and absent players (feature values from z).
+Despite there being $2^p$ coalitions, the tree only allows a limited number of possible predictions.
+Instead of starting with all coalitions, we can reverse the process and explore the tree paths to determine which coalitions would yield different predictions since many feature changes may have no impact on the prediction.
+The tricky part, which is addressed in SHAP, is accurately weighting and combining predictions based on the altered features.
 
-Another, more intuitive explanation:
-A coalition of feature values is made up of present players (feature values taken from x) and absent players (feature values taken from z).
-While there are $2^p$ coalitions, there's only a limited amount of possible predictions in a tree.
-Instead of starting with all coalitions, we can invert the process and examine the tree paths to determine which coalitions would result in different predictions, as many feature changes may not affect the prediction at all.
-The challenging aspect that the procedure, also implemented in SHAP, addresses is accurately weighting and combining predictions based on the features that were changed.
+For further details, refer to p.25, Algorithm 3 of [this paper](https://arxiv.org/abs/1905.04610) by @lundberg2020local.
 
-For more details, refer to p.25, Algorithm 3 of [this paper](https://arxiv.org/abs/1905.04610) by @lundberg2020local.
+For ensembles of trees, we can simply average the SHAP values, with each tree's prediction contribution influencing the final ensemble's weight.
+Thanks to the additivity of SHAP values, the Shapley values of a tree ensemble are the (weighted) average of the individual trees' Shapley values.
 
-For ensembles of trees, we can simply average the SHAP values, weighted by the contribution of each tree's prediction in the final ensemble.
-Due to the additivity property of SHAP values, the Shapley values of a tree ensemble are the (weighted) average of the Shapley values of the individual trees.
+The complexity of this Tree explainer (over a background set of size $n_{bg}$) is $\mathcal{O}(T n_{bg} L)$, where $T$ is the number of trees and $L$ is the maximum number of leaves in any tree.
 
-The complexity of this Tree explainer (over a background set of size $n_{bg}$) is $\mathcal{O}(T n_{bg} L)$, where $T$ is the number of trees and $L$ is the maximum number of leaves (terminal nodes) in any of the trees.
+## Tree path dependent explainer
 
-### Tree Path Dependent Explainer
-
-There is an alternative method for computing SHAP values for trees.
-This method is more of historical interest, as it is no longer the default approach and has some issues.
-This second approach depends on the tree paths and requires no background data.
-While the first approach to Tree SHAP assumes the features $X_j$ and $X_{-j}$ to be independent, or at least combined as if they were independent, this other approach is closer to the conditional expectation $E_{X_j|X_{-j}}(f(x)|x_j)$.
-However, it is not precisely that [@aas2021explaining], so its exact nature is somewhat unclear.
-Since the features are not modified in a marginal but conditional manner, the resulting SHAP values differ from those obtained using the Interventional Tree Explainer approach.
-They are still valid SHAP values, but by changing the conditioning, it represents a different value function and, therefore, a different game that is played and attributed to the feature values.
-One issue with conditional expectation is that features with no impact on the prediction function f may still receive a non-zero TreeSHAP estimate [@janzing2020feature;@sundararajan2020many]. 
-This can occur when the feature is correlated with another feature that genuinely influences the prediction.
-
-I will provide some intuition on how the Tree-Path Dependent Explainer computes the expected prediction for a single tree, an instance x, and a feature subset S. 
-If we condition on all features, meaning S is the set of all features, then the prediction from the node in which the instance x falls would be the expected prediction. 
-On the other hand, if we do not condition the prediction on any feature, meaning S is empty, we would use the weighted average of predictions from all terminal nodes. 
-If S contains some but not all features, we ignore predictions of unreachable nodes. 
-A node is considered unreachable if the decision path leading to it contradicts values in $x_S$. 
+There's an alternative method for calculating SHAP values for trees.
+This method is mainly of historical interest as it's not the default approach and has certain issues.
+This second method depends on the tree paths and doesn't require background data.
+While the first Tree SHAP method treats features $X_j$ and $X_{-j}$ as either independent or combined as if they were, this alternative method leans more towards the conditional expectation $E_{X_j|X_{-j}}(f(x)|x_j)$.
+Still, it's not precisely that [@aas2021explaining], so its exact nature is somewhat ambiguous.
+Since the features are altered in a conditional rather than marginal manner, the resulting SHAP values vary from those obtained using the Interventional Tree Explainer method.
+Although these are still valid SHAP values, changing the conditioning represents a different value function and subsequently a different game being played and attributed to the feature values.
+One problem with conditional expectation is that features with no effect on the prediction function f may still receive a non-zero TreeSHAP estimate [@janzing2020feature;@sundararajan2020many].
+This can happen when the feature is correlated with another feature that plays a significant role in the prediction.
+I'll provide some insight into how the Tree-Path Dependent Explainer computes the expected prediction for a single tree, an instance x, and a feature subset S. 
+If we condition on all features, which means that S contains all features, the prediction from the node where instance x falls would be the expected prediction. 
+Conversely, if we don't condition the prediction on any feature, meaning S is empty, we use the weighted average of predictions from all terminal nodes. 
+If S includes some, but not all features, we disregard predictions of unreachable nodes. 
+A node is deemed unreachable if the decision path to it contradicts values in $x_S$. 
 From the remaining terminal nodes, we average the predictions weighted by node sizes, which refers to the number of training samples in each node. 
-The mean of the remaining terminal nodes, weighted by the number of instances per node, is the expected prediction for x given S. 
-The challenge is that we must apply this procedure for each possible subset S of the feature values.
+The mean of the remaining terminal nodes, weighted by the number of instances per node, yields the expected prediction for x given S. 
+The challenge lies in applying this procedure for each possible subset S of the feature values.
 
-The basic idea of the path-dependent tree explainer is to push all possible subsets S down the tree simultaneously.
-For each decision node, we have to keep track of the number of subsets.
+The fundamental concept of the path-dependent tree explainer is to push all possible subsets S down the tree simultaneously.
+For each decision node, we need to keep track of the number of subsets.
 This depends on the subsets in the parent node and the split feature.
-For example, when the first split in a tree is on feature x3, all subsets that contain feature x3 will go to one node (the one where x goes).
-Subsets that do not contain feature x3 go to both nodes with reduced weight.
-Unfortunately, subsets of different sizes have different weights.
-The algorithm has to keep track of the overall weight of the subsets in each node.
+For instance, when the first split in a tree is on feature x3, all subsets containing feature x3 will go to one node (the one where x goes).
+Subsets that do not include feature x3 go to both nodes with reduced weight.
+Regrettably, subsets of different sizes carry different weights.
+The algorithm must keep track of the cumulative weight of the subsets in each node.
 This complexity complicates the algorithm.
 
-### Implementation details:
+## Implementation details
 
 ```{python}
 #| eval: False
@@ -458,59 +440,58 @@ shap.explainers.Tree(model, data, feature_pertubation='interventional')
 shap.explainers.Tree(model, feature_pertubation='tree_path_dependent')
 ```
 
-- Implemented in C++ for increased speed.
-- Supports tree-based models: XGBoost, LightGBM, CatBoost, PySpark, and most tree-based models found in scikit-learn, such as RandomForestRegressor.
-- Offers two feature_perturbation methods to choose from: `interventional` and `tree_path_dependent`.
-- Option `tree_path_dependent` requires no background data.
+- The implementation is in C++ for enhanced speed.
+- It supports tree-based models like XGBoost, LightGBM, CatBoost, PySpark, and most tree-based models found in scikit-learn, such as RandomForestRegressor.
+- There are two feature_perturbation methods available: `interventional` and `tree_path_dependent`.
+- The `tree_path_dependent` option requires no background data.
 
-## Gradient Explainer: For gradient-based models
+## Gradient explainer: For gradient-based models
 
 ::: {.callout-note}
 
-## Gradient Explainer
+## Gradient explainer
 
-The Gradient Explainer is a model-specific explainer designed for gradient-based models, such as neural networks, and can be applied to both tabular and image data.
+The Gradient Explainer is a model-specific explainer tailored for gradient-based models, such as neural networks, and can be applied to both tabular and image data.
 
 :::
 
-Several models are gradient-based, including many neural networks.
+Many models, including several neural networks, are gradient-based.
 This means that we can compute the gradient of the loss function with respect to the model input.
-When we can compute the gradient with respect to the input, this information can be used to calculate SHAP values more efficiently.
+When we can compute the gradient with respect to the input, we can use this information to calculate SHAP values more efficiently.
 
-Gradient SHAP is defined as the expected value of the gradients x (inputs - baselines).
+Gradient SHAP is defined as the expected value of the gradients times the inputs minus the baselines.
 
 $$\text{GradientShap}(x) = \mathbb{E}\left((x_j - \tilde{x}_j) \cdot \frac{\delta g(\tilde{x} + \alpha \cdot (x - \tilde{x}))}{\delta x_j}
 d\alpha\right)$$
 
-Estimated with:
+It's estimated with:
 
 $$\text{GradientShap}(x) = \frac{1}{n_{bg}}\sum_{i=1}^{n_{bg}} (x_j - \tilde{x}_j^{(i)}) \cdot \frac{\delta g(\tilde{x} + \alpha_i \cdot (x - \tilde{x}^{(i)}))}{\delta x_j} d\alpha$$
-
 So, what does this formula do?
-For feature value $x_j$, this explainer iterates through the background data of size $n_{bg}$ and computes two terms:
-- The distance between the data point to explain $x_j$ and the background sample.
-- The gradient $g$ of the prediction with respect to the j-th feature, but not at the position of the point to explain, rather at a random location of feature $X_j$ between the data point of interest and background data. The $\alpha_i$ is uniformly sampled from $[0,1]$.
+For a given feature value $x_j$, this explainer cycles through the background data of size $n_{bg}$, computing two terms:
+- The distance between the data point to be explained $x_j$ and the sample from the background data.
+- The gradient $g$ of the prediction with respect to the j-th feature, calculated not at the position of the point to be explained, but at a random location of feature $X_j$ between the data point of interest and the background data. The $\alpha_i$ is uniformly sampled from $[0,1]$.
 
-These terms are multiplied and are averaged over the background data to approximate SHAP values.
-There is a connection between the Gradient Explainer and a method called Integrated Gradients [@sundararajan2017axiomatic].
-Integrated Gradients is a feature attribution method that is also based on gradients and, as an explanation, outputs the integrated path of the gradient with respect to some reference point.
-The difference between Integrated Gradients and SHAP values is that Integrated Gradients have just one reference point, while Shapley values work with a background data set.
-The gradient explainer can be seen as an adaptation of Integrated Gradients, where instead of a single reference point, we reformulate the integral as an expectation and estimate that expectation with the background data.
+These terms are multiplied and averaged over the background data to approximate SHAP values.
+There's a connection between the Gradient Explainer and a method called Integrated Gradients [@sundararajan2017axiomatic].
+Integrated Gradients is a feature attribution method also based on gradients that outputs the integrated path of the gradient with respect to a reference point as an explanation.
+The difference between Integrated Gradients and SHAP values is that Integrated Gradients use a single reference point, while Shapley values utilize a background data set.
+The gradient explainer can be viewed as an adaptation of Integrated Gradients, where instead of a single reference point, we reformulate the integral as an expectation and estimate that expectation with the background data.
 
 Integrated gradients are defined as follows:
 
 $$IG(x) = (x_j - \tilde{x}_j) \cdot \int_{\alpha = 0}^1 \frac{\delta g(\tilde{x} + \alpha \cdot (x - \tilde{x}))}{\delta x_j} d\alpha$$
 
-These are the terms of the equation:
+These are the components of the equation:
 
 - $x$: the data point to be explained.
-- $\tilde{x}$: the reference data point. For images, this can be a completely black or gray image.
+- $\tilde{x}$: the reference data point. For images, this could be a completely black or gray image.
 - $g$: the gradient function of the gradient-based model with respect to the input feature $x_j$ in our case.
 - The integral is along the path between $x_j$ and $\tilde{x}_j$.
 
-The Gradient Explainer modifies this concept by using more than one data point as a reference and integrating over an entire background dataset.
+The Gradient Explainer extends this concept by using multiple data points as references and integrating over an entire background dataset.
 
-Implementation details in `shap`:
+Here are the implementation details in `shap`:
 
 ```{python}
 #| eval: False
@@ -518,85 +499,81 @@ shap.GradientExplainer(model, data)
 ```
 
 - Compatible with PyTorch, TensorFlow, and Keras.
-- Data can be provided as numpy arrays, pandas DataFrames, or torch.tensors.
+- Data can be numpy arrays, pandas DataFrames, or torch.tensors.
 - The gradient explainer is highly versatile, allowing the use of gradients based on parameters, which enables SHAP values to attribute predictions to layers within a neural network. See [this example](https://shap.readthedocs.io/en/latest/example_notebooks/image_examples/image_classification/Explain%20an%20Intermediate%20Layer%20of%20VGG16%20on%20ImageNet%20(PyTorch).html?highlight=Gradient).
 
-## Deep Explainer: For neural networks
+## Deep explainer: for neural networks
 
 The Deep Explainer is specifically designed for deep neural networks [@chen2021explaining].
-This makes the Deep Explainer more model-specific compared to the Gradient Explainer, which, in theory, works for all gradient-based methods.
-
+This makes the Deep Explainer more model-specific compared to the Gradient Explainer, which can be applied to all gradient-based methods in theory.
 The Deep Explainer is inspired by the DeepLIFT algorithm [@shrikumar2017learning], an attribution method for deep neural networks.
-Thus, to understand how the Deep Explainer works, we first need to discuss DeepLIFT.
-DeepLIFT is an explanation method for feature attribution in neural networks. 
-It works by computing the contribution value $\Delta f$ for each input feature $x_j$ by comparing the prediction for $x$ and the prediction for a reference point $z$. 
-The reference point is chosen by the user and is meant to be an "uninformative" data point, such as a black or gray image for images. 
-So, the difference to be explained is $\Delta f(x) - \Delta f(\tilde{x})$. 
-The attributions provided by DeepLIFT are called contribution scores $C_{\Delta x_j \Delta f}$ and add up to the total difference: $\sum_{j=1}^n C_{\Delta x_j \Delta f} = \Delta f$. 
-This is already similar to what SHAP values do. 
-DeepLIFT doesn't require the $x_j$ to be the inputs to the model; they can be any neuron layer along the way.
-Not only is that a perk of DeepLIFT, but it is also an essential ingredient, since DeepLIFT is designed to backpropagate the contributions through the neural network, layer-by-layer.
-DeepLIFT employs the concept of "multipliers," which are defined as follows:
+To understand how the Deep Explainer works, we first need to discuss DeepLIFT.
+DeepLIFT explains feature attribution in neural networks by calculating the contribution value $\Delta f$ for each input feature $x_j$, comparing the prediction for $x$ with the prediction for a reference point $z$.
+The user chooses the reference point, which is usually an "uninformative" data point, such as a blank image for image data.
+The difference to be explained is $\Delta f(x) - \Delta f(\tilde{x})$.
+DeepLIFT’s attributions, called contribution scores $C_{\Delta x_j \Delta f}$, add up to the total difference: $\sum_{j=1}^n C_{\Delta x_j \Delta f} = \Delta f$.
+This process is similar to how SHAP values are calculated.
+DeepLIFT does not require $x_j$ to be the model inputs; they can be any neuron layer along the way.
+This feature is not only a perk of DeepLIFT but also a vital aspect, as DeepLIFT is designed to backpropagate the contributions through the neural network, layer by layer.
+DeepLIFT employs the concept of "multipliers," defined as follows:
 
 $$m_{\Delta x \Delta f} = \frac{C_{\Delta x \Delta f}}{\Delta x}$$
 
 A multiplier represents the contribution of $\Delta x$ to $\Delta f$ divided by $\Delta x$.
-This multiplier is a finite distance, similar to a partial derivative ($\frac{\partial f}{\partial x}$) when $\Delta x$ approaches a very small value.
-Similarly to derivatives, these multipliers can be backpropagated through the neural network by utilizing the chain rule: $m_{\Delta x_j \Delta f} = \sum_{j=1}^n m_{\Delta x_j \Delta y_j} m_{\Delta y_j \Delta f}$, where x and y denote two consecutive layers of the neural network.
-DeepLIFT then goes on to define a list of rules for how the multipliers can be backpropagated for different components of the neural networks. 
-For example, DeepLIFT uses the linear rule for linear units, the "rescale rule" for nonlinear transformations like ReLU and sigmoid, and so on. 
-Positive and negative attributions are separated, which is important for backpropagating through nonlinear units.
+Like a partial derivative ($\frac{\partial f}{\partial x}$) when $\Delta x$ approaches a very small value, this multiplier is a finite distance.
+Like derivatives, these multipliers can be backpropagated through the neural network using the chain rule: $m_{\Delta x_j \Delta f} = \sum_{j=1}^n m_{\Delta x_j \Delta y_j} m_{\Delta y_j \Delta f}$, where x and y are two consecutive layers of the neural network.
+DeepLIFT then defines a set of rules for backpropagating the multipliers for different components of the neural networks, using the linear rule for linear units, the "rescale rule" for nonlinear transformations like ReLU and sigmoid, and so on.
+Positive and negative attributions are separated, which is crucial for backpropagating through nonlinear units.
 
-However, DeepLIFT does not yield SHAP values. 
-Deep SHAP is an adaptation of the DeepLIFT procedure to produce SHAP values. 
-Here are the changes that the Deep explainer incorporates:
+However, DeepLIFT does not yield SHAP values.
+Deep SHAP is an adaptation of the DeepLIFT procedure to produce SHAP values.
+Here are the changes the Deep Explainer incorporates:
 
-- Instead of using a single reference point, Deep Explainer uses background data, which consists of a set of reference points.
+- The Deep Explainer uses background data, a set of reference points, instead of a single reference point.
 - The multipliers are redefined in terms of SHAP values, which are backpropagated instead of the original DeepLIFT multipliers. Informally:  $m_{\Delta x_j \Delta f} = \frac{\phi}{x_j - \mathbb{E}(X_j)$.
-- Another interpretation of Deep Explainer: Deep Explainer computes the SHAP values in smaller parts of the network first and combines those to obtain SHAP values for the entire network, explaining the prediction from the input, similar to what we are used to with SHAP.
+- Another interpretation of Deep Explainer: it computes the SHAP values in smaller parts of the network first and combines those to obtain SHAP values for the entire network, explaining the prediction from the input, similar to our usual understanding of SHAP.
 
 ::: {.callout-note}
 
-For DeepExplainer, how large should the background data be?
+How large should the background data be for DeepExplainer?
 [According to the SHAP author](https://shap-lrjball.readthedocs.io/en/latest/generated/shap.DeepExplainer.html#shap.DeepExplainer.shap_values), 100 is good, and 1000 is very good.
 
 :::
 
-Implementation details in `shap`:
+Implementation details for the `shap` library:
 
-- Compatible with PyTorch and TensorFlow/Keras
-- Supports only pre-implemented neural network operations
-- Consequently, incorporating unusual or custom operations may result in errors from the Deep Explainer
-- Complexity increases linearly with the number of background data rows
+- Compatible with PyTorch and TensorFlow/Keras.
+- Supports only pre-implemented neural network operations.
+- Using unusual or custom operations may result in errors from the Deep Explainer.
+- Complexity increases linearly with the number of background data rows.
+## Partition Explainer: For hierarchically grouped data
+The Partition Explainer is built on a hierarchy of features, similar to tree-based structures like hierarchical clustering.
+It iterates through this hierarchy recursively.
 
-## Partition Explainer: for hierarchically grouped data
-The partition explainer is based on a hierarchy of features, similar to a tree-based hierarchy, such as hierarchical clustering.
-The partition explainer iterates recursively through this hierarchy tree.
+How is the hierarchy interpreted?
+Consider a tree of depth 1 with multiple splits, for example, four groups.
+Initially, we compute four SHAP values, one for each group.
+This implies that features grouped together behave as a single entity.
 
-How can we interpret the hierarchy?
-Let's consider a tree of depth 1, with multiple splits instead of just one; say, four groups.
-At first, we would compute four SHAP values, one for each group.
-This means that features bundled together in a group act as a single player.
+The SHAP value for each group can then be attributed to its individual features.
+Alternatively, if the hierarchy further splits into subgroups, we attribute the SHAP value at the subgroup level.
 
-Then, within each group, the SHAP value for that group can be attributed to the individual features.
-Alternatively, if the hierarchy involves splitting into further subgroups, we would attribute the SHAP value again at the subgroup level.
-
-How is this useful?
-Sometimes, we are not concerned with individual features but rather a group of features.
-Or, multiple feature columns may encode a similar concept, and we are interested in the attribution of the concept, not the individual features.
-For example, let's say we predict the yield of fruit trees, and we have different measurements of soil humidity at various depths.
-We might not care about the individual attributions to different depths but instead have a SHAP value attributed to the general humidity of the soil.
-This example also hints at another problem that the partition explainer can solve: handling correlated features by placing them in a cluster.
-As further discussed in the [correlation chapter](#correlation), there is an issue when computing SHAP values for a feature that is strongly correlated with another feature.
-This issue is related to extrapolation.
-However, by bundling correlated features together, we can avoid this problem.
-Results are not actually SHAP values, but Owen values.
+Why is this useful?
+There are instances where we are more interested in a group of features rather than individual ones.
+For example, multiple feature columns may represent a similar concept, and we're interested in the attribution of the concept, not the individual features.
+Let's say we're predicting the yield of fruit trees, and we have various soil humidity measurements at different depths.
+We might not care about the individual attributions to different depths but instead want a SHAP value attributed to the overall soil humidity.
+This scenario also highlights another problem that the Partition Explainer can address: handling correlated features by clustering them together.
+As discussed in the [correlation chapter](#correlation), there's an issue when computing SHAP values for a feature that's strongly correlated with another.
+This issue relates to extrapolation.
+However, by grouping correlated features together, we can avoid this issue.
+The results are not SHAP values but Owen values.
 Owen values are another solution to the attribution problem in cooperative games.
-They are similar to SHAP values, but assigned to groups of features instead of individual features.
-Owen values only allow permutations that are defined by some kind of coalition structure.
-Otherwise, the computation is exactly the same as SHAP values, except that only the permissible coalitions are iterated.
+They are similar to SHAP values but assigned to feature groups instead of individual features.
+Owen values only allow permutations defined by a coalition structure.
+The computation is identical to SHAP values, except that only the allowable coalitions are iterated.
 
-Another use case for partition explainers is image inputs, where the image pixels can be bundled together into larger regions.
+Partition Explainers also prove useful for image inputs, where image pixels can be grouped into larger regions.
 
 Implementation details:
 
@@ -605,10 +582,10 @@ Implementation details:
 shap.PartitionExplainer(model, partition_tree=None)
 ```
 
-- A required input is a partition tree, which is a hierarchical clustering of the input features and should have a format similar to `scipy.cluster.hierarchy`, essentially a matrix.
-- Alternatively, you can use `masker.clustering` to leverage a built-in feature clustering in SHAP, which will be used by default when `partition_tree=None`.
+- A partition tree, a hierarchical clustering of the input features, is a required input.
+It should follow a format similar to `scipy.cluster.hierarchy`, essentially a matrix.
+- Alternatively, you can use `masker.clustering` to utilize a built-in feature clustering in SHAP, which will be the default when `partition_tree=None`.
 
+[^interactions]: While you can generally add interactions to a linear model, this option is not available for the Linear Explainer.
 
-[^interactions]: You can generally add interactions to a linear model, but in the case of the linear explainer, this option is not available.
-
-[^og-meaning]: OG referring to the original Explainer as proposed in the paper.
+[^og-meaning]: OG refers to the original Explainer as proposed in the paper.

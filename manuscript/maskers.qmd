@@ -10,26 +10,24 @@ The definition of feature values can be flexible, but we'll discuss that later.
 
 SHAP values are computed by considering many possible contributions.
 Forming a coalition of features means some features are absent.
-In games, playing with fewer players is often straightforward, but for machine learning, simulating the absence of feature values requires more effort.
-
+In games, playing with fewer players is straightforward, but for machine learning, simulating the absence of feature values requires more effort.
 This problem is solved using maskers.
-A masker is a function that takes in a data instance and a binary mask, which indicates which inputs to mask.
-The output is the same data point with designated inputs masked.
 
-Maskers employ different strategies for masking, depending on the input data type (tabular, text, or image data).
+A masker is a function that takes a data instance and a binary mask, indicating which inputs to mask.
+The output is the same data point with the designated inputs masked.
+Depending on the input data type (tabular, text, or image data), maskers employ different strategies for masking.
 However, they all take a feature values input and a binary vector.
-This binary vector, like [0,1,...,1], is also called a binary mask and indicates which feature values to mask (the 1s) and which not to (0s).
+This binary vector, like [0,1,...,1], also known as a binary mask, indicates which feature values to mask (the 1s) and which not to (0s).
 For non-masked features, the feature vector position remains untouched.
 For the masked or absent features (1s), feature values are replaced according to the specific masker used.
 We will explore various maskers in this chapter.
 
 A binary mask can be viewed as a team description, indicating which players participate and which don't.
-- The masker's job is to take a coalition and produce something that can be input into the model.
-- The output can be multiple data points when using background data.
-- The output can be a dataframe of points where the 0's are sampled from the background data.
-- These data points from the masker are then input to the model.
-- The model's predictions are obtained and averaged.
-- A masker can be a function that performs this mapping, or directly an array or pandas.DataFrame, providing a shortcut.
+The masker's job is to take a coalition and produce something that can be input into the model.
+The output can be multiple data points when using background data.
+These data points from the masker are then input to the model.
+The model's predictions are obtained and averaged.
+A masker can be a function that performs this mapping or directly an array or pandas DataFrame, providing a shortcut.
 
 ## Masker for tabular data
 
@@ -47,20 +45,12 @@ Depending on the Explainer, this can involve sampling from the background data o
 
 But which data should you choose as background data?
 In theory, any data matching the number of features could be background data.
-
-A common choice is the training dataset or a specific subset of it.
-In theory, it could also be just one particular data instance.
+A common choice is the training dataset or a subset of it.
+In theory, it could also be a single data instance.
 
 The choice of background data influences the interpretation of SHAP values.
-
-Some examples of what you can do by leveraging the background data:
-
-- Simulate a distribution shift and obtain SHAP values under the shifted data.
-- Analyze how SHAP values differ in different data groups.
-- Explore counterfactual scenarios by setting the background data to a specific scenario.
-- Evaluate the stability of model predictions: By using more extreme background data values, you can study the model's robustness.
-
-Technically, in SHAP, the tabular data is implemented with the Independent masker.
+You can leverage the background data to simulate a distribution shift, analyze how SHAP values differ in different data groups, explore counterfactual scenarios by setting the background data to a specific scenario, or evaluate the stability of model predictions using more extreme background data values.
+Technically, the tabular data in SHAP is implemented with the Independent masker.
 
 ```{python}
 #| eval: false
@@ -68,8 +58,7 @@ masker = shap.maskers.Independent(data=X_train)
 explainer = shap.LinearExplainer(model, masker=masker)
 ```
 
-Here is an illustration of how the Independent masker operates.
-For that, we simulate a background dataset.
+Here is an illustration of how the Independent masker operates, using a simulated background dataset.
 
 ```{python}
 #| warning: false
@@ -96,32 +85,28 @@ Next, we create a masker and apply it to data point (f1=0, f2=0, f3=0).
 #| warning: false
 np.random.seed(2)
 m = shap.maskers.Independent(df, max_samples=3)
-# mask = np.array([1,0,2])
 mask = np.array([1, 0, 1], dtype=np.bool)
 print(m(mask=mask, x=np.array([0, 0, 0])))
 
 mask = np.array([False, False, True])
 print(m(mask=mask, x=np.array([0, 0, 0])))
-
 ```
 
-We have two masks in this example.
-The first mask removes features f1 and f3, retaining only the feature values f1=0 and f3=0 from x, and drawing f2 from the background data.
-In the second example, only feature f3 is retained.
+In this example, we have two masks.
+The first mask eliminates features f1 and f3, keeping only the feature values f1=0 and f3=0 from x, and drawing f2 from the base data.
+In the second instance, only feature f3 is preserved.
 
-Another way to define masks for tabular data is through integer vectors.
-These vectors indicate which feature (based on column index) to mask.
+Masks for tabular data can also be defined through integer vectors that indicate which feature (based on column index) to mask.
 
-### Partition Masker
+## Partition masker
 
-Alternatively, the Partition masker takes not only the background dataset but also a hierarchical structure of the data.
-The partition masker is used in combination with the [Partition explainer](#estimation) and includes a max_samples argument controlling the number of data points sampled from the background data to compute SHAP values.
-The clustering type argument specifies the partitioning method, which is a distance metric for clustering feature values.
-This can either be a string representing the correlation metric, with the default being "correlation" which is generally recommended by the SHAP developers.
-Any distance function found in the `scipy.spatial.distance.pdist` module can be used, such as "cosine", "euclidean", or "chebyshev".
-Alternatively, a numpy array defining the clusters directly can be provided.
+The Partition masker uses both the base dataset and a hierarchical structure of the data.
+It is deployed with the [Partition explainer](#estimation) and includes a max_samples argument that controls the number of data points selected from the base data to compute SHAP values.
+The clustering type argument specifies the partitioning method, a distance metric for clustering feature values.
+This can either be a string representing the correlation metric (default is "correlation"), or any distance function from the `scipy.spatial.distance.pdist` module, such as "cosine", "euclidean", or "chebyshev".
+Alternatively, a numpy array defining the clusters directly can also be provided.
 
-The second option using the array should not be overlooked, as it can be very useful when providing your own feature groupings.
+The second option using the array is worth considering as it can be helpful when providing your own feature groupings.
 
 ## Maskers for text data
 
@@ -129,23 +114,22 @@ The second option using the array should not be overlooked, as it can be very us
 Maskers for text replace tokens with a user-defined token.
 :::
 
-For text data, the input is text, which is often represented as tokens within models, particularly neural networks.
+For text data, the input is often represented as tokens within models, especially neural networks.
 These tokens can be represented by (learned) embeddings, a vectorized representation of a token, or other internal representations such as bag-of-words counts or hand-written rules flagging specific words.
-However, when computing SHAP values, the internal representation is not our concern.
+However, when calculating SHAP values, we are not concerned with the internal representation.
 The "team" consists of the text fed into the model, and the payout is the model output, whether it's a sentiment score or a probability for the next word in a translation task.
 The individual players, which can be characters, tokens, or words, are determined by the user.
-The granularity at which text is divided into smaller units is called tokenization, and the individual units are known as tokens.
+The granularity at which text is divided into smaller units is termed tokenization, and the individual units are known as tokens.
 Tokenization can be performed at various levels, such as by character, subword, word, sentence, paragraph, or even custom methods like using n-grams or stopping at specific characters.
 The choice of tokenization method depends on the goal of the model interpretation.
 
 :::{.callout-tip}
 
-Tokenization by word is often a good first choice for interpretation with SHAP.
+Word tokenization is often a good first choice for interpretation with SHAP.
 
 :::
 
-For the following discussions, let's assume the input is tokenized by word.
-The next question is: How do we represent the "absence" of a word?
+Assuming the input is tokenized by word for the following discussions, the next question is: How do we represent the "absence" of a word?
 This decision is up to the user.
 By default, the word is replaced by an empty string, but it could also be replaced with "..." (which is the default in `shap`) or even a randomly chosen word from background data or based on a grammar tool.
 The chosen method will influence the prediction, as shown in the [text chapter](#text).
@@ -165,7 +149,7 @@ print(m(s=s, mask = [0,0,0,0,0,0]))
 
 ::: {.callout-note}
 
-For images, maskers replace missing pixels with blurred versions or use inpainting techniques.
+For images, maskers substitute missing pixels with blurred versions or employ inpainting techniques.
 
 :::
 Similar to text data, the representation of an image for SHAP can be independent of its representation for the model, as long as there is a mapping between the SHAP version and the model version to calculate the marginal contributions.
