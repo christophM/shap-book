@@ -120,8 +120,8 @@ This procedure is actually it's own game, called Owen's game and we get Owen val
 Owen values are tightly connect to Shapley values, as we will see in the following example.
 Let's say for the apartment example we have the following binary tree of correlations:
 
-
 ```{mermaid}
+
 graph TB
     A[X]
     S[size, cat, park]
@@ -136,7 +136,9 @@ graph TB
     S --> P
     P --> Q
     P --> R
+
 ```
+
 
 - Cat and size are most strongly correlated.
 - Both are slightly correlated with the park feature.
@@ -195,6 +197,7 @@ Without correlation, marginal and conditional SHAP are the same, because then $P
 If you want to use conditional sampling in `shap`, you can use the Linear explainer with the option `feature_pertubation='correlation_dependent'`.
 The tree explainer has a similar option called `feature_pertubation='tree_path_dependent'` which relies on the splits in underlying tree-based model to make sure that the Monte Carlo samples for SHAP are not extrapolating.
 But I recommend against the tree-path option, since it doesn't actually model the conditional distribution but something in between and doesn't approximate the conditional SHAP values well [@aas2021explaining].
+
 
 Whether a conditional SHAP interpretation is desirable depends on your interpretation goals.
 If your objective is to audit the model, marginal sampling might be more appropriate.
