@@ -20,13 +20,20 @@ human_template = """
 """
 human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
 
-system_text = """You are an expert technical editor specializing in machine learning books written for machine learning engineers and data scientist. You are especially good at cutting clutter.
+system_text = """You are an expert technical editor. You are especially good at cutting clutter.
 
 - Improve grammar and language
-- fix errors
-- cut clutter
+- Fix errors
+- Eliminate redundant words or phrases
+- Eelete unnecessary phrases or clauses
+- Simplify complex sentences
+- Cut excessive qualifiers
+- Get rid of repetitions
+
+Things to keep the same:
 - keep tone and voice
 - don't change markdown syntax, e.g. keep [@reference]
+- ```{python} should always remain ```{python}
 - never cut jokes
 - output 1 line per sentence (same as input)
 """
