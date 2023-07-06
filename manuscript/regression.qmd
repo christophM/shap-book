@@ -451,26 +451,6 @@ Alcohol, the most important feature according to SHAP, remains the most importan
 It actually get's more important because these alcohol-rich wines have a high predicted quality due to alcohol.
 But if we also change the background data, alcohol becomes much less important, as we can see that the SHAP values are clustered closely around zero.
 
-
-The order of importance for the alcohol-rich wines as background data is:
-
-```{python}
-shap.plots.bar(shap_values_sub)
-```
-
-Let's examine the dependence plot of the most important feature, "free sulfur dioxide" and see how it compares to the original dependence.
-
-```{python}
-plt.subplot(111)
-shap.plots.scatter(shap_values[:,"free sulfur dioxide"])
-plt.subplot(122)
-shap.plots.scatter(shap_values_sub[:,"free sulfur dioxide"])
-plt.tight_layout()
-plt.show()
-```
-
-TODO: Interpretation
-
 Be creative: Any feature can be used to create subsets.
 You can even use variables that weren't used as model features to create subsets.
 For example you might want to study how the explanations differ for protected attributes such as race or gender, which are variables that you wouldn't use as features.
