@@ -224,7 +224,7 @@ This implies that there are no interactions[^interactions] and no non-linear rel
 In this case, the SHAP values are quite straightforward to compute, as we have seen in the [Theory Chapter](#theory).
 The SHAP values are then defined as:
 
-$$\phi^{(i)}_j = \beta_j \cdot (x_j - \mathbb{E}[X_j])$$
+$$\phi^{(i)}_j = \beta_j \cdot (x_j - \mathbb{E}(X_j))$$
 
 This also works if you have a non-linear link function.
 This means that the model is not entirely linear, but the weighted sum is transformed before making the prediction.
@@ -356,7 +356,7 @@ $$g(z')=\phi_0+\sum_{j=1}^M\phi^{(i)}_jz_j'$$
 
 We train the linear model g by optimizing the following loss function L:
 
-$$L(f,g,\pi_{x})=\sum_{z'\in{}Z}[f(h_x(z'))-g(z')]^2\pi_{x}(z')$$
+$$L(f,g,\pi_{x})=\sum_{z'\in{}Z}(f(h_x(z'))-g(z'))^2\pi_{x}(z')$$
 
 where Z is the training data.
 This is the familiar sum of squared errors that we typically optimize for linear models.
@@ -479,7 +479,8 @@ When we can compute the gradient with respect to the input, this information can
 
 Gradient SHAP is defined as the expected value of the gradients x (inputs - baselines).
 
-$$\text{GradientShap}(x) = \mathbb{E}\left[(x_j - \tilde{x}_j) \cdot \frac{\delta g(\tilde{x} + \alpha \cdot (x - \tilde{x}))}{\delta x_j} d\alpha\right]$$
+$$\text{GradientShap}(x) = \mathbb{E}\left((x_j - \tilde{x}_j) \cdot \frac{\delta g(\tilde{x} + \alpha \cdot (x - \tilde{x}))}{\delta x_j}
+d\alpha\right)$$
 
 Estimated with:
 
@@ -551,7 +552,7 @@ Deep SHAP is an adaptation of the DeepLIFT procedure to produce SHAP values.
 Here are the changes that the Deep explainer incorporates:
 
 - Instead of using a single reference point, Deep Explainer uses background data, which consists of a set of reference points.
-- The multipliers are redefined in terms of SHAP values, which are backpropagated instead of the original DeepLIFT multipliers. Informally: $m_{\Delta x_j \Delta f} = \frac{\phi}{x_j - \mathbb{E}[x_j]}$.
+- The multipliers are redefined in terms of SHAP values, which are backpropagated instead of the original DeepLIFT multipliers. Informally:  $m_{\Delta x_j \Delta f} = \frac{\phi}{x_j - \mathbb{E}(X_j)$.
 - Another interpretation of Deep Explainer: Deep Explainer computes the SHAP values in smaller parts of the network first and combines those to obtain SHAP values for the entire network, explaining the prediction from the input, similar to what we are used to with SHAP.
 
 ::: {.callout-note}

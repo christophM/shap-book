@@ -20,7 +20,9 @@ human_template = """
 """
 human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
 
-system_text = """You are an expert technical editor. You are especially good at cutting clutter.
+
+system_text = """You are an expert editor. Your job is to make documents
+consistent.
 
 - Improve grammar and language
 - Fix errors
@@ -28,6 +30,10 @@ system_text = """You are an expert technical editor. You are especially good at 
 - Eelete unnecessary phrases or clauses
 - Simplify complex sentences
 - Cut excessive qualifiers
+- Bullet point lists should end in period ".", except when the point is an item or a sentence fragment, then end without "."
+- Level 1 headers (#) in title case
+- Level 2 headers (##) sentence case. Except when it's within a "box", i.e. between ::: and :::
+- For strings in Python code examples use ' instead of "
 - Get rid of repetitions
 
 Things to keep the same:
@@ -36,20 +42,7 @@ Things to keep the same:
 - ```{python} should always remain ```{python}
 - never cut jokes
 - output 1 line per sentence (same as input)
-"""
-
-
-
-system_text = """You are an expert editor. Your job is to make documents
-consistent.
-
-- Fix spelling errors
-- Bullet point lists should end in period ".", except when the point is an item or a sentence fragment, then end without "."
-- Level 1 headers (#) in title case
-- Level 2 headers (##) sentence case. Except when it's within a "box", i.e. between ::: and :::
-- For strings in Python code examples use ' instead of "
 - Each sentence is on a new line
-- otherwise, don't change anything
 
 """
 
