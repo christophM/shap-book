@@ -5,12 +5,12 @@ I conducted a Twitter survey to determine the most frequently used methods for i
 Options included LIME, permutation feature importance, and "Other," but SHAP was not an option.
 
 To my surprise, the majority of respondents selected "Other," with many comments highlighting the absence of SHAP.
-Although I was aware of SHAP at that time, I underestimated its prevalence in machine learning explainability and beyond.
+Although I was aware of SHAP at that time, I underestimated its popularity in machine learning explainability.
 
 This popularity was a double-edged sword.
 My PhD research on interpretable machine learning was centered around partial dependence plots and permutation feature importance.
 On multiple occasions, when submitting a paper to a conference, we were advised to focus on SHAP or LIME instead.
-This counsel was misguided as it's not how science operates, but it does underscore the popularity of SHAP.
+This advice was misguided because because we should make progress for all interpretation method, not just SHAP,  but it underscores the popularity of SHAP.
 
 SHAP has been subjected to its fair share of criticism: it's costly to compute, challenging to interpret, and overhyped.
 I agree with some of these criticisms.

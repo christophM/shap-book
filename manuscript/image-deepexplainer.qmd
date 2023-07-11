@@ -112,6 +112,7 @@ print('Test accuracy:', score[1])
 ```
 
 ## Computing SHAP values with the Gradient Explainer
+
 After training and evaluating our model, we'll explain its classification using SHAP:
 
 ```{python}
@@ -155,6 +156,7 @@ shap.image_plot(shap_values, x_test[:3])
 In the plot, red pixels contributed positively to the respective class, while blue pixels contributed negatively. Grey pixels have a near zero SHAP value.
 
 ## SHAP with the Deep Explainer
+
 We'll use the same process as above, but this time we'll use the DeepExplainer:
 
 ```{python}

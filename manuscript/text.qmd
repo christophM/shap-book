@@ -94,7 +94,7 @@ print(model(s)[0])
 ```
 
 As anticipated, this statement is classified as negative. 
-The keyword "scam" would naturally lead us to this conclusion, but let's delve into whether this was the reason for the model's classification and if SHAP can offer any insight.
+The keyword "scam" would naturally lead us to this conclusion, but let's find out whether this was the reason for the model's classification and if SHAP can offer any insight.
 
 Let's create an explainer model, which SHAP will intuitively know how to handle:
 

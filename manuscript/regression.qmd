@@ -19,6 +19,14 @@ However, we can make use of the fast `shap.TreeExplainer`.
 Random forests are ensembles of decision trees and the prediction is an average of the tree predictions.
 Random forests typically work well out of the box.
 
+::: {.callout-note}
+
+Gradient boosted trees like LightGBM and xgboost are other popular tree-based
+models.
+The `shap` application shown here works the same way.
+
+:::
+
 
 ```{python}
 #| output: False

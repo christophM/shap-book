@@ -14,7 +14,7 @@ In this chapter, we will scrutinize SHAP.
 
 While SHAP is popular, it is not without its shortcomings. 
 We have already discussed issues such as the [correlation problem](#correlation) and the complexity of [interpreting interactions](#interaction). 
-Let's delve further into these limitations.
+Let's dive further into these limitations.
 
 ## Computation time can be excessive
 

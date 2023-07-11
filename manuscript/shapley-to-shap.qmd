@@ -131,15 +131,11 @@ This is the contribution of feature $j$ to a coalition of features $S$.
 The marginal contribution of $j$ to $S$ is:
 
 \begin{align*}
-
-v(S \cup \{j\}) - v(S) &= \int f(x^{(i)}_S \cup X_C) d\mathbb{P}_{X_{C}} - \mathbb{E}(f(X)) \\
-&\quad - \left(\int f(x^{(i)}_{S \cup {j}} \cup X_{C \backslash {j}}) d\mathbb{P}_{X_{C \backslash {j}}} - \mathbb{E}(f(X))\right) \\
-&= \int f(x^{(i)}_{S \cup {j}} \cup X_{C \backslash j}) d\mathbb{P}_{X_{C \backslash {j}}} \\
-
-&\quad - \int f(x^{(i)}_{S} \cup X_C) d\mathbb{P}_{X_{C}}
-
+v(S \cup {j}) - v(S) &= \int f(x^{(i)}S \cup X_C) d\mathbb{P}{X_{C}} -\mathbb{E}(f(X)) \\
+&\quad - \left(\int f(x^{(i)}{S \cup {j}} \cup X{C \backslash {j}})d\mathbb{P}{X{C \backslash {j}}} - \mathbb{E}(f(X))\right) \\
+&= \int f(x^{(i)}{S \cup {j}} \cup X{C \backslash j}) d\mathbb{P}{X{C \backslash {j}}} \\
+&\quad - \int f(x^{(i)}{S} \cup X_C) d\mathbb{P}{X_{C}}
 \end{align*}
-
 
 For instance, the contribution of 'cat' to a coalition of {park, floor} would be:
 

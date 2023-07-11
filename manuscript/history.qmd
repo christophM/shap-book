@@ -123,6 +123,6 @@ Moreover, SHAP has been implemented in other contexts, indicating that the `shap
 Given this historical context, we will begin with the theory of Shapley values and gradually progress to SHAP.
 
 
-[^fake-nobel]: In actuality, it's not the Nobel prize, but the "Nobel Memorial Prize in Economic Sciences." Officially, it's termed the "Sveriges Riksbank Prize in Economic Sciences in Memory of Alfred Nobel." This prize is a kind of surrogate Nobel award created by economists since they were not included in the original five Nobel Prizes.
+[^fake-nobel]: It's not the real Nobel prize, but the "Nobel Memorial Prize in Economic Sciences." Officially, it's termed the "Sveriges Riksbank Prize in Economic Sciences in Memory of Alfred Nobel." This prize is a kind of surrogate Nobel award created by economists since they were not included in the original five Nobel Prizes.
 
 [^neurips]: The name NIPS faced criticism due to its association with "nipples" and its derogatory usage against Japanese individuals, leading to its change to NeurIPS.

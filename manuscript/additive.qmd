@@ -34,7 +34,7 @@ Although we could add interaction terms to a GAM, we will not do so in this chap
 
 We return to the wine example and fit a GAM instead of a linear regression model.
 
-We'll utilize the `interpret` Python library for this. You can install it with:
+We'll use the `interpret` Python library for this. You can install it with:
 
 ```{python}
 #| eval: false
@@ -113,7 +113,7 @@ The Additive explainer method isn't used because the additive estimation in `sha
 
 This waterfall plot provides a different perspective than the purely linear model.
 
-- For this particular wine, the most crucial features were alcohol and free sulfur dioxide, whereas, in the linear model, it was residual sugar and free sulfur dioxide.
+- For this particular wine, the most important features were alcohol and free sulfur dioxide, whereas, in the linear model, it was residual sugar and free sulfur dioxide.
 - The quality predicted by the GAM is approximately 6.0, lower than the 6.4 predicted by the linear model. 
 - This example clearly illustrates how the global average prediction and the local prediction can be similar, but numerous SHAP values cancel each other out.
 
@@ -168,13 +168,11 @@ To determine global importance, we average the **absolute** SHAP values per feat
 $$I_j=\frac{1}{n}\sum_{i=1}^n |\phi^{(i)}_j|$$
 
 We then sort the features by decreasing importance and plot them.
-The following figure displays the SHAP feature importance for the random forest model previously trained to predict cervical cancer.
 This method of sorting features is also used in the summary plot. 
 
 ```{python}
 shap.plots.bar(shap_values)
 ```
-
 
 SHAP feature importance provides an alternative to [permutation feature importance](https://christophm.github.io/interpretable-ml-book/feature-importance.html).
 There's a significant difference between these importance measures:

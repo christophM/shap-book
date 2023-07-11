@@ -86,6 +86,13 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 We'll now train the linear regression model using the scikit-learn package.
 
+::: {.callout-tip}
+
+`shap` can be used with all sklearn models.
+
+:::
+
+
 ```{python}
 #| output: false
 from sklearn.linear_model import LinearRegression
@@ -162,7 +169,7 @@ $$\phi^{(i)}_j=\beta_{j}x^{(i)}_j-\mathbb{E}(\beta_{j}X_{j})=\beta_{j}(x^{(i)}_j
 Where $\mathbb{E}(\beta_jX_{j})$ denotes the expected effect estimate for feature j, the contribution refers to the difference between the feature effect and the average effect.
 Here's why SHAP has such a simplified form for linear models:
 When calculating the marginal contribution $v(S \cup \{j\}) - v(S)$, all components of the linear function cancel out, leaving only those associated with feature $j$.
-In $v(S \cup \{j\}$, only $\beta_j x^{(i)}_j$ remains, while in $v(S)$, only $\beta_j \mathbb{E}(X_j)$ persists.
+In $v(S \cup \{j\})$, only $\beta_j x^{(i)}_j$ remains, while in $v(S)$, only $\beta_j \mathbb{E}(X_j)$ persists.
 All marginal contributions remain constant due to the absence of feature interactions, hence, the coalition to which we add feature $j$ is irrelevant.
 
 We simply replace the expectation with the mean for the estimation:
@@ -209,11 +216,11 @@ Like most Python packages, you can install `shap` using `pip`.
 pip install shap
 ```
 
-All examples in this book utilize `shap` version 0.41.0.
+All examples in this book utilize `shap` version 0.42.0.
 To install this exact version, execute the following command:
 
 ```{sh}
-pip install shap==0.41.0
+pip install shap==0.42.0
 ```
 
 
@@ -238,7 +245,7 @@ conda install -c conda-forge shap
 For the version used in this book:
 
 ```{sh}
-conda install -c conda-forge shap=0.41.0
+conda install -c conda-forge shap=0.42.0
 ```
 
 The installation process is simple.

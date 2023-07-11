@@ -25,7 +25,7 @@ This method computes the exact SHAP value. It's model-agnostic and is only meani
 :::
 
 The Exact Explainer theoretically computes all $2^p$ possible coalitions, from which we can calculate all possible feature contributions for each feature, as discussed in the [theory chapter](#theory).
-It also utilizes all of the background data, not just a sample.
+It also uses all of the background data, not just a sample.
 This means the computation has no elements of randomness.
 Despite the high computational cost, which depends on the number of features and the size of the background data, this method uses all available information and provides the most accurate estimation of SHAP values compared to other model-agnostic estimation methods.
 
@@ -38,7 +38,7 @@ explainer = shap.Explainer(model, background)
 
 However, `shap` limits the marginal contributions of features to coalitions of size 0, 1, p-2, and p-1, which means it only covers interactions of a maximum size of 2.
 As the [documentation states](https://github.com/slundberg/shap/blob/master/shap/explainers/_exact.py), it should be used for less than 15 features.
-Because of this enumeration, the exact explainer can utilize "Gray code," an optimization method not applicable to other SHAP estimation methods.
+Because of this enumeration, the exact explainer can use "Gray code," an optimization method not applicable to other SHAP estimation methods.
 Gray code is an effective ordering of coalitions where adjacent coalitions only differ in one feature value, which can be directly used to compute marginal contributions.
 This method is more efficient than enumerating all possible coalitions and adding features to them, as Gray code reduces the number of model calls through more effective computation.
 
@@ -347,7 +347,7 @@ Here, Z is the training data.
 This equation represents the familiar sum of squared errors that we typically optimize for linear models.
 The estimated coefficients of the model, the $\phi^{(i)}_j$'s, are the SHAP values.
 
-As we are in a linear regression context, we can utilize standard tools for regression.
+As we are in a linear regression context, we can rely on standard tools for regression.
 For instance, we can incorporate regularization terms to make the model sparse.
 By adding an L1 penalty to the loss L, we can create sparse explanations.
 
@@ -372,7 +372,7 @@ Boosted trees are particularly effective for tabular data, and having a quick me
 Moreover, it is an exact method, meaning you obtain the correct SHAP values rather than mere estimates, at least with respect to the coalitions.
 It remains an estimate in relation to the background data, given that the background data itself is a sample.
 
-The Tree Explainer utilizes the tree structure to compute SHAP values, and it comes in two versions: Interventional and Tree-Path Dependent Explainers.
+The Tree Explainer makes use of the tree structure to compute SHAP values, and it comes in two versions: Interventional and Tree-Path Dependent Explainers.
 
 ### Interventional Tree Explainer
 
@@ -530,7 +530,8 @@ Deep SHAP is an adaptation of the DeepLIFT procedure to produce SHAP values.
 Here are the changes the Deep Explainer incorporates:
 
 - The Deep Explainer uses background data, a set of reference points, instead of a single reference point.
-- The multipliers are redefined in terms of SHAP values, which are backpropagated instead of the original DeepLIFT multipliers. Informally:  $m_{\Delta x_j \Delta f} = \frac{\phi}{x_j - \mathbb{E}(X_j)$.
+- The multipliers are redefined in terms of SHAP values, which are
+  backpropagated instead of the original DeepLIFT multipliers. Informally:  $m_{\Delta x_j \Delta f} = \frac{\phi}{x_j} - \mathbb{E}(X_j)$.
 - Another interpretation of Deep Explainer: it computes the SHAP values in smaller parts of the network first and combines those to obtain SHAP values for the entire network, explaining the prediction from the input, similar to our usual understanding of SHAP.
 
 ::: {.callout-note}

@@ -7,6 +7,16 @@ It's often unclear why a certain prediction was made, what the most important fe
 Many people argue that as long as a machine learning model performs well, interpretability is unnecessary.
 However, there are many practical reasons why you need interpretability, ranging from debugging to building trust in your model.
 
+::: {.callout-note}
+
+## Interpretability 
+
+I think of "interpretability" in the context of machine learning as a key word.
+And under this key word you find a colorful variety of approaches that attempt
+to extract information about how the model makes predictions.
+
+:::
+
 ## Interpret to debug
 
 Interpretability is valuable for model debugging, as illustrated by a study predicting pneumonia [@caruana2015intelligible].
@@ -34,7 +44,8 @@ Black box machine learning models create a distance between the data and the mod
 
 Here's a story about how the lack of interpretability led users of a model to develop their own incorrect interpretations.
 The story relates to sepsis, a life-threatening condition in which the body responds severely to an infection.
-As one of the most common causes of death in hospitals, sepsis is hard to diagnose, expensive to treat, and highly harmful to patients, making early detection systems highly sought after.
+As one of the most common causes of death in hospitals, sepsis is hard to
+diagnose, expensive to treat, and detrimental to patients, making early detection systems highly sought after.
 
 Duke University and Duke Health Systems developed Sepsis Watch, an early warning system for sepsis in hospitals.
 This software system, based on deep neural networks, takes patient data as input and predicts whether the patient is likely to develop sepsis [@elish2020repairing].
@@ -79,14 +90,16 @@ However, there are two problems.
 **Problem 1: The definition of an interpretable model is ambiguous.**
 One group may understand linear regression models, while another may not due to lack of experience.
 Even if you accept a linear regression model as interpretable, it can easily be made perplexing.
-For instance, by log-transforming the target, adding interaction terms, using harder-to-interpret features, or adding thousands of features, an inherently interpretable model can become uninterpretable.
+For instance, by log-transforming the target, standardizing the features,  adding interaction terms, using harder-to-interpret features, or adding thousands of features, an inherently interpretable model can become uninterpretable.
 
 **Problem 2: The models with the highest predictive performance are often not inherently interpretable.**
 In machine learning, a metric is usually optimized.
 Boosted trees often emerge as the best choice in many scenarios [@grinsztajn2022tree].
 Most people wouldn't deem them interpretable, at least not in their original form.
-The same can be said for transformers, the standard for text (GPT, anyone?), and convolutional neural networks for image classification.
-Ensembles of models often yield the best results.
+The same can be said for transformers, the standard for text (large language
+models, anyone?), and convolutional neural networks for image classification.
+Furthermore, ensembles of models often yield the best results and they are
+clearly less interpretable as they combine multiple models.
 Hence, restricting model selection to inherently interpretable models might lead to inferior performance.
 This inferior performance could directly result in fewer sales, increased churn or more false negative sepsis predictions. 
 
@@ -128,9 +141,9 @@ Methods like SHAP can be applied to any model, so even if you're using a decisio
 SHAP [@NIPS2017_7062] is a game-theory-inspired method created to explain predictions made by machine learning models.
 To understand SHAP explanations, refer to @fig-waterfall.
 SHAP generates one value per input feature (also known as SHAP values) that indicates how the feature contributes to the prediction of the specified data point.
-In the following example, the prediction model estimates the probability of a person earning more than $50k based on that person's socio-economic factors.
+In the following example, the prediction model estimates the probability of a person earning more than \$50k based on that person's socio-economic factors.
 Some demographics positively affect the predicted probability, while others negatively impact it.
-The understanding of this figure isn't crucial at this point; it's simply the goal to keep in mind as we delve into the theory behind SHAP in the following chapters.
+The understanding of this figure isn't crucial at this point; it's simply the goal to keep in mind as we dive into the theory behind SHAP in the following chapters.
 
 ```{python}
 #| echo: false
@@ -205,7 +218,7 @@ SHAP has gained popularity and is applied in various fields to explain predictiv
 
 Given its wide range of applications, you are likely to find a use for SHAP in your work.
 
-Before we delve into the practical application of SHAP, let's begin with its historical background, which provides context for the subsequent theory chapters.
+Before we talk about practical application of SHAP, let's begin with its historical background, which provides context for the subsequent theory chapters.
 
 [^keywords]: The terms "Explainable AI" and "interpretable machine learning" are used interchangeably. Some people use XAI more for post-hoc explanations of predictions and interpretable ML for inherently interpretable models. However, in many instances, these terms are used interchangeably. When searching for a particular method, it's advisable to use both terms.
 

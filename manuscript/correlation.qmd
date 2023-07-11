@@ -15,7 +15,7 @@ SHAP values encounter a subtle yet significant issue when dealing with correlate
 - Physically impossible data points (e.g., a 2-meter tall person weighing 10 kg) may present a conceptual issue.
 - The model may not have been trained on data in these areas and might yield unexpected results.
 
-In this chapter, we will first delve into the problem in more detail using a small simulation, followed by a discussion of possible solutions.
+In this chapter, we will first dive into the problem in more detail using a small simulation, followed by a discussion of possible solutions.
 
 ## Correlated features cause extrapolation
 
@@ -138,7 +138,7 @@ graph TB
 
 To compute Owen values, also known as hierarchical Shapley values, we start at the top with two feature groups: {size,cat,park} and {floor}.
 We treat both groups as players and compute their SHAP values $\phi_{\text{size,cat,park}}$ and $\phi_{floor}$.
-In the next recursion, we split up the $\phi_{\text{size,cat,park}}$ among the groups {park} and {size, cat}, again as if we were computing SHAP, but with possible groups as players.
+In the next recursion, we split up the $\phi_{\text{size,cat,park}}$ among the groups {park} and {size, cat}, again as if we were computing SHAP, but with groups as players.
 We then move down to {cat} and {size}.
 The Partition explainer doesn't fully eliminate the correlation problem.
 As we move deeper down the correlation tree, we start to also break up stronger correlated features to recursively compute the Owen's value.

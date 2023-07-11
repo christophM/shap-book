@@ -11,7 +11,7 @@ By the end of this chapter, you will be able to:
 :::
 
 Interpreting models becomes more complex when they contain interactions.
-This chapter delves into a simulated example to explain how feature interactions influence SHAP values.
+This chapter presents a simulated example to explain how feature interactions influence SHAP values.
 
 ::: {.callout-note}
 

@@ -31,7 +31,7 @@ For instance, how much would Alice pay for a taxi ride if she were alone?
 How much would Alice and Bob pay if they shared a taxi?
 Let's suppose it would be \$15 for Alice alone.
 Alice and Bob live together, but adding Bob to the ride increases the cost to \$25, as he insists on a more spacious, luxurious taxi, adding a flat \$10 to the ride costs.
-Adding Charlie to Alice and Bob's ride increases the cost to \$51 since Bob lives somewhat further away. 
+Adding Charlie to Alice and Bob's ride increases the cost to \$51 since Charlie lives somewhat further away. 
 We define the taxi ride costs for all possible combinations and compile the following table:
 
 | Passengers           | Cost | Note                                  |
@@ -84,7 +84,8 @@ We calculate all possible marginal contributions in this way:
 We're one step closer to calculating a fair share of ride costs.
 Could we just average these marginal contributions per passenger?
 We could, but that would assign equal weight to every marginal contribution.
-However, one could argue that adding Alice to an empty taxi is more informative than adding Alice to a taxi already occupied by Bob.
+However, one could argue that we learn more about how much Alice should pay
+when we add her to an empty taxi compared to adding her to a ride with Bob.
 But how much more informative?
 One way to answer this question is by considering all possible permutations of Alice, Bob, and Charlie.
 There are $3!=3*2*1=6$ possible permutations of passengers:
@@ -208,9 +209,9 @@ If $v(S \cup \{j\}) = v(S \cup \{k\})$ for all $S \subseteq N \backslash \{j, k\
 
 The Shapley value for a player who doesn't contribute to any coalition is zero, which seems quite fair.
 Let's introduce Dora, Charlie's dog, and consider her an additional player.
-Assuming there's no extra cost for including Charlie in any ride, all of Charlie's marginal contributions would be \$0.
+Assuming there's no extra cost for including Dora in any ride, all of Dora's marginal contributions would be \$0.
 The dummy axiom states that when all marginal contributions are zero, the Shapley value should also be zero.
-This rule seems reasonable, especially as Charlie doesn't have any money.
+This rule seems reasonable, especially as Dora doesn't have any money.
 
 To express this axiom formally:
 

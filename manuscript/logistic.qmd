@@ -23,6 +23,14 @@ Logistic regression is suitable for binary classification tasks.
 It provides probability outputs for two classes.
 Since the probability of one class defines the other's, you can work with just one probability.
 Having two classes is a special case of having $k$ classes.
+
+::: {.callout-tip}
+
+Even though the example here is binary classification, `shap` works the same for
+multi-class models.
+
+:::
+
 From the SHAP perspective, classification is similar to regression, except the scale is the score output, not regression.
 
 ## The Adult dataset
@@ -215,7 +223,7 @@ The logit space is more suitable if you're interested in "evidence" in an inform
 
 :::
 
-Let's delve further into where the distinction between log odds and probabilities matters:
+Let's discuss when the distinction between log odds and probabilities matters:
 A shift from 80% to 90% is significant in probability space, while a change from 98% to 99.9% is relatively minor.
 
 In probability space, the differences are 0.10 and 0.019.

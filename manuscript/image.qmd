@@ -10,7 +10,7 @@ By the end of this chapter, you will be able to:
 :::
 
 Up until now, we've explored tabular data.
-Now, let's delve into image data.
+Now, let's explore image data.
 
 Image classification is a common task typically solved using deep learning.
 Given an image, the model identifies a class based on the visible content.
@@ -141,7 +141,7 @@ The chain part of the watch is the correct reason for this classification.
 One disadvantage of calculating the SHAP values for multiple images is that the color scale for the Shapley values, seen at the bottom, applies to all images.
 As the watch has larger values, the values for the cheeseburger are scaled closer to white.
 
-Let's delve into the different maskers, as they're more than just a "set-and-forget" parameter.
+Let's learn about the different maskers, as they're more than just a "set-and-forget" parameter.
 
 ## The impact of various maskers
 

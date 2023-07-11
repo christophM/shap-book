@@ -229,8 +229,8 @@ Model-specific methods are often inspired by other techniques used to explain mo
 The "Background Data" column indicates whether the estimation method requires data to be estimated.
 
 | Estimation Method| Estimation Idea | Model-specific? | Background Data | Inspiration |
-| --- | --- | --- | --- | --- |
-| Exact | Iterates through all background data and some coalitions. | Agnostic | Yes | - |
+| --- | --------- | --- | --- | --- |
+| Exact | Iterates through all background data and coalitions. | Agnostic | Yes | - |
 | Sampling | Samples coalitions of features. | Agnostic | Yes | - |
 | Permutation | Samples permutations of feature values. | Agnostic | Yes | - |
 | Linear | Exact SHAP value estimation with linear model weights | Linear | Yes | - |
