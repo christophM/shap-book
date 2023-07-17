@@ -87,7 +87,7 @@ We'll use Hugging Face transformers, which simplifies the implementation:
 from transformers import pipeline
 model = pipeline('sentiment-analysis', return_all_scores=True)
 s = ['This product was a scam']
-print(model(s)[0][0])
+print(model(s)[0][1])
 ```
 
 As anticipated, the statement "this product was a scam" is classified as negative. 
@@ -98,6 +98,8 @@ The keyword "scam" would naturally lead us to this conclusion, but let's find ou
 import shap
 explainer = shap.Explainer(model)
 shap_values = explainer(s)
+print("expected: %.2f" % shap_values.base_values[0][1])
+print("prediction: %.2f" % model(s)[0][1]['score'])
 shap.plots.bar(shap_values[0, :, 'POSITIVE'])
 ```
 
@@ -138,6 +140,8 @@ s2 = "This product was a scam." + \
 masker = shap.maskers.Text(tokenizer=r"\.", mask_token=" ")
 explainer = shap.Explainer(model, masker=masker)
 shap_values = explainer([s2])
+print("expected: %.2f" % shap_values.base_values[0][1])
+print("prediction: %.2f" % model(s2)[0][1]['score'])
 shap.plots.bar(shap_values[0, :, 'POSITIVE'])
 ```
 
@@ -166,7 +170,8 @@ masker = shap.maskers.Text(tokenizer=r"\.", mask_token="I love it",
                            collapse_mask_token=True)
 explainer = shap.Explainer(model, masker=masker)
 shap_values = explainer([s2])
-print(shap_values.base_values[0])
+print("expected: %.2f" % shap_values.base_values[0][1])
+print("prediction: %.2f" % model(s2)[0][1]['score'])
 shap.plots.bar(shap_values[0, :, 'POSITIVE'])
 ```
 
@@ -178,14 +183,15 @@ masker = shap.maskers.Text(
 )
 explainer = shap.Explainer(model, masker=masker)
 shap_values = explainer([s2])
-print(shap_values.base_values[0])
+print("expected: %.2f" % shap_values.base_values[0][1])
+print("prediction: %.2f" % model(s2)[0][1]['score'])
 shap.plots.bar(shap_values[0, :, 'POSITIVE'])
 ```
 
 Here, the replacement acts as a reference.
 In one scenario, any sentence removed from the coalition is replaced with "I love it," and in the other scenario, it's replaced with "I hate it."
 
-What changes is the base value, it shifts from strongly positive to negative, as can be inferred from the difference in the range of SHAP values on the x-axis.
+What changes is the base value, it shifts from strongly positive to negative, as can be inferred from the difference in the base value.
 Every sentence is now interpreted in contrast to the replacement.
 This was also true earlier, but previously we replaced it with an empty string, which is more neutral than the sentences provided.
 
@@ -206,7 +212,8 @@ masker = shap.maskers.Text(
 )
 explainer = shap.Explainer(model, masker=masker)
 shap_values = explainer([s2])
-print(shap_values.base_values[0])
+print("expected: %.2f" % shap_values.base_values[0][1])
+print("prediction: %.2f" % model(s2)[0][1]['score'])
 shap.plots.bar(shap_values[0, :, 'POSITIVE'])
 ```
 
@@ -216,7 +223,8 @@ masker = shap.maskers.Text(
 )
 explainer = shap.Explainer(model, masker=masker)
 shap_values = explainer([s2])
-print(shap_values.base_values[0])
+print("expected: %.2f" % shap_values.base_values[0][1])
+print("prediction: %.2f" % model(s2)[0][1]['score'])
 shap.plots.bar(shap_values[0, :, 'POSITIVE'])
 ```
 

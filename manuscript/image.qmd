@@ -241,24 +241,38 @@ Let's investigate the impact of increasing the number of evaluation steps, begin
 
 ```{python}
 #| message: False
-evals = [10, 100, 1000]
+#| warning: False
 topk = 1
-
 masker = shap.maskers.Image(
     'blur(128, 128)', shape=sh
 )
 
-# iterate through all the masks
-for ev in evals:
-    explainer = shap.Explainer(predict, masker, output_names=class_names)
-    shap_values = explainer(
-      X[[21]],
-      max_evals=ev,
-      batch_size=50,
-      outputs=shap.Explanation.argsort.flip[:topk]
-     )
-    shap.image_plot(shap_values, pixel_values=X[[21]]/255)
+explainer = shap.Explainer(predict, masker, output_names=class_names)
+shap_values = explainer(
+    X[[21]],
+    max_evals=10,
+    batch_size=50,
+    outputs=shap.Explanation.argsort.flip[:topk]
+)
+shap.image_plot(shap_values, pixel_values=X[[21]]/255)
 ```
+
+
+Then we increase the number of evaluations to 1000:
+
+```{python}
+#| message: False
+#| warning: False
+shap_values = explainer(
+    X[[21]],
+    max_evals=1000,
+    batch_size=50,
+    outputs=shap.Explanation.argsort.flip[:topk]
+)
+shap.image_plot(shap_values, pixel_values=X[[21]]/255)
+```
+
+
 
 
 As we increase the number of evaluations, we notice:

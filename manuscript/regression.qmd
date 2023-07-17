@@ -342,7 +342,7 @@ Let's explore the two methods of comparing subsets.
 ```{python}
 # create the data subsets
 ind_test = np.where(X_test['alcohol'].values > 12)
-ind_train = np.where(X_test['alcohol'].values > 12)
+ind_train = np.where(X_train['alcohol'].values > 12)
 X_train_sub = X_train.iloc[ind_train]
 X_test_sub = X_test.iloc[ind_test]
 
@@ -431,7 +431,7 @@ Keeping the background data set for all wines and subsetting the SHAP values pro
 ```{python}
 #| label: fig-summaries
 #| fig-cap: "The left plot includes all SHAP values with all wines as background data. The middle plot contains SHAP values for wines high in alcohol with all wines as background data. The right plot displays SHAP values for wines high in alcohol with background data also comprising wines high in alcohol. The feature order for all plots is based on the SHAP importance of the left plot."
-# sort based on ShAP importance for all background data and all wines
+# sort based on SHAP importance for all data and all wines
 ordered = np.argsort(abs(shap_values.values).mean(axis=0))[::-1]
 plt.subplot(131)
 shap.plots.beeswarm(
