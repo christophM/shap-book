@@ -399,7 +399,7 @@ feature1 = 'free sulfur dioxide'
 ind = X_test_sub.columns.get_loc(feature1)
 fv1 = X_test_sub.iloc[i, ind]
 sv1 = shap_values_sub.values[i,ind]
-```
+
 feature2 = 'sulphates'
 ind = X_test_sub.columns.get_loc(feature2)
 fv2 = X_test.iloc[i, ind]

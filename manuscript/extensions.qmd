@@ -9,7 +9,7 @@ To accommodate this, @chen2018shapley introduced L-Shapley (local) and C-Shapley
 These constrained versions of Shapley values are especially helpful in explaining image and text classifiers.
 
 For text, L-Shapley only takes into account neighboring words, rather than all word interactions.
-For instance, when calculating the Shapley value of the 6th word in a text, only neighboring words are considered for word absence, based on the assumption that distant words have minimal interaction.
+For instance, when calculating the SHAP value of the 6th word in a text, only neighboring words are considered for word absence, based on the assumption that distant words have minimal interaction.
 C-Shapley, conversely, focuses on n-grams with $n\leq4$, preventing coalitions between distant words.
 
 ## Group SHAP for grouped features
@@ -53,7 +53,7 @@ Counterfactual SHAP (or CF-SHAP) [@albini2022counterfactual] introduces this app
 ## Explanation Shifts[^carlos]
 
 Explanation shifts [@mougan2022explanation] refer to differences in how predictions are explained by machine learning models on training data compared to new data.
-By analyzing variations in SHAP values, we get insights into how the relation models and features evolved.
+By analyzing variations in SHAP values, we get insights into how the relation of models and features evolved.
 Explanation shifts offer advantages over traditional methods that focus only on distribution shifts (like monitoring performance), as explanations provide a deeper understanding of changes in the model behavior.
 Changes that might otherwise be overlooked.
 Explanation shifts is implemented within the [skshift](https://skshift.readthedocs.io/en/latest/) Python package which also includes tutorials.

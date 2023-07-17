@@ -37,7 +37,6 @@ Tokens are typically smaller than words, and there are numerous methods to token
 ## Defining players in text
 
 As seen in the [Image Chapter](#image), we can use different levels of granularity for SHAP inputs than those used for the model.
-
 This provides us with multiple options for computing SHAP values:
 
 - By character
@@ -49,7 +48,7 @@ This provides us with multiple options for computing SHAP values:
 
 The choice depends on the specific application, and we'll explore various examples throughout this chapter.
 Consider the task of sentiment analysis.
-The sentence "I returned the item as it didn't work." has a predicted score indicating a negative sentiment with a score of -0.8.
+The sentence "I returned the item as it didn't work." might have a predicted score of -0.5  indicating a negative sentiment.
 
 The aim of SHAP is to attribute this score to the input words.
 If you choose to attribute the prediction at the word level, you will obtain one SHAP value for each word: ["I", "returned", "the", "item", "as", "it", "didn't", "work"].
@@ -59,7 +58,6 @@ Each word acts as a team player, and the -0.8 score is fairly distributed among 
 ## Removing players in text-based scenarios
 
 An interesting question arises: how do you simulate the absence of players/features in text?
-
 In theory, you have multiple options:
 
 - Remove the word.
@@ -68,9 +66,8 @@ In theory, you have multiple options:
 
 SHAP implements options 1 and 2.
 Options 1 and 2 are more reasonable than option 3, as option 3 could introduce significantly different texts.
-
 For example, to assess the impact of the word "returned" on the negative sentiment prediction, we would include it in different teams.
-Assuming that missing words are replaced with "...", and multiple adjacent words are replaced with a single "...", we get:
+Assuming that missing words are replaced with "...", and multiple adjacent words are replaced with a single "...", we get the following coalitions for computing marginal contributions.
 
 - "I ... the ... as it didn't work" -> "I returned the ... as it didn't work"
 - "... the item ...  work" -> "... returned the item ... work"
@@ -90,27 +87,26 @@ We'll use Hugging Face transformers, which simplifies the implementation:
 from transformers import pipeline
 model = pipeline('sentiment-analysis', return_all_scores=True)
 s = ['This product was a scam']
-print(model(s)[0])
+print(model(s)[0][0])
 ```
 
-As anticipated, this statement is classified as negative. 
+As anticipated, the statement "this product was a scam" is classified as negative. 
 The keyword "scam" would naturally lead us to this conclusion, but let's find out whether this was the reason for the model's classification and if SHAP can offer any insight.
 
-Let's create an explainer model, which SHAP will intuitively know how to handle:
 
 ```{python}
 import shap
 explainer = shap.Explainer(model)
 shap_values = explainer(s)
-shap.plots.bar(shap_values[0, :, 'NEGATIVE'])
+shap.plots.bar(shap_values[0, :, 'POSITIVE'])
 ```
 
 That was straightforward, wasn't it?
-
 The term "sc" appears to contribute the most to the negative sentiment.
-
 However, the splitting of "scam" into "sc" and "am" isn't ideal for interpretation. 
 This issue emerges from our masking of the input, in which the choice of tokenizer influences how the text is masked.
+We can see that the Partition explainer was used since the clustering is displayed here as well.
+So we can just add up the two SHAP values of "sc" and "am" to get the SHAP value for "scam", but it would be more elegant to compute SHAP values based on better tokenization.
 
 ## Experimenting with the masker
 
@@ -125,10 +121,10 @@ Let's review the results:
 masker = shap.maskers.Text(tokenizer=r"\W+")
 explainer = shap.Explainer(model, masker=masker)
 shap_values = explainer(s)
-shap.plots.bar(shap_values[0, :, 'NEGATIVE'])
+shap.plots.bar(shap_values[0, :, 'POSITIVE'])
 ```
 
-Now it's evident that "scam" is the significant term. 
+Now it's evident that "scam" is the most relevant term for a negative classification.
 The tokenizer is highly adaptable. 
 To illustrate this, let's consider another example using SHAP values calculated on sentences. 
 In this scenario, the tokenizer is simple and breaks the input at periods ".". 
@@ -139,13 +135,13 @@ s2 = "This product was a scam." + \
      "It was more about marketing than technology." + \
      "But that's why I loved it." + \
      "Learned a bunch about marketing that way."
-print(model([s2]))
 masker = shap.maskers.Text(tokenizer=r"\.", mask_token=" ")
 explainer = shap.Explainer(model, masker=masker)
 shap_values = explainer([s2])
-shap.plots.bar(shap_values[:, :, 'NEGATIVE'])
+shap.plots.bar(shap_values[0, :, 'POSITIVE'])
 ```
 
+"But that's why I loved it" has a huge positive contribution to the sentiment, more than the two negative sentence combined.
 I've used a whitespace " " as the masking token, which seems suitable for dropping a sentence. 
 The default replacement token for text is "...", but generally, if a tokenizer is provided, the .mask_token attribute is utilized, assuming the tokenizer has this attribute.
 
@@ -157,29 +153,33 @@ Consider the sentence: "This product was a scam.
 It was more about marketing than technology. 
 But that's why I loved it. 
 Learned a bunch about marketing that way."
-
 Let's analyze the marginal contribution of "Learned a bunch about marketing" when added to an empty set, by comparing these two sentences:
 
 "I love it. Learned a bunch about marketing that way." versus "I love it."
 
 If `collapse_mask_token=False`, we would compare "I love it. I love it. I love it. Learned a bunch about marketing that way." with "I love it. I love it. I love it. I love it."
-
 Therefore, it often makes sense to set `collapse_mask_token` to True.
-
 In theory, you could also create a custom masker.
 
 ```{python}
-masker = shap.maskers.Text(tokenizer=r"\.", mask_token="I love it", collapse_mask_token=True)
+masker = shap.maskers.Text(tokenizer=r"\.", mask_token="I love it",
+                           collapse_mask_token=True)
 explainer = shap.Explainer(model, masker=masker)
 shap_values = explainer([s2])
-shap.plots.bar(shap_values[:, :, 'POSITIVE'])
+print(shap_values.base_values[0])
+shap.plots.bar(shap_values[0, :, 'POSITIVE'])
 ```
 
 ```{python}
-masker = shap.maskers.Text(tokenizer=r"\.", mask_token='I hate it', collapse_mask_token=True)
+masker = shap.maskers.Text(
+  tokenizer=r"\.",
+  mask_token='I hate it',
+  collapse_mask_token=True
+)
 explainer = shap.Explainer(model, masker=masker)
 shap_values = explainer([s2])
-shap.plots.bar(shap_values[:, :, 'POSITIVE'])
+print(shap_values.base_values[0])
+shap.plots.bar(shap_values[0, :, 'POSITIVE'])
 ```
 
 Here, the replacement acts as a reference.
@@ -206,7 +206,8 @@ masker = shap.maskers.Text(
 )
 explainer = shap.Explainer(model, masker=masker)
 shap_values = explainer([s2])
-shap.plots.bar(shap_values[:, :, 'POSITIVE'])
+print(shap_values.base_values[0])
+shap.plots.bar(shap_values[0, :, 'POSITIVE'])
 ```
 
 ```{python}
@@ -215,7 +216,8 @@ masker = shap.maskers.Text(
 )
 explainer = shap.Explainer(model, masker=masker)
 shap_values = explainer([s2])
-shap.plots.bar(shap_values[:, :, 'POSITIVE'])
+print(shap_values.base_values[0])
+shap.plots.bar(shap_values[0, :, 'POSITIVE'])
 ```
 
 Despite the overall attribution not changing significantly, except for the sign change in the "marketing" sentence which was close to zero, the base value changes considerably.
@@ -227,7 +229,6 @@ To understand more about maskers, refer to the [maskers chapter in the Appendix]
 
 The output falls in the probability space between 0 and 1, necessitating a logit transformation.
 Additive explanations perform better on linear scales, such as logits, which occur just before the 0 to 1 squeezing.
-
 SHAP provides a wrapper for transformers that allows specifying whether to use logits or probabilities:
 
 ```{python}
@@ -247,10 +248,10 @@ Now let's see how this impacts the explanations with SHAP:
 ```{python}
 explainer2 = shap.Explainer(model2)
 shap_values2 = explainer2(s)
-shap.plots.bar(shap_values2[0,:, 'NEGATIVE'])
+shap.plots.bar(shap_values2[0,:, 'POSITIVE'])
 ```
 
-This result is quite similar, but now "am" is also a positive factor, which makes more sense.
+This result is quite similar.
 
 ## How SHAP interacts with text-to-text models
 
@@ -269,17 +270,12 @@ We can compute SHAP values for each token.
 If the tokenized input has length $n$ and the tokenized output length is $m$, we derive $n \cdot m$ SHAP values.
 The level of input tokenization is user-controllable.
 In the example above, if the user opts for word-level tokenization for the input, the first token of the output, i.e., "No", receives $n$ SHAP values.
-The next token "!" gets $n$ Shapley values, and so on.
+The next token "!" gets $n$ SHAP values, and so on.
 
-However, there is a complication.
-Transformers not only consider the input but also the output generated so far when producing the next token.
-For instance, if "No! This is" has already been generated by the model, it forms part of the input for deciding the next token, "Patrick".
-In the case of SHAP, this portion is simply held constant.
-Thankfully, the 'shap' package has already implemented this for us.
 
 ## Explaining a text-to-text model
 
-Let's explore a text generation task, a fairly general task.
+Let's explore text generation, a fairly general task.
 Again, this is implemented in the Hugging Face transformers package.
 It's a large language model similar to those that power GPT-3 and GPT-4.
 For a locally runnable example that doesn't require an account, we'll use a less powerful model.
@@ -322,7 +318,7 @@ output_text = tokenizer.decode(output[0], skip_special_tokens=True)
 print('The result: "' + output_text + '"')
 ```
 
-Now we can obtain the SHAP explanations for this sentence:
+Now we can obtain the SHAP explanations for the first generated word "throwing".
 
 ```{python}
 torch.manual_seed(0)
@@ -333,7 +329,6 @@ shap_values = explainer([input_text])
 shap.plots.waterfall(shap_values[0, :, 5 + 1])
 ```
 
-This is the explanation for the second word in the predicted sequence, "throwing".
 The word "insulted" positively contributed to this word, while all others had a negative contribution.
 
 ## Other text-to-text tasks

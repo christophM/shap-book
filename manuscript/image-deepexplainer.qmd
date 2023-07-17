@@ -16,16 +16,15 @@ In this chapter, we will explain image classifier classifications using a differ
 This involves two key aspects:
 
 - Assigning one SHAP value for each input pixel.
-- Simulating feature absence (pixel absence) by replacing it with a pixel from a background dataset.
+- Simulating feature absence (pixel absence) by sampling pixel from a background dataset.
 
-Though the network receives individual pixels as input, we don't need to use the same granularity for explanations.
 
 Since we are working with a neural network, two model-specific tools are available:
 
 - The Gradient Explainer, as neural networks often rely on gradients.
 - The Deep Explainer, which utilizes neural network layers to backpropagate SHAP values.
 
-Both methods are discussed in greater detail in the [Estimation Chapter](#estimation).
+Both methods are discussed in greater detail in the [Estimation Appendix](#estimation).
 For this example, we will use the MNIST dataset.
 The MNIST dataset contains 70,000 handwritten digits (0-9), each represented as a 28x28 pixel grayscale image.
 The goal of the MNIST task is to create a machine learning algorithm that can accurately classify these images into their corresponding digit categories.
@@ -35,12 +34,7 @@ Researchers in machine learning, computer vision, and pattern recognition have e
 Why did I choose the MNIST dataset instead of ImageNet, as in the previous example?
 Because using pixel-wise explanations with Gradient or Deep Explainer requires sampling absent features using a background dataset.
 
-There are essentially two options to replace a value with images:
-
-- Replace them with background data, that is, with pixels from a dataset of other images.
-- Substitute them with a reference, such as blurring or replacing them with grey pixels (or another "neutral" color).
-
-Imagine using the ImageNet dataset, where we have an image of a burger and replace the "absent" pixels with pixels from a dog image - it would result in a strange outcome.
+Imagine using the ImageNet dataset, where we have an image of a burger and replace the "absent" pixels with pixels from a dog image -- it would result in a strange outcome.
 However, for the MNIST dataset, this approach is more reasonable, as digits are more similar to each other, and replacing some pixels of a "2" with those of a "3" won't generate bizarre images.
 I acknowledge that this is a somewhat vague argument, but generally, explanations for images can be more challenging.
 
@@ -154,6 +148,9 @@ shap.image_plot(shap_values, x_test[:3])
 ```
 
 In the plot, red pixels contributed positively to the respective class, while blue pixels contributed negatively. Grey pixels have a near zero SHAP value.
+The first row shows a 7 and, for example, in the 8th column we see positive contributions of the pixels that make up a 7.
+The second row shows the image of a  2 and we can see that especially the start and end of the "2" contributed positively to the class "2" (3rd column).
+The start of the "2" and the slope in the middle contributed negatively to a prediction of "1".
 
 ## SHAP with the Deep Explainer
 
@@ -176,7 +173,7 @@ shap.image_plot(shap_values, x_test[:3])
 The SHAP values are very similar to the Gradient Explainer.
 This makes sense, since in both cases the result should be the same SHAP values and the difference is only due to the fact that both are approximated.
 
-## Time comparison between Explainers
+## Time comparison
 
 We measured the time for both gradient and deep explainer.
 
@@ -189,5 +186,6 @@ print('Deep explainer: ', round(deep_time, 2))
 
 In theory, to obtain a reliable time comparison, you should repeat the calls several hundred times and avoid using other programs simultaneously.
 However, this comparison was conducted only once on my MacBook with an M1 chip.
-Despite this, the difference is clear.
+Keeping this in mind, we see a bit of difference.
 Since only the CPU is used, the efficiency of calling the model could improve if a GPU were involved.
+But I'd rather use the Gradient Explainer.

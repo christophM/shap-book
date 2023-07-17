@@ -11,7 +11,6 @@ By the end of this chapter, you will be able to:
 
 As a statistician holding both Bachelor's and Master's degrees, I feel obligated to critically examine methods and resist hype. 
 In this chapter, we will scrutinize SHAP.
-
 While SHAP is popular, it is not without its shortcomings. 
 We have already discussed issues such as the [correlation problem](#correlation) and the complexity of [interpreting interactions](#interaction). 
 Let's dive further into these limitations.
@@ -31,7 +30,7 @@ This function is purely multiplicative.
 All features were independent and had an expected value of zero. 
 Given this information, what would you anticipate for the SHAP importance of each feature? 
 I would expect all SHAP importances to be equal. 
-However, they also assign equal importance to two features with different scales, such as $X_1$ ranging from -1 to +1 and $X_2$ ranging from -1000 to +1000. 
+However the two features have different scales, such as $X_1$ ranging from -1 to +1 and $X_2$ ranging from -1000 to +1000. 
 While $X_2$ appears to have a greater influence on the prediction due to its larger scale, the SHAP importance for both features is the same. 
 This is because knowing $X_1$ is as important as knowing $X_2$. 
 $X_2$ has a much larger range, but it doesn't impact the SHAP value because $X_1$ can set the prediction to zero or flip the sign. 
@@ -42,7 +41,7 @@ Keep this peculiarity in mind.
 ## No consensus on what an attribution should look like
 
 Another issue, which extends beyond SHAP, is the lack of a cohesive understanding of what an attribution method should entail. 
-There is uncertainty about how interactions should be attributed or what importance truly represents.
+There is uncertainty about how interactions should be attributed or what "importance" truly represents.
 
 In interpretable machine learning, the process is often reversed: 
 We use a somewhat mathematically coherent method that generates an "explanation" for a model and then attempt to decipher its meaning. 
@@ -53,7 +52,7 @@ With SHAP values, one could argue that the axioms perfectly define them.
 After all, SHAP values are the only solution that satisfies the axioms. 
 The question now is: Are these axioms useful for interpretation? Did we define the right game?
 
-As demonstrated in the [Linear Chapter](#linear) and the [Additive Chapter](#additive), at least for these more restricted models, the results align with our expectations and what similar metrics (such as coefficients or PDP) would indicate.
+As demonstrated in the [Linear Chapter](#linear) and the [Additive Chapter](#additive), at least for these more restricted models, the results align with our expectations and what similar metrics (such as coefficients) would indicate.
 
 ## SHAP values aren't human-friendly explanations
 Human-friendly explanations should be concise, contrastive, and focus on "abnormal" causes [@miller2019explanation].
@@ -83,8 +82,8 @@ Additionally, ensure the model itself offers actionable advice by using represen
 ## SHAP values can be misinterpreted
 
 The SHAP value of a feature is not the difference in predicted value after removing the feature from model training.
-Instead, the SHAP value interpretation is as follows: given the current set of feature values, the contribution of a feature value to the difference between the actual prediction and the mean prediction is the estimated Shapley value.
-SHAP value is not the ideal explanation method for sparse explanations (explanations with few features), as it always uses all the features.
+Instead, the SHAP value interpretation is as follows: given the current set of feature values, the contribution of a feature value to the difference between the actual prediction and the mean prediction is the estimated SHAP value.
+SHAP is not the ideal explanation method for sparse explanations (explanations with few features), as it always uses all the features.
 
 ## SHAP values aren't a surrogate model
 
@@ -105,4 +104,4 @@ However, for the recipients of a SHAP explanation, it is a disadvantage as they 
 
 ## Unrealistic data when features are correlated
 
-For more information, go to the [Correlation Chapter](#correlation).
+See [Correlation Chapter](#correlation).

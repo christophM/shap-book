@@ -10,7 +10,7 @@ By the end of this chapter, you will be able to:
 :::
 
 Shapash is a package that utilizes SHAP (or LIME) to compute contributions and visualize them in a dashboard or report.
-The dashboard is more convenient for exploring explanations than iterating through explanations in a Jupyter notebook or Python script, enabling an exploratory data analysis style of discovery.
+The dashboard is more convenient for exploring explanations than iterating through explanations in a Jupyter notebook or Python script, enabling exploratory data analysis.
 
 ## Installation
 
@@ -18,7 +18,7 @@ You can install Shapash using pip:
 
 ```{python}
 #| eval: false
-pip install shapash
+pip install shapash==2.3.0
 ```
 
 ## A quick example with Shapash

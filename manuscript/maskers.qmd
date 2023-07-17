@@ -4,14 +4,11 @@
 Maskers are the technical solution for "removing" feature values to compute marginal contributions and SHAP values.
 :::
 
-This chapter explains the role of maskers.
-To apply SHAP values from game theory to machine learning interpretability, we need to frame the prediction as a game, with feature values of a data point being the players.
-The definition of feature values can be flexible, but we'll discuss that later.
 
 SHAP values are computed by considering many possible contributions.
 Forming a coalition of features means some features are absent.
-In games, playing with fewer players is straightforward, but for machine learning, simulating the absence of feature values requires more effort.
-This problem is solved using maskers.
+In games, playing with fewer players can be straightforward, but for machine learning, simulating the absence of feature values requires more effort.
+This problem is solved in `shap` using maskers.
 
 A masker is a function that takes a data instance and a binary mask, indicating which inputs to mask.
 The output is the same data point with the designated inputs masked.
@@ -36,21 +33,12 @@ Typical maskers for tabular data replace absent feature values with samples from
 :::
 
 For tabular data, we can provide a background dataset, and the masker replaces missing values with samples from the background data.
-
 There are two choices for maskers: Independent masker and Partition masker.
 
 ### Independent masker
 
-Depending on the Explainer, this can involve sampling from the background data or iterating through all background data for each instance and feature value to compute the SHAP values.
-
-But which data should you choose as background data?
-In theory, any data matching the number of features could be background data.
-A common choice is the training dataset or a subset of it.
-In theory, it could also be a single data instance.
-
-The choice of background data influences the interpretation of SHAP values.
-You can leverage the background data to simulate a distribution shift, analyze how SHAP values differ in different data groups, explore counterfactual scenarios by setting the background data to a specific scenario, or evaluate the stability of model predictions using more extreme background data values.
-Technically, the tabular data in SHAP is implemented with the Independent masker.
+The independent masker replaces missing features with the background data.
+Technically, the tabular data in SHAP is implemented with the `Independent` masker in `shap`:
 
 ```{python}
 #| eval: false

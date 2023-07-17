@@ -14,9 +14,7 @@ Now, let's explore image data.
 
 Image classification is a common task typically solved using deep learning.
 Given an image, the model identifies a class based on the visible content.
-
 Rather than training our own image classifier, we'll utilize a pre-trained ResNet model [@he2016deep] trained on ImageNet data [@deng2009imagenet].
-
 ImageNet is a large-scale image classification challenge where models are required to categorize objects within digital images.
 It boasts a dataset of over 1 million images from 1000 different categories, aiming to develop a model that accurately classifies each image.
 
@@ -39,7 +37,7 @@ X, y = shap.datasets.imagenet50()
 ```
 
 We'll use the 50 images supplied by SHAP.
-One of these is a cheeseburger, which we'll encounter later.
+One of these is a cheeseburger, which we'll encounter again later.
 
 ```{python}
 import json
@@ -73,6 +71,7 @@ What we need now are:
 
 The prediction function is straightforward: it takes an image as a numpy array, preprocesses it for the Resnet, and feeds it to the Resnet.
 Thus, it takes a numpy array as input and outputs probability scores.
+We make use of the Partition explainer that partitions the image into equal rectangles and recursively computes the SHAP values. 
 
 ```{python}
 # Wrapping the model
@@ -171,8 +170,11 @@ Below are examples of how these different options look, featuring melting burger
 import matplotlib.pyplot as plt
 
 # Define a masker to mask certain portions of the input image. 
-mask_names = ['inpaint_telea', 'inpaint_ns', 'blur(128, 128)', 'blur(16, 16)']
-masks = [shap.maskers.Image(m, shape=X[0].shape) for m in mask_names]
+mask_names = ['inpaint_telea', 'inpaint_ns',
+              'blur(128, 128)', 'blur(16, 16)']
+
+sh = X[0].shape
+masks = [shap.maskers.Image(m, sh) for m in mask_names]
 
 # Create a numpy array of the shape (224, 224, 3)
 arr = np.zeros((224 * 224 * 3), dtype=bool)
@@ -210,12 +212,14 @@ topk = 3
 # Iterate through all the masks
 for mask_name in mask_names:
     print(mask_name)
-    mask = shap.maskers.Image(mask_name, shape=X[0].shape)
+    mask = shap.maskers.Image(mask_name, shape=sh)
     explainer = shap.Explainer(
         predict, mask, output_names=class_names, silent=True
     )
-    shap_values = explainer(X[[21]], max_evals=500, batch_size=50,
-                            outputs=shap.Explanation.argsort.flip[:topk])
+    shap_values = explainer(
+      X[[21]], max_evals=500, batch_size=50,
+      outputs=shap.Explanation.argsort.flip[:topk]
+    )
     shap.image_plot(shap_values, pixel_values=X[[21]] / 255)
 ```
 
@@ -236,16 +240,16 @@ Given that the Image explainer is based on the Partition explainer, more evaluat
 Let's investigate the impact of increasing the number of evaluation steps, beginning with just 10 evaluations:
 
 ```{python}
-evals = [10, 100, 1000, 5000]
+#| message: False
+evals = [10, 100, 1000]
 topk = 1
 
 masker = shap.maskers.Image(
-    'blur(128, 128)', shape=X[21].shape
+    'blur(128, 128)', shape=sh
 )
 
 # iterate through all the masks
 for ev in evals:
-    print(ev)
     explainer = shap.Explainer(predict, masker, output_names=class_names)
     shap_values = explainer(
       X[[21]],
@@ -256,9 +260,10 @@ for ev in evals:
     shap.image_plot(shap_values, pixel_values=X[[21]]/255)
 ```
 
+
 As we increase the number of evaluations, we notice:
 
-- We acquire more detailed superpixels, which are associated with the Partition explainer. With only 10 evaluations, we see 4 leaves, requiring a tree depth of 2, which leads to 2 + 2 * 2 = 6 SHAP values.
+- We acquire more detailed superpixels, which are associated with the Partition explainer. With only 10 evaluations, we see 4 leaves, requiring a tree depth of 2, which leads to 4 individual SHAP values and 2 for the first split.
 - The SHAP values decrease as the partitions and the number of pixels get smaller. This is because masking fewer pixels tends to have a lower impact on the prediction.
 - The computation time grows linearly with the number of evaluations.
 
