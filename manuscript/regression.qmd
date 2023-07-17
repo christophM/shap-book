@@ -21,7 +21,7 @@ Random forests typically work well out of the box.
 
 ::: {.callout-note}
 
-Gradient boosted trees like LightGBM and xgboost are other popular tree-based
+Gradient boosted trees algorithms like LightGBM and xgboost are other popular tree-based
 models.
 The `shap` application shown here works the same way.
 
@@ -34,20 +34,15 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 
-# Load the dataset
 wine = pd.read_csv('wine.csv')
 y = wine['quality']
 X = wine.drop(columns=['quality'])
 
-# Split the dataset into training and testing subsets
 X_train, X_test, y_train, y_test = train_test_split(
   X, y, test_size=0.2, random_state=42
 )
 
-# Initialize the model
 model = RandomForestRegressor(random_state=42)
-
-# Train the model
 model.fit(X_train, y_train)
 ```
 
@@ -56,19 +51,16 @@ Next, we evaluate the performance of our model, hoping for better results than w
 ```{python}
 from sklearn.metrics import mean_absolute_error
 
-# Make predictions on the test data
 y_pred = model.predict(X_test)
-# Compute the MAE
 mae = mean_absolute_error(y_test, y_pred)
-
 print('MAE:', round(mae, 2))
 
 ```
 
-This model performs slightly better than the GAM, suggesting that additional interactions are beneficial.
+This model performs better than the GAM, suggesting that additional interactions are beneficial.
 Though the GAM was also tree-based, it did not model interactions.
 
-## Computing SHAP Values
+## Computing SHAP values
 
 Now, let's interpret the model:
 
@@ -93,7 +85,8 @@ If you disable the check, verify the difference to ensure it's acceptable:
 ```{python}
 #| eval: False
 import numpy as np
-shap_values.base_values +  np.sum(shap_values, axis=1) - model.predict(X_test)
+shap_values.base_values +  np.sum(shap_values, axis=1) - \
+  model.predict(X_test)
 ```
 
 :::
@@ -117,7 +110,7 @@ Although other explainers will not function without data, the tree explainer wil
 Let's revisit the SHAP values for the wine from the [Linear Chapter](#linear) and the [Additive Chapter](#additive).
 
 ```{python}
-shap.plots.waterfall(shap_values[0])
+shap.plots.waterfall(shap_values[0], max_display=11)
 ```
 
 While the results differ from both the linear and the GAM models, the interpretation process remains the same.
@@ -137,7 +130,7 @@ Key observations:
 
 - Alcohol and volatile acidity proved to be the most important features.
 - Several features, such as alcohol and volatile acidity, exhibited a somewhat monotonic relationship with the target.
-- Factors that had the large absolute contributions on predicted quality of some wines included:
+- Factors that had the largest absolute contributions on predicted quality of some wines included:
   - High alcohol levels leading to higher predicted quality.
   - Low levels of free sulfur dioxide resulting in lower quality.
 
@@ -149,7 +142,7 @@ shap.plots.scatter(shap_values[:,"alcohol"], color=shap_values)
 ```
 
 The `shap` package automatically detects interactions.
-In this instance, `shap` identified `total sulfur dioxide` as a feature that highly interacts with `alcohol` and color-coded the SHAP values accordingly.
+In this instance, `shap` identified `volatile acidity` as a feature that highly interacts with `alcohol` and color-coded the SHAP values accordingly.
 By default, the `shap` dependence plot selects the feature that shows the strongest interaction with the feature of interest.
 The dependence plot function invokes the `approximate_interactions` function, which measures the interaction between features through the correlation of SHAP values, with a stronger correlation indicating a stronger interaction.
 It then ranks features based on their interaction strength with a selected feature.
@@ -158,12 +151,12 @@ You can also manually select a feature.
 Here are some important observations:
 
 - Generally, a higher alcohol level corresponds to a higher SHAP value.
-- An examination of cases with low total sulfur dioxide reveals an interesting interaction with wines that have a low alcohol level. While wines with low alcohol (around 9%) typically have a negative SHAP value, low total sulfur dioxide appears to have a slightly positive impact.
-- When alcohol levels are high (11 - 14%), a larger total sulfur dioxide level is associated with slightly higher SHAP values and less variance in SHAP values.
+- An examination of cases with low volatile acidity reveals an interesting interaction with wines that have a low alcohol level. For wines with low alcohol (between 8% and 11%), if the wines have low volatile acidity, then the SHAP value for alcohol is higher compared to wines with similar alcohol levels.
+- The relationship reverses for wines with higher alcohol levels: larger volatile acidity level is associated with slightly higher SHAP values for alcohol.
+- We could say that volatile acidity modifies the effect of alcohol on the predicted wine quality.
 - However, this interaction is subtle, and we shouldn't overinterpret it, especially considering the insights from the [Interaction Chapter](#interaction) about the complexity of interactions.
 
-::: {.callout-note}
-Here's some advice on interpreting the interaction part of the dependence plot:
+::: {.callout-note} Here's some advice on interpreting the interaction part of the dependence plot:
 
 - Select one of the two variables.
 - For this variable, choose two ranges or categories.
@@ -176,7 +169,9 @@ Next, let's examine the dependence plot for residual sugar as another example.
 Residual sugar denotes the remaining sugar in the wine, with higher amounts indicating a sweeter taste.
 
 ```{python}
-shap.plots.scatter(shap_values[:,"residual sugar"], color=shap_values)
+shap.plots.scatter(
+  shap_values[:,"residual sugar"], color=shap_values
+)
 ```
 
 Key observations:
@@ -184,7 +179,7 @@ Key observations:
 - Higher residual sugar is associated with higher SHAP values.
 - The `shap` package identifies alcohol as having the highest interaction with residual sugar.
 - Alcohol and residual sugar are negatively correlated with a correlation coefficient of -0.5 (see later in this chapter); this is logical considering sugar is converted into alcohol during the fermentation process.
-- When comparing curves for low (below 12) and high alcohol levels (above 12):
+- Comparing curves for low (below 12) and high alcohol levels (above 12):
   - High variance in SHAP values is observed when alcohol content is low.
   - High alcohol content is associated with low residual sugar and higher SHAP values, as compared to low alcohol content.  
 
@@ -196,7 +191,7 @@ We begin with a correlation plot that displays the Pearson correlation between t
 
 $$r_{xy} = \frac{\sum_{i=1}^{n}(x^{(i)}-\bar{x})(z^{(i)}-\bar{z})}{\sqrt{\sum_{i=1}^{n}(x^{(i)}-\bar{x})^2}\sqrt{\sum_{i=1}^{n}(z^{(i)}-\bar{z})^2}}$$
 
-The correlation varies from -1 (for a perfect negative correlation) to +1 (for a perfect positive correlation), with 0 signifying no correlation.
+The correlation varies from -1 for a perfect negative correlation to +1 for a perfect positive correlation, with 0 signifying no correlation.
 Here, $x$ and $z$ are two features, and $\bar{x}$ and $\bar{z}$ are their respective means.
 
 ```{python}
@@ -224,38 +219,53 @@ sns.heatmap(corr, mask=mask, cmap=cmap, vmax=.3, center=0,
 plt.show()
 ```
 
-Figure @fig-correlation reveals, for instance, that density is correlated with residual sugar (0.8) and total sulfur dioxide (0.5).
+@fig-correlation reveals, for instance, that density is correlated with residual sugar (0.8) and total sulfur dioxide (0.5).
+Density is also strongly negatively correlated with alcohol.
 Volatile acidity does not exhibit a strong correlation with any other features.
-Alcohol, on the other hand, is strongly negatively correlated with density.
 
-The Partition explainer is one method to handle correlated features, which computes SHAP values based on Owen values following a feature clustering process.
-We can use the `shap` package to obtain a tree-based hierarchical clustering.
-The correlation should be the clustering metric for the Partition explainer in this case, as it is designed to address the correlation issue.
-Highly correlated features are grouped together, and correlations become weaker the higher we ascend in the tree.
+The Partition explainer is one method to handle correlated features, which computes SHAP values based on hierarchical feature clusters.
+
+A first obvious choice would be to use the correlation to cluster the features so that features that are highly correlated are clustered together.
+But with one modification:
+Correlation causes extrapolation -- that's why we have to handle it -- but it doesn't matter whether the correlation is positive or negative.
+Clustering based on correlation would result in features with strong negative correlation to be far apart in the clustering hierarchy -- which is bad for our goal of reducing extrapolation.
+That's why, in the following example, we apply tree-based hierarchical clustering on the **absolute correlation** instead.
+Features that are highly correlated, either negative or positive, are hierarchically grouped together until the groups with the least amount of correlation are combined.
 
 ```{python}
 #| label: fig-clustering
 #| fig-cap: "Hierarchically clustered features based on correlation"
+#| width: "80%"
 import matplotlib.pyplot as plt
 from scipy.cluster import hierarchy
 
-clustering = shap.utils.hclust(X_train, metric='correlation')
 
-plt.figure(figsize=(10, 7))  
-plt.title("Dendrograms")  
+correlation_matrix = X_train.corr()
+correlation_matrix = np.corrcoef(correlation_matrix)
+correlation_matrix = np.abs(correlation_matrix)
+dist_matrix = 1 - correlation_matrix
+
+import scipy.cluster.hierarchy as sch
+
+clustering = sch.linkage(dist_matrix, method="complete")
+
+#clustering = shap.utils.hclust(X_train, metric='correlation')
+
+plt.figure(figsize=(10, 7))
+plt.title("Dendrograms")
 dend = hierarchy.dendrogram(clustering, labels=X_train.columns)
 
 # Rotate labels for better readability
 plt.xticks(rotation=90)
 
 # Increase label size for better visibility
-plt.tick_params(axis='x', which='major', labelsize=10)
+plt.tick_params(axis='x', which='major', labelsize=12)
 plt.ylabel('Correlation Distance')
 
 plt.show()
 ```
 
-@fig-clustering shows the results of the clustering: residual sugar and density are combined first, then merged with the cluster of free sulfur dioxide and total sulfur dioxide.
+@fig-clustering shows the results of the clustering: density and alcohol are combined first, then merged with the residual sugar, and then with the cluster of free and total sulfur dioxide.
 The higher we ascend, the weaker the correlation becomes.
 This clustering hierarchy is input into the Partition explainer to produce SHAP values:
 
@@ -271,40 +281,48 @@ Since we are using the Partition explainer and not the Tree explainer, we avoid 
 
 We now have our new SHAP values.
 The most intriguing question is: Are the results different from when we ignored the feature correlation?
-Let's begin with a summary statistic, the SHAP importance, to get a broad view of the changes:
+Let's begin by comparing the SHAP importances:
 
 ```{python}
-fig = plt.figure(figsize=(12,6))
-ax0 = fig.add_subplot(121)
-shap.plots.bar(shap_values, show=False)
-ax1 = fig.add_subplot(122)
-shap.plots.bar(shap_values2, clustering_cutoff=0, show=False)
+fig = plt.figure(figsize=(6,12))
+ax0 = fig.add_subplot(211)
+shap.plots.bar(shap_values, max_display=11, show=False)
+ax1 = fig.add_subplot(212)
+shap.plots.bar(
+  shap_values2, max_display=11, show=False, clustering_cutoff=0.6
+)
 plt.tight_layout()
 plt.show()
 ```
 
-Even though the importances are not identical, they don't differ substantially.
-However, could the explanations differ at the individual level?
-Let's compare the SHAP explanation of the first data instance:
+Even though the SHAP importances are not identical, they don't differ substantially.
+The real deal, however, is the newly won interpretation we get thanks to the clustering and Partition explainer:
+
+- For example, we may add up the SHAP values for both alcohol and density and interpret this as the effect for the group of alcohol and density. And for the interpretation of the combined SHAP value, there was no extrapolation between the two features, meaning no unlikely combination of alcohol and density was formed.
+- Accordingly, we may interpret the combined SHAP importance: we may interpret 0.34 + 0.03 = 0.37 as the SHAP importance of the group alcohol+density.
+- Also free and total sulfur dioxide form a cluster and their combined importance is 0.16.
+- Together they are more important than volatile acidity and due to their high correlation we have a good argument why we may analyze them together.
+
+As the user you can decide how far up you go in the hierarchy by increasing the `clustering_cutoff` and then adding up the SHAP values (or SHAP importances values) for clusters.
+The higher the cutoff, the larger the groups, but also the more reduced the correlation problem is.
+
+Let's now compare the SHAP explanation of the first data instance:
 
 ```{python}
-fig = plt.figure(figsize=(12,6))
-ax0 = fig.add_subplot(121)
-shap.plots.waterfall(shap_values[0], show=False)
-ax1 = fig.add_subplot(122)
-shap.plots.waterfall(shap_values2[0], show=False)
-plt.tight_layout()
-plt.show()
+shap.plots.bar(shap_values2[0], clustering_cutoff=0.6)
 ```
 
-Once again, there are minor differences in the SHAP values, but nothing that alters our conclusions.
-So, where does this leave us in terms of interpretation?
-It's actually beneficial that the explanations are consistent.
-This implies that when dependencies were ignored and the inevitable extrapolation occurred, the resulting SHAP values were not biased, at least compared to a reduced extrapolation with the Partition explainer.
+Again, there are only small differences in the SHAP values, and in addition to interpreting the individual SHAP values we can combine the SHAP values of clusters.
+For the computation of a combined SHAP value, the features within that group have not been subjected to extrapolation through marginal sampling.
+Revisit the [Correlation Chapter](#correlation) for a refresher on this concept.
+For example, the feature group "alcohol, density and residual sugar" contributed a whopping +0.55 (0.39 + 0.02 + 0.14) to the predicted quality.
+And we know that for the group SHAP value of 0.55, alcohol, density and residual sugar were always kept together in coalitions.
 
-The [shap docs](https://shap.readthedocs.io/en/latest/example_notebooks/api_examples/explainers/Exact.html) (accessed July 2023) also highlighted this point:
-
-> Note that there is a strong similarity between the explanation from the Independent masker above and the Partition masker here. In general, the differences between these methods for tabular data are not substantial, though the Partition masker allows for faster runtime and potentially more realistic manipulations of the model inputs, as groups of clustered features are masked/unmasked together.
+But the individual SHAP values are still partially susceptible to extrapolation.
+For example, the SHAP value for alcohol was computed by attributing 0.41 to both density and alcohol.
+And for this attribution, density was also sampled by marginal sampling, which introduces extrapolation, such as combining high alcohol values with a high density.
+So we have a trade-off between extrapolation and group granularity:
+The higher up we go in the clustering hierarchy, the less extrapolation but the larger the feature groups become which also makes interpretation more difficult.
 
 ## Understanding models for data subsets
 
@@ -316,8 +334,10 @@ In technical terms, this means subsetting the SHAP values and then producing sum
 But when we want to investigate a data subset, such as alcohol-rich wines, should we also subset the background data used to estimate the SHAP values?
 
 The selection of background data is contingent on the interpretation goal:
+
 - Do you want to explain the difference in prediction compared to all wines?
 - Or compared to the prediction of alcohol-rich wines?
+
 Altering the background data changes the value function.
 Wines with higher alcohol levels have higher predicted qualities.
 A wine predicted to be of above-average quality may actually be below average if the average is based on wines rich in alcohol.
@@ -326,28 +346,30 @@ Let's examine the two methods of comparing subsets.
 
 ```{python}
 # create the data subsets
-X_train_sub = X_train[X_train['alcohol'] > 12]
-X_test_sub = X_test[X_test['alcohol'] > 12]
+ind_test = np.where(X_test['alcohol'].values > 12)
+ind_train = np.where(X_test['alcohol'].values > 12)
+X_train_sub = X_train.iloc[ind_train]
+X_test_sub = X_test.iloc[ind_test]
 
 # SHAP where background data is based on subset
 explainer_sub = shap.Explainer(model, X_train_sub)
 shap_values_sub = explainer_sub(X_test_sub)
 
 # SHAP where background data includes all wines
-shap_values_sub_all = shap_values[np.where(X_test['alcohol'].values > 12)]
+shap_values_sub_all = shap_values[ind_test]
 ```
 
 We begin with the SHAP values for a single wine.
-We compare the SHAP values calculated with all background data to those calculated with only alcohol-rich wines.
 
 ```{python}
 #| label: fig-subsets
-#| fig-cap:  "Left: Background data are wines with alcohol > 12. Right: Background data includes all wines"
+#| fig-cap:  "Top: Background data are wines with alcohol > 12. Bottom: Background data includes all wines"
 import matplotlib.pyplot as plt
 
-plt.subplot(121)
+fig = plt.figure(figsize=(6,12))
+ax0 = fig.add_subplot(211)
 shap.plots.waterfall(shap_values_sub[1], show=False)
-plt.subplot(122)
+ax1 = fig.add_subplot(212)
 shap.plots.waterfall(shap_values_sub_all[1], show=False)
 plt.tight_layout()
 plt.show()
@@ -355,16 +377,15 @@ plt.show()
 
 @fig-subsets demonstrates the different explanations produced by SHAP:
 
-
 - While the wine's quality is above average compared to all wines, it falls below average in predicted quality when compared to alcohol-rich wines.
 - Alcohol, usually the most significant feature, wasn't relevant for this wine. This makes sense because we conditioned the background data on alcohol. The question is: How much did an alcohol level of 12.2 contribute to the prediction, compared to the average prediction for wines rich in alcohol?
-- The reference changes: Since wines rich in alcohol are associated with higher predicted quality, $\mathbb{E}(f(X))$ is also higher when we use all wines as background data. This means that the SHAP values only need to explain a smaller negative difference of approximately -0.1 instead of approximately 0.7.
+- The reference changes: Since wines rich in alcohol are associated with higher predicted quality, $\mathbb{E}(f(X))$ is also higher when we use all wines as background data. This means that the SHAP values only need to explain a smaller difference of almost 0 instead of approximately 0.7.
 
 :::{.callout-tip}
 
 ## Interpretation template for subsets *(replace [] with your data)*
 
-Prediction [$f(x)$] for instance [$i$] differs from the average prediction of [$\mathbb{E}(f(X))$] for [subset] by [$f(xi) − \mathbb{E}(f(X))j$] and [feature name = feature value] contributed [$\phi^{(i)}_j$] towards that difference.
+Prediction [$f(x)$] for instance [$i$] differs from the average prediction of [$\mathbb{E}(f(X))$] for [subset] by [$f(x^{(i)} − \mathbb{E}(f(X))$] and [feature name = feature value] contributed [$\phi^{(i)}_j$] towards that difference.
 
 :::
 
@@ -374,7 +395,7 @@ Here's an example of interpretation:
 #| echo: False
 from IPython.display import display, Markdown
 
-i = 0
+i = 1
 y = model.predict(X_test_sub)[i]
 bv = shap_values.base_values[0]
 diff = y - bv
@@ -395,7 +416,7 @@ fv3 = X_test_sub.iloc[i, ind]
 sv3 = shap_values_sub.values[i,ind]
 
 display(Markdown("""
-Interpretation: The predicted value of {y} for instance {i} deviates from the expected average prediction of {base_value} for wines with alcohol > 12 by {diff}.
+The predicted value of {y} for instance {i} deviates from the expected average prediction of {base_value} for wines with alcohol > 12 by {diff}.
 
 - {feature1}={fv1} contributed {sv1}
 - {feature2}={fv2} contributed {sv2}
@@ -418,14 +439,20 @@ While maintaining the background data set for all wines and subsetting the SHAP 
 # sort based on ShAP importance for all background data and all wines
 ordered = np.argsort(abs(shap_values.values).mean(axis=0))[::-1]
 plt.subplot(131)
-shap.plots.beeswarm(shap_values, show=False, color_bar=False, order=ordered)
+shap.plots.beeswarm(
+  shap_values, show=False, color_bar=False, order=ordered
+)
 plt.xlabel("")
 plt.subplot(132)
-shap.plots.beeswarm(shap_values_sub_all, show=False, color_bar=False, order=ordered)
+shap.plots.beeswarm(
+  shap_values_sub_all, show=False, color_bar=False, order=ordered
+)
 plt.gca().set_yticklabels([])  # Remove y-axis labels
 plt.ylabel("")
 plt.subplot(133)
-shap.plots.beeswarm(shap_values_sub, show=False, color_bar=False, order=ordered)
+shap.plots.beeswarm(
+  shap_values_sub, show=False, color_bar=False, order=ordered
+)
 plt.gca().set_yticklabels([])  # Remove y-axis labels
 plt.ylabel("")
 plt.xlabel("")
@@ -434,10 +461,21 @@ plt.show()
 ```
 
 @fig-summaries illustrates how subsetting SHAP values solely or together with the background data influences the explanations.
-Alcohol, the most critical characteristic according to SHAP, retains its importance when we subset SHAP values for alcohol-rich wines.
+Alcohol, the most critical feature according to SHAP, retains its importance when we subset SHAP values for alcohol-rich wines.
 It gains more prominence because these wines, rich in alcohol, have a high predicted quality due to their alcohol content.
 However, when we also change the background data, the importance of alcohol diminishes significantly, as evidenced by the close clustering of the SHAP values around zero.
 
+But there's even more insights in @fig-summaries.
+Look, for example, at volatile acidity.
+While higher volatile acidity is usually related to lower SHAP values, we see different patterns when interpreting with the background of alcohol-rich wines.
+First of all, the SHAP values of volatile acidity have a lower range.
+In addition, there are some wines with high volatile acidity that actually have positive SHAP values, which is a reversal of the usual relationship between volatile acidity and predicted quality.
+
+
+::: {.callout-tip}
+
 Be creative: Any feature can be used to create subsets.
 You can even use variables that weren't used as model features to create subsets.
-For instance, you might want to study how explanations vary for protected attributes such as race or gender, variables that you wouldn't use as features.
+For instance, you might want to study how explanations vary for protected attributes such as ethnicity or gender, variables that you wouldn't use as features.
+
+:::

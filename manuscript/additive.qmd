@@ -14,7 +14,7 @@ In this step, we introduce the concept of non-linear relationships between a fea
 
 ## Introducing the generalized additive model (GAM)
 
-Generalized additive models (GAMs) are perfect for modeling additive models with non-linear base functions.
+Generalized additive models (GAMs) are perfect for modeling purely additive effects using non-linear base functions.
 
 A GAM models the target as follows:
 
@@ -33,26 +33,20 @@ Although we could add interaction terms to a GAM, we will not do so in this chap
 ## Fitting the GAM
 
 We return to the wine example and fit a GAM instead of a linear regression model.
-
 We'll use the `interpret` Python library for this. You can install it with:
 
 ```{python}
 #| eval: false
-!pip install interpret
+pip install interpret
 ```
 
 Next, we fit a model.
 We're using the Explainable Boosting Regressor from the interpret package.
-
-::: .{callout-note}
-
 The Explainable Boosting Machine (EBM) is a tree-based GAM.
 It offers optional automated interaction detection, which we won't use in this example.
 In our case, each tree in the ensemble can only use one feature to avoid modeling interactions.
 
-:::
-
-Here is the model we'll train:
+Here we train the model:
 
 ```{python}
 #| output: false
@@ -75,15 +69,15 @@ Let's evaluate the model's predictions on the test data:
 
 ```{python}
 from sklearn.metrics import mean_absolute_error
+
 y_pred = model.predict(X_test)
 mae = mean_absolute_error(y_test, y_pred)
-
-# Print the mean absolute error
 print(f"MAE: {mae:.2f}")
 ```
 
 The mean absolute error on the test data is less than that of the linear regression model.
-This is promising, as it indicates that by using a GAM and allowing non-linear feature effects, we improved predictions and revealed some non-linear effects.
+This is promising, as it indicates that by using a GAM and allowing non-linear feature effects, we improved predictions.
+The increase in performance indicates that some relations between wine quality and features are non-linear.
 
 ## Interpreting the GAM with SHAP
 
@@ -119,11 +113,10 @@ This waterfall plot provides a different perspective than the purely linear mode
 
 ## SHAP recovers non-linear functions
 
-We understand that the GAM is additive.
-This implies that we can inspect each feature in isolation to understand its effect without considering interaction effects.
+GAM is an additive model, which implies that we can inspect each feature in isolation to understand its effect without considering interaction effects.
 Let's examine the SHAP dependence plot for alcohol:
 ```{python}
-shap.plots.scatter(shap_values[:,"alcohol"], show=False)
+shap.plots.scatter(shap_values[:,"alcohol"])
 ```
 
 
@@ -156,7 +149,7 @@ As evident, the SHAP values follow the same trajectory as we would see when simp
 This reinforces our confidence in understanding SHAP values.
 There's a paper [@bordt2022shapley] that demonstrates that when the model is a GAM, the non-linear components can be recovered by SHAP.
 
-Like the linear case, in the additive case, SHAP values accurately track the feature effect and align with what we would predict.
+Like the linear case, in the additive case, SHAP values accurately track the feature effect and align with what we would expect.
 
 ## Analyzing feature importance
 
@@ -183,4 +176,3 @@ This difference becomes particularly pronounced when the model is overfitting. A
 
 :::
 
-While the feature importance plot is beneficial, it doesn't provide information beyond the importances.

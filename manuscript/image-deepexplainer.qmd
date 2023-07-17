@@ -1,4 +1,4 @@
-# Explaining MNIST Model with Deep Explainer and Gradient Explainer {#image-deep-explainer}
+# Explaining Image Classification with Deep and Gradient Explainer {#image-deep-explainer}
 
 
 ::: {.callout-tip appearance="simple"}
@@ -176,7 +176,7 @@ shap.image_plot(shap_values, x_test[:3])
 The SHAP values are very similar to the Gradient Explainer.
 This makes sense, since in both cases the result should be the same SHAP values and the difference is only due to the fact that both are approximated.
 
-## Time comparison between Deep Explainer
+## Time comparison between Explainers
 
 We measured the time for both gradient and deep explainer.
 

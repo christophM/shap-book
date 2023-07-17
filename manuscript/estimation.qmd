@@ -432,7 +432,7 @@ Regrettably, subsets of different sizes carry different weights.
 The algorithm must keep track of the cumulative weight of the subsets in each node.
 This complexity complicates the algorithm.
 
-## Implementation details
+Implementation details
 
 ```{python}
 #| eval: False
@@ -589,4 +589,3 @@ It should follow a format similar to `scipy.cluster.hierarchy`, essentially a ma
 
 [^interactions]: While you can generally add interactions to a linear model, this option is not available for the Linear Explainer.
 
-[^og-meaning]: OG refers to the original Explainer as proposed in the paper.

@@ -1,4 +1,4 @@
-# A Short History of SHAP and Shapley Values {#history}
+# A Short History of Shapley Values and SHAP {#history}
 
 ::: {.callout-tip appearance="simple"}
 
@@ -9,7 +9,7 @@ By the end of this chapter, you will be able to:
 
 :::
 
-This chapter offers a succinct overview of the history of SHAP and Shapley values, focusing on their chronological development.
+This chapter offers an overview of the history of SHAP and Shapley values, focusing on their chronological development.
 The history is divided into three parts, each highlighted by a milestone:
 
 - 1953: The introduction of Shapley values in game theory.
@@ -29,7 +29,7 @@ In 2012, Lloyd Shapley and Alvin Roth were awarded the Nobel Prize in Economics[
 
 Shapley values serve as a solution in cooperative game theory, which deals with games where players cooperate to achieve a payout.
 They address the issue of a group of players participating in a collaborative game, where they work together to reach a certain payout.
-The payout of the game needs to be evenly distributed among the players, who may have contributed differently.
+The payout of the game needs to be distributed among the players, who may have contributed differently.
 Shapley values provide a mathematical method of fairly dividing the payout among the players.
 
 Shapley values have since become a cornerstone of coalitional game theory, with applications in various fields such as political science, economics, and computer science.
@@ -67,18 +67,14 @@ The prevailing sentiment at the time was a concern over the complexity of advanc
 Shortly after the LIME paper, in 2017, Scott Lundberg and Su-In Lee published a paper titled "A Unified Approach to Interpreting Model Predictions" [@lundberg2017unified].
 This paper introduced SHapley Additive exPlanations (SHAP), another method to explain machine learning predictions.
 The paper was published at NIPS, now known as NeurIPS[^neurips].
-NeurIPS is a major machine learning conference, and if your research is published there as a machine learning researcher, it's more likely to draw attention.
+NeurIPS is a major machine learning conference, and if your research is published there, it's more likely to draw attention.
 But what exactly did the SHAP paper introduce, given that Shapley values for machine learning were already defined in 2010/2014?
 
 Lundberg and Lee presented a new way to estimate SHAP values using a weighted linear regression with a kernel function to weight the data points[^new-estimator].
 The paper also demonstrated how their proposed estimation method could integrate other explanation techniques, such as DeepLIFT [@shrikumar2017learning], LIME [@ribeiro2016should], and Layer-Wise Relevance Propagation [@bach2015pixel].
 
 
-[^unification]: The notion of unification is somewhat misleading.
-While a framework that connects different methods is helpful, SHAP doesn't truly unify these methods as it requires modifications to other methods to produce SHAP values.
-This is a separate discussion.
-
-[^new-estimator]: The `shap` package no longer uses Kernel SHAP, rendering the paper somewhat historical.
+[^new-estimator]: The `shap` package no longer uses Kernel SHAP by default, rendering the paper somewhat historical.
 
 Here's why I believe SHAP gained popularity:
 

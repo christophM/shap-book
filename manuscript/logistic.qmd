@@ -7,7 +7,7 @@ By the end of this chapter, you will be able to:
 - Interpret SHAP for classification models.
 - Decide whether to interpret probabilities or log odds.
 - Handle categorical features.
-- Use alternatives to the waterfall plot: the bar plot and the force plot.
+- Use alternatives to the waterfall plot: bar and force plot.
 - Describe the cluster plot and the heatmap plot.
 
 :::
@@ -20,28 +20,34 @@ Differences from linear regression include:
 - A non-linear function when the output is a probability.
 
 Logistic regression is suitable for binary classification tasks.
-It provides probability outputs for two classes.
+It provides probability outputs for two classes by relating the binary output with the features in the following way:
+
+\begin{equation*}
+P(Y=1 | x^{(i)}) = \frac{1}{1 + \exp(-(\beta_0 + \beta_1 x^{(i)}_1 + \beta_2 x^{(i)}_2 + ... + \beta_p x^{(i)}_p))}
+\end{equation*}
+
 Since the probability of one class defines the other's, you can work with just one probability.
 Having two classes is a special case of having $k$ classes.
 
 ::: {.callout-tip}
 
-Even though the example here is binary classification, `shap` works the same for
-multi-class models.
+Even though the example here is binary classification, `shap` works the same for multi-class and also when the model is not logistic regression.
 
 :::
 
-From the SHAP perspective, classification is similar to regression, except the scale is the score output, not regression.
+From the SHAP perspective, classification is similar to regression, except the scale the score or probability for a class.
 
 ## The Adult dataset
 
 We will use the Adult dataset from the UCI repository for the classification task.
 This dataset contains demographic and socioeconomic data of individuals from the 1994 U.S. Census Bureau database, aiming to predict whether an individual's income is greater than or equal to \$50,000 per year.
-The dataset includes features such as age, education level, work class, occupation, marital status, and more.
+The dataset includes features such as age, education level, work class, occupation, and marital status.
 With approximately 32,000 observations, it contains both categorical and numerical features.
 Conveniently, the `shap` package includes the Adult dataset, which simplifies its use in our example.
 
 ## Training the model
+
+First we load the dataset which, to our convenience, is available in `shap`.
 
 ```{python}
 import shap
@@ -115,7 +121,7 @@ We can integrate the preprocessing and logistic regression into a pipeline and r
 This approach is akin to nesting mathematical functions:
 
 - Our model is $y = f(\tilde{x})$, where $\tilde{x}$ is the preprocessed data.
-- We have our preprocessing steps, denoted as $g$, so the preprocessed data can be expressed as $\tilde{x} = g(x)$.
+- We have our preprocessing, denoted as $g$, so the preprocessed data can be expressed as $\tilde{x} = g(x)$.
 - A less desirable option would be to apply SHAP values on $f$.
 - A better choice is to define a new function $\tilde{f}(x) = f(g(x))$, where the input is $x$ and not $\tilde{x}$. $\tilde{f}$ represents the pipeline.
 - We apply and interpret SHAP values for $\tilde{f}$ instead of $f$.
@@ -131,7 +137,7 @@ It's sensible to include steps like feature standardization in the pipeline, whi
 
 Another point of interest is that the model's output is 2-dimensional, not 1-dimensional.
 This is mirrored in the resulting `shap_values` variable, which gains an extra dimension.
-Hence, we also need to specify the class for which we want to obtain the SHAP values.
+Hence, we also need to specify the class for which we want the SHAP values.
 
 ```{python}
 class_index = 0
@@ -151,7 +157,8 @@ class_index = 1
 shap.plots.waterfall(shap_values[data_index,:,class_index])
 ```
 
-This plot mirrors the previous one, except all SHAP values are multiplied by -1.
+This plot shows the probability of this individual to earn less than \$50k.
+We can see it's the figure from before except all SHAP values are multiplied by -1.
 This is logical since the probabilities for both classes must add up to 1.
 Thus, a variable that increases the classification by 0.11 for class >50k decreases the classification by 0.11 for class <=50k.
 We only need to pick one of the two classes.
@@ -182,7 +189,7 @@ shap.plots.force(shap_values[data_index,:,class_index])
 
 ![Force Plot](images/force-plot.png)
 
-The force plot, interactive and based on JavaScript, allows you to hover over it for more insights.
+The force plot is interactive, based on JavaScript, and allows you to hover over it for more insights.
 Of course, this feature is not available in the static format you're currently viewing, but it can be accessed if you create your own plot and embed it in a Jupyter notebook or a website.
 The image above is a screenshot of a force plot.
 The plot is named force plot because the SHAP values are depicted as forces, represented by arrows, which can either increase or decrease the prediction.
@@ -196,7 +203,17 @@ In logistic regression, it's common to interpret the model in terms of log odds 
 
 The explainer has a `link` argument for this, which defaults to the identity link $l(x) = x$.
 For classification, the logit link: $l(x) = log\left(\frac{x}{1 - x}\right)$, is a good choice.
-We can use this logit link to transform the output of the logistic regression model and compute SHAP values on this new scale: 
+This turn the probabilities into log odds.
+In mathematical terms, it's rearrangement of the terms in the logistic regression model:
+
+\begin{equation*}
+\log\left(\frac{P(Y=1|x^{(i)})}{P(Y=0|x^{(i)})}\right) = \beta_0 + \beta_1 x^{(i)}_1 + \beta_2 x^{(i)}_2 + ... + \beta_p x^{(i)}_p
+\end{equation*}
+
+
+We can use this logit link to transform the output of the logistic regression model and compute SHAP values on this new scale:
+
+And to the same 
 
 ```{python}
 ex_logit = shap.Explainer(
@@ -209,7 +226,7 @@ shap.plots.waterfall(sv_logit[data_index,:,class_index])
 ```
 
 When the outcome of a logistic regression model is defined in terms of log odds, the features impact the outcome linearly.
-In simpler terms, the logistic regression model is a linear model on the level of the log odds. 
+In other words, logistic regression is a linear model on the level of the log odds. 
 
 Here's what it means for interpretation:
 A marital status of 0 (married) contributes +1.47 to the log odds of making >50k versus <=50k compared to the average prediction.
@@ -224,7 +241,7 @@ The logit space is more suitable if you're interested in "evidence" in an inform
 :::
 
 Let's discuss when the distinction between log odds and probabilities matters:
-A shift from 80% to 90% is significant in probability space, while a change from 98% to 99.9% is relatively minor.
+A shift from 80% to 90% is large in probability space, while a change from 98% to 99.9% is relatively minor.
 
 In probability space, the differences are 0.10 and 0.019.
 In logit space, we have:
@@ -232,15 +249,15 @@ In logit space, we have:
 - $log(0.9/0.1) - log(0.8/0.2) \approx 0.8$ and
 - $log(0.999/0.001) - log(0.98/0.02) \approx 3$
 
-In logit space, the step is significantly larger.
-This happens because the logit compresses near 0 and 1, making changes in the middle of probability space appear larger.
+In logit space, the second jump is larger.
+This happens because the logit compresses near 0 and 1, making changes in the extremes of probability space appear larger.
 
 So, which one should you select?
 If you're primarily concerned with probabilities, and a jump from 50% to 51% is as significant to you as from 99% to 100%, stick with the default and use the identity link.
 However, if changes in extreme probabilities near 0 and 1 are more critical for your application, choose logits.
 You can also visualize the difference in step sizes in the following @fig-logits.
 
-![Probabilities versus Logits](images/logits.jpg){#fig-logits}
+![Probabilities versus Logits](images/logits.jpg){#fig-logits width="75%"}
 
 ## Understanding the data globally
 
@@ -251,7 +268,7 @@ Here we interpret the model in the probability space again.
 shap.plots.beeswarm(shap_values[:,:,class_index])
 ```
 
-From our observations, Marital Status and Education emerge as the two most significant features on a log-odds scale.
+From our observations, Marital Status and Education emerge as the two most important features.
 For some individuals, Capital Gain has substantial effects, suggesting that high values of capital gain result in small SHAP values.
 
 ## Clustering SHAP values
@@ -287,7 +304,7 @@ shap.plots.force(sv_logit[0:20:,:,0])
 - The cluster plot consists of vertical force plots.
 - Data instances are distributed across the x-axis, while SHAP values are spread across the y-axis.
 - Color signifies the direction of SHAP values.
-- The larger the area for a feature, the larger the SHAP values across the data, indicating the significance of this feature.
+- The larger the area for a feature, the larger the SHAP values across the data, indicating the importance of this feature.
 - By default, the data instances are arranged by their similarity in SHAP values.
 
 :::

@@ -6,18 +6,18 @@ By the end of this chapter, you will be able to:
 
 - Calculate SHAP for linear models.
 - Install and use `shap`.
-- Interpret and visualize SHAP values for linear regression models.
+- Interpret and visualize SHAP values.
 - Analyze the model with summary and dependence plots.
 
 :::
 
 Let's start with a straightforward example.
-This example is "simple" because we are using a linear regression model, which is naturally interpretable.
+This example is "simple" because we are using a linear regression model, which is naturally interpretable, or so they say.
 This allows us to compare SHAP values with the coefficients of the model.
 
 ## The wine data
 
-We will utilize the wine dataset from the `scikit-learn` library.
+We will utilize the wine dataset from the UCI repository.
 The objective is to predict wine quality based on its physicochemical properties.
 The target variable "quality" is an average rating from three blind testers, ranging from 0 to 10.
 
@@ -44,6 +44,7 @@ except FileNotFoundError:
 Let's analyze the distributions of the features.
 
 ```{python}
+#| output: asis
 from tabulate import tabulate
 summary = wine.describe().transpose().round(2)
 summary = summary.drop("count", axis=1)
@@ -75,8 +76,6 @@ from sklearn.model_selection import train_test_split
 
 # Extract the target variable (wine quality) from the data
 y = wine['quality']
-
-# Remove the target variable from the data
 X = wine.drop('quality', axis=1)
 
 X_train, X_test, y_train, y_test = train_test_split(
@@ -105,15 +104,10 @@ To evaluate, we calculate the mean absolute error (MAE) on the test data.
 
 ```{python}
 from sklearn.metrics import mean_absolute_error
-
-# Calculate the mean absolute error 
 y_pred = model.predict(X_test)
 mae = mean_absolute_error(y_test, y_pred)
-
-# Print the mean absolute error
 print(f"MAE: {mae:.2f}")
 ```
-
 ```{python}
 #| echo: false
 from IPython.display import display, Markdown
@@ -149,7 +143,7 @@ The coefficient for a feature is constant across all data points, rendering the 
 
 For a specific data point (a local explanation), we can also consider the feature value.
 Consider a coefficient $\beta_j=0.5$.
-The feature value could be 0, 0.008, or -4, yielding different results when multiplied (0, 0.004, -2).
+The feature value could be 0, 0.008, or -4, yielding different results when multiplied with the feature value (0, 0.004, -2).
 A more meaningful way to present a feature effect would be the product of the coefficient and the feature value: $\beta_j \cdot x^{(i)}_j$.
 
 However, this formula is also "incomplete" as it doesn't provide an understanding of whether the contribution is large (in absolute terms) or not.
@@ -158,12 +152,12 @@ Is that a large contribution?
 It depends on the range of $x_j$.
 If 4 is the smallest possible value of $x^{(i)}_j$, then 2 is actually the smallest possible contribution, but if $x^{(i)}_j$ follows a Normal distribution centered at 0, then a contribution of 4 is more than expected.
 An easy solution is to center the effect $\beta_j x^{(i)}_j$ around the expected effect $E(\beta_j X_j)$.
-As we'll see in the coming section, this is how the SHAP values are defined.
+As we'll see in the coming section, this is the same as how the SHAP values are defined.
 
 ## Theory: SHAP for linear models
 
 For linear regression models without interaction terms, the computation of SHAP values is straightforward since the model only has linear relations between the feature and target and no interactions.
-The SHAP value $\phi^{(i)}_j$ of the j-th feature on the prediction $f(x^{(i)}_j)$ can be computed as:
+The SHAP value $\phi^{(i)}_j$ of the j-th feature on the prediction $f(x^{(i)}_j)$ for a linear regression model is defined as:
 
 $$\phi^{(i)}_j=\beta_{j}x^{(i)}_j-\mathbb{E}(\beta_{j}X_{j})=\beta_{j}(x^{(i)}_j - \mathbb{E}(X_{j}))$$
 Where $\mathbb{E}(\beta_jX_{j})$ denotes the expected effect estimate for feature j, the contribution refers to the difference between the feature effect and the average effect.
@@ -181,13 +175,12 @@ Now we are aware of each feature's contribution to the prediction.
 Let's verify the efficiency axiom:
 
 \begin{align*}
-\sum_{j=1}^{p}\phi^{(i)}_j(f)=&\sum_{j=1}^p(\beta_{j}x^{(i)}_j-\mathbb{E}(\beta_{j}X_{j}))\\
-=&(\beta_0+\sum_{j=1}^p\beta_{j}x^{(i)}_j)-(\beta_0+\sum_{j=1}^{p}\mathbb{E}(\beta_{j}X_{j}))\\
+\sum_{j=1}^{p}\phi^{(i)}_j=&\sum_{j=1}^p(\beta_{j}x^{(i)}_j-\mathbb{E}(\beta_{j}X_{j}))\\
+=&\beta_0+\sum_{j=1}^p\beta_{j}x^{(i)}_j-(\beta_0+\sum_{j=1}^{p}\mathbb{E}(\beta_{j}X_{j}))\\
 =&f(x)-\mathbb{E}(f(X))
 \end{align*}
 
-This is the predicted value for data point x subtracted from the average predicted value.
-Feature contributions can be negative.
+This is the predicted value for data point x subtracted from the average predicted value.  Feature contributions can be negative.
 Now, let's apply these to the wine quality prediction.
 
 ## Installing `shap`
@@ -248,7 +241,6 @@ For the version used in this book:
 conda install -c conda-forge shap=0.42.0
 ```
 
-The installation process is simple.
 
 ## Computing SHAP values
 To better comprehend the effects of features, we can calculate SHAP values for a single data instance.
@@ -293,9 +285,8 @@ However, I must confess that I haven't seen much research on dataset choices, so
 Next, let's examine the SHAP values.
 
 While initially looking a bit messy, it's insightful to inspect the `Explanation` object.
-
 The Explanation object includes `.values`, `.base_values`, and `.data` fields.
-The `.values` represent the feature SHAP values, `.base_values` is the average prediction (consistent for each data point), and `.data` contains the feature values.
+The `.values` represent the SHAP values as $n \times p$ array, `.base_values` is the average prediction (consistent for each data point), and `.data` contains the feature values.
 Each element in these arrays corresponds to one data point in `X_test`, which we used to calculate the SHAP values.
 
 ```{python}
@@ -303,7 +294,7 @@ print(shap_values.values)
 ```
 
 However, having only the raw SHAP values isn't particularly useful.
-The true power of the shap library lies in its various visualization capabilities.
+The true power of the `shap` library lies in its various visualization capabilities.
 
 ## Interpreting SHAP values
 
@@ -319,13 +310,12 @@ shap.plots.waterfall(shap_values[0])
 
 ## The Waterfall Plot
 
-- The plot is dubbed "waterfall" because each step resembles flowing water. Water can flow in either direction, just as SHAP values can be positive or negative.
+- The plot is dubbed "waterfall" because each step resembles flowing water. Water can flow in either direction, just as SHAP values can be positive or negative. Positive SHAP values point to the right.
 - The y-axis exhibits the individual features, along with the values for the selected data instance.
 - The feature values are ordered by the magnitudes of their SHAP values.
-- The x-axis is on the scale of SHAP values, which is the same scale on which the prediction is.
+- The x-axis is on the scale of SHAP values
 - Each bar signifies the SHAP value for that specific feature value.
-- Positive SHAP values point to the right.
-- The x-axis also shows the overall expected prediction $\mathbb{E}(f(X))$ and the actual prediction of the instance $f(x^{(i)})$.
+- The x-axis also shows the estimated expected prediction $\mathbb{E}(f(X))$ and the actual prediction of the instance $f(x^{(i)})$.
 - The bars start at the bottom from the expected prediction and add up to the actual prediction.
 
 :::
@@ -379,10 +369,10 @@ Prediction [$f(x)$] for instance [$i$] differs from the average prediction [$\ma
 
 Several observations can be made:
 
-- The most influential feature was 'residual sugar' (=10.8), with a SHAP value of 0.27, indicating it had an increasing impact on the quality.
+- The most influential feature was 'residual sugar' (=10.8), with a SHAP value of 0.32, indicating it had an increasing impact on the quality on average.
 - Overall, the prediction surpassed the average, suggesting a high-quality wine.
 - Most of this wine's feature values were assigned a positive SHAP value.
-- The feature 'pH' with a value of 3.09 had the most significant negative SHAP value.
+- The feature 'pH' with a value of 3.09 had the largest negative SHAP value.
 
 Let's examine another data point:
 
@@ -398,7 +388,7 @@ For instance, while we know 'residual sugar' increased the prediction for the fi
 
 ## Global model understanding
 
-We calculated SHAP values to explain individual predictions.
+We computed SHAP values to explain individual predictions.
 However, we can also compute SHAP values for more data points, ideally for the entire (test) dataset.
 By visualizing the SHAP values across all features and multiple data points, we can uncover patterns of how the model makes predictions.
 This gives us a global model interpretation.
@@ -422,7 +412,7 @@ shap.plots.beeswarm(shap_values)
 
 ## Summary plot
 
-- Also known as bee swarm plot.
+- Also known as beeswarm plot.
 - The x-axis represents the SHAP values, while the y-axis shows the features, and the color indicates the feature's value.
 - Each row corresponds to a feature.
 - The feature order is determined by importance, defined as the average of absolute SHAP values: $I_j = \frac{1}{n}\sum_{i=1}^n \phi^{(i)}_j$
@@ -435,7 +425,8 @@ Density, residual sugar, and alcohol are the most important features for predict
 
 The coloring also reveals that the relationships are monotonic for all features:
 A feature's increase (or decrease) consistently influences the prediction in one direction.
-Since the model is a linear regression model, we know that this relationship is linear.
+Since the model is a linear regression model, we know that this modeled relationship must be linear.
+However, that's just for the model, the "true" relationship in the data might be non-linear.
 
 ::: {.callout-tip}
 
@@ -444,7 +435,7 @@ Since the model is a linear regression model, we know that this relationship is 
 - Observe the ranking of the features. The higher the feature, the greater its SHAP importance.
 - For each feature of interest:
   - Examine the distribution of the SHAP values. This provides insight into the various ways the feature values can influence the prediction. For instance, a wide spread indicates a broad range of influence.
-  - Understand the color trend for a feature: This offers an initial insight into whether the relationship is monotonic or exhibits more complex relations.  
+  - Understand the color trend for a feature: This offers an initial insight into whether the relationship is monotonic or exhibits more complex relations.
   - Look for color clusters that may indicate interesting data clusters.
 
 :::

@@ -13,19 +13,6 @@ By the end of this chapter, you will be able to:
 Interpreting models becomes more complex when they contain interactions.
 This chapter presents a simulated example to explain how feature interactions influence SHAP values.
 
-::: {.callout-note}
-
-## Feature Interaction
-
-Two features interact when the prediction can't be explained by the sum of both feature effects.
-Alternatively formulated: interaction means the effect of one feature changes depending on the value of the other feature.
-
-Consider the price of a hotel room, which depends on room size and sea view.
-Both factors individually contribute to the price: a larger room costs more, as does a room with a sea view.
-However, size and view interact: for small rooms, the sea view adds less value than it does for large rooms, since small rooms are less inviting for extended stays.
-
-:::
-
 ## A function with interactions
 
 Imagine you're at a concert.
@@ -46,6 +33,20 @@ $$y = 0.1 \cdot x_1 - 1 \cdot x_2 + 10 \cdot \mathbb{1}_{x_1 < 160 \text{ and } 
 - The closer to the stage, the better.
 - Both of these have linear relationships with concert enjoyment.
 - Additional interaction: Small fans who are far from the stage get a "bonus": some kind soul allows them to sit on their shoulders for a better view of the concert.
+
+::: {.callout-note}
+
+## Feature Interaction
+
+Two features interact when the prediction can't be explained by the sum of both feature effects.
+Alternatively formulated: interaction means the effect of one feature changes depending on the value of the other feature.
+
+Consider the price of a hotel room, which depends on room size and sea view.
+Both factors individually contribute to the price: a larger room costs more, as does a room with a sea view.
+However, size and view interact: for small rooms, the sea view adds less value than it does for large rooms, since small rooms are less inviting for extended stays.
+
+:::
+
 
 We'll simulate some data and train a random forest on it.
 
@@ -101,6 +102,8 @@ plt.show()
 ```
 
 The random forest appears to approximate the function quite accurately.
+A note on the scale of "concert enjoyment":
+The range of the score from 8 to 18 doesn't really relate to anything, you can just see it as higher means more enjoyment.
 Next, we will generate explanations for the predictions.
 
 ## Computing SHAP values
@@ -109,14 +112,9 @@ Let's calculate some SHAP values:
 
 ```{python}
 import shap
-# Make predictions on the test set
-predictions = rf_model.predict(X_test)
 
-# Explain the predictions with shapley values
 explainer = shap.TreeExplainer(rf_model)
 shap_values = explainer(X_test)
-
-# Visualize the shapley values
 shap.plots.beeswarm(shap_values)
 ```
 The summary plot reveals the following general relationships:
@@ -139,12 +137,12 @@ We can make three observations:
 
 1. A large jump at $x_1=160$ is logical because, according to our simulated data, fans taller than 160cm will not sit on someone's shoulders.
 2. Ignoring the jump, there seems to be a linear upward trend, which aligns with the linear dependence of $Y$ on $x_1$. The slope reflects the coefficient in the simulated function ($\beta_1=0.1$).
-3. There are two "clusters" of points: one with a small jump and one with a large jump. The one with the smaller jump is a bit trickier to explain.
+3. There are two "clusters" of points: one with a small jump and one with a large jump.
 
 The third point becomes clearer when we note the curves are colored by the feature value $x_2$. There are two "lines":
 
 - One line represents fans who are >7 away from the stage ($x_2$). Here we see the large jump, which is expected since fans taller than 160cm have no chance of getting on someone's shoulders.
-- The other line represents values of $x_2$ below 7. It has a smaller jump, but why is there a jump at all? Fans in this "cluster" don't get to sit on someone's shoulders when they are less than 160cm tall.
+- The other line represents values of $x_2$ below 7. It has a smaller jump, but why is there a jump at all? Fans in this "cluster" don't get to sit on someone's shoulders when they are smaller than 160cm.
 
 The reason why the interaction also "bleeds" into the cluster where we wouldn't expect it has to do with how SHAP values function.
 
@@ -197,10 +195,9 @@ Despite Tom being taller than Mia, his height has a more detrimental effect on t
 Neither of them have the opportunity to benefit from a shoulder ride as they are already at the front.
 
 Even though Mia is shorter, her height has less of a negative impact than Tom's.
-This discrepancy cannot be explained by the interaction term, as Mia's close proximity to the band negates any potential benefit from the shoulder bonus.
-
-Surprisingly, Mia's SHAP value is influenced by the interaction term, despite her not being directly affected by it.
-This outcome is a result of the calculation process of Shapley values.
+This discrepancy seemingly cannot be explained by the interaction term, as Mia's close proximity to the band negates any potential benefit from the shoulder bonus.
+But surprisingly, Mia's SHAP value is influenced by the interaction term, despite her not being directly affected by it.
+This outcome is a result of the calculation process of SHAP values.
 
 When computing the SHAP value for Mia's height, her height value is either added to an empty coalition ($\emptyset$) or to a coalition where her stage distance is already factored in ($\{x_2=2\}$).
 The same process applies to Tom.
@@ -208,13 +205,11 @@ When stage distance is already present in the coalition, Mia and Tom’s margina
 
 However, when we add either Mia's or Tom's height to an empty coalition, the outcomes differ.
 For the empty coalition, we sample the distance to the stage from the data.
-
 Sometimes we sample stage distances that are far away, activating the interaction term (shoulder bonus).
 But this only applies to Mia, not Tom.
 Since the shoulder bonus increases concert enjoyment, Mia's SHAP value for height is greater than Tom's.
 
 Although Mia's proximity to the stage means she wouldn't benefit from the shoulder bonus, her height's SHAP value still accounts for the existence of this bonus.
-
 This phenomenon is why I describe SHAP values as having a global component: Interactions influence data points that are far away.
 
 This characteristic distinguishes SHAP values from a "what-if" analysis.
@@ -235,6 +230,6 @@ But, what does such a contrived example have to do with real machine learning ap
 The extreme phenomenon observed here occurs subtly in real applications, albeit in more complex ways.
 The interactions might be more nuanced and intricate, and there may be more features involved.
 However, this global phenomenon is likely to occur.
-Interactions within a machine learning model can be highly complex, and SHAP values often do not significantly aid our understanding of them.
+Interactions within a machine learning model can be highly complex.
 Thus, bear this limitation in mind when interpreting SHAP values.
 

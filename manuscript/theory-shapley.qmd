@@ -11,9 +11,7 @@ By the end of this chapter, you will be able to:
 :::
 
 To learn about SHAP, we first discuss the theory behind Shapley values from game theory.
-We begin with games, coalitions, and payouts, transitioning to machine learning later in this chapter.
-
-In this chapter, we will progressively define a fair payout in a coalition of players and ultimately arrive at Shapley values (spoiler alert).
+We will progressively define a fair payout in a coalition of players and ultimately arrive at Shapley values (spoiler alert).
 
 ## Who's going to pay for that taxi?
 
@@ -110,7 +108,7 @@ By weighting the marginal contributions accordingly, we calculate the following 
 
 $$\frac{1}{6}(\underbrace{2 \cdot \$15}_{\text{A to }\emptyset} + \underbrace{ 1 \cdot \$0}_{\text{A to B}} + \underbrace{1 \cdot \$3}_{\text{A to C}} + \underbrace{2 \cdot \$0}_{\text{A to B,C}})  = \$5.50$$
 
-We divide by $\frac{1}{6}$ because 6 is the sum of the weights (2 + 1 + 1 + 2).
+We multiply by $\frac{1}{6}$ because 6 is the sum of the weights (2 + 1 + 1 + 2).
 That's how much Alice should pay for the ride: \$5.50.
 
 We can calculate the contribution for Bob the same way:
@@ -198,7 +196,7 @@ $$\sum_{j \in N}\phi_j = v(N)$$
 
 The symmetry principle states that if two players are identical, they should receive equal contributions.
 Identical means that all their marginal contributions are the same.
-For instance, if Bob doesn't need the luxury version of the taxi, his marginal contributions would be exactly the same as Alice's.
+For instance, if Bob wouldn't need the luxury version of the taxi, his marginal contributions would be exactly the same as Alice's.
 The symmetry axiom says that in such situations, both should pay the same amount, which seems fair.
 
 We can also express symmetry mathematically for two players $j$ and $k$:
@@ -225,7 +223,7 @@ $$\phi_{j, v_1 + v_2} = \phi_{j, v_1} + \phi_{j, v_2}$$
 
 Imagine Alice, Bob, and Charlie not only sharing a taxi but also going out for ice cream.
 Their goal is to fairly divide not just the taxi costs, but both the taxi and ice cream costs.
-The additivity axiom suggests that they could first calculate the ice cream costs and then the taxi costs separately.
+The additivity axiom suggests that they could first calculate every persons fair share of the ice cream costs, then the taxi costs, and add them up per person.
 
 These four[^fifth] axioms ensure the uniqueness of the Shapley values, indicating there's only one solution presented in the Shapley formula, @eq-shapley.
 The proof of why this is the case won't be discussed in this book, as it would be too detailed.

@@ -81,7 +81,7 @@ In this scenario, the replaced value was `cat-allowed`, but it could have been `
 We predict the apartment price for the coalition of `park-nearby` and `area-50` to be €320,000.
 Therefore, the marginal contribution of `cat-banned` is €310,000 - €320,000 = -€10,000.
 
-![One Monte Carlo sample to estimate the marginal contribution of `cat-banned` to the prediction when added to the coalition of `park-nearby` and `area-50`.](images/shapley-instance-intervention.jpg)
+![One Monte Carlo sample to estimate the marginal contribution of `cat-banned` to the prediction when added to the coalition of `park-nearby` and `area-50`.](images/shapley-instance-intervention.jpg){width="75%"}
 
 This estimate is based on the values of a single, randomly drawn apartment that served as a "donor" for the cat and floor feature values.
 This is not an optimal estimate of the marginal contribution as it relies on only one Monte Carlo sample.
@@ -90,7 +90,7 @@ To obtain better estimates, we can repeat this sampling process and average the 
 Now, let's get into the formalities.
 The value of a coalition of features $S$ is estimated as:
 
-$$\hat{v}(S) = \frac{1}{n}\sum_{k=1}^n \left( f(x^{(i)}_S, x^{(k)}_{C}) - f(x^{(k)}) \right) $$
+$$\hat{v}(S) = \frac{1}{n}\sum_{k=1}^n \left( f(x^{(i)}_S \cup x^{(k)}_{C}) - f(x^{(k)}) \right) $$
 
 Here, $n$ is the number of data samples drawn from the data.
 The hat on the $\hat{v}$ signifies that this is an estimate of the value function $v$.
@@ -113,7 +113,7 @@ To calculate the actual SHAP value of a feature, we need to estimate the margina
 
 @fig-coalitions shows all coalitions of feature values required to determine the exact SHAP value for `cat-banned`.
 
-![All 8 coalitions needed for computing the exact SHAP value of the `cat-banned` feature value.](images/shapley-coalitions.jpg){#fig-coalitions}
+![All 8 coalitions needed for computing the exact SHAP value of the `cat-banned` feature value.](images/shapley-coalitions.jpg){#fig-coalitions width="75%"}
 
 In total, the following coalitions are possible:
 
@@ -129,7 +129,6 @@ In total, the following coalitions are possible:
 For each coalition, we calculate the predicted apartment price with and without the `cat-banned` feature value and derive the marginal contribution from the difference. 
 The exact SHAP value is the (weighted) average of these marginal contributions. 
 To generate a prediction from the machine learning model, we replace the feature values of features not in a coalition with random feature values from the apartment dataset. 
-By estimating the SHAP values for all feature values, we can obtain the complete prediction distribution (minus the average) among the feature values. 
 The SHAP value formula is:
 
 $$ \hat{\phi}^{(i)}_j =  \sum_{S\subseteq\{1,\ldots,p\} \backslash \{j\}}\frac{|S|!\left(p-|S|-1\right)!}{p!} \hat{\Delta}_{S,j}$$
@@ -159,7 +158,6 @@ The best way to understand permutation estimation is through an example.
 
 Let's consider four feature values: $x_{\text{park}}, x_{\text{cat}}, x_{\text{area}}$, and $x_{\text{floor}}$.
 For simplicity, we will denote $x^{(i)}_{\text{park}}$ as $x_{\text{park}}$.
-
 First, we need a random permutation.
 For instance:
 
@@ -191,7 +189,7 @@ Actually, the formula is simpler than the original SHAP formula.
 The SHAP formula contains a complex fraction that we multiply by the sum of the marginal contributions.
 However, with permutation estimation, we don't sum over coalitions but over permutations.
 If you recall from the [Theory Chapter](#theory), we justified the coalition weights by their frequency when listing all possible coalitions.
-But SHAP value can also be defined via permutations.
+But SHAP values can also be defined via permutations.
 Let $m$ denote permutations of the features, with $o(k)$ being the k-th permutation, then SHAP can be estimated as follows:
 
 $$\hat{\phi}_j^{(i)} = \frac{1}{m} \sum_{k=1}^m \hat{\Delta}_{o(k), j}$$
@@ -228,19 +226,21 @@ Some methods are model-specific, while others are model-agnostic.
 Model-specific methods are often inspired by other techniques used to explain model predictions. 
 The "Background Data" column indicates whether the estimation method requires data to be estimated.
 
-| Estimation Method| Estimation Idea | Model-specific? | Background Data | Inspiration |
-| --- | --------- | --- | --- | --- |
-| Exact | Iterates through all background data and coalitions. | Agnostic | Yes | - |
-| Sampling | Samples coalitions of features. | Agnostic | Yes | - |
-| Permutation | Samples permutations of feature values. | Agnostic | Yes | - |
-| Linear | Exact SHAP value estimation with linear model weights | Linear | Yes | - |
-| Additive | Simplifies SHAP estimation based on additive nature of the model | GAMs | Yes | - |
-| Kernel | Locally weighted linear regression for sampled coalition. | Agnostic | Yes | LIME |
-| Tree (interventional) | Recursively iterates tree paths. | Tree-based | Yes | - |
-| Tree (path dependent) | Recursively iterates hybrid paths. | Tree-based | No | - |
-| Gradient | Computes the gradient of the output with respect to the inputs. | Gradient-based | Yes | Input Gradient |
-| Deep | Backpropagates SHAP value through units of the neural network. | Neural Networks | Yes | DeepLIFT |
-| Partition | Calculates SHAP values for a hierarchy of features. | Agnostic | Yes | Owen values |
+
+| Method | Estimation (with inspiration) | Model-specific? |
+| ------ | ----------------------------- | --------------- |
+| Exact | Iterates through all background data and coalitions | Agnostic |
+| Sampling | Samples coalitions | Agnostic |
+| Permutation | Samples permutations | Agnostic |
+| Linear | Exact estimation with linear model weights | Linear |
+| Additive | Simplifies estimation based on additive nature of the model (inspired by GAMs) | GAMs |
+| Kernel | Locally weighted regression for sampled coalitions (inspired by LIME) | Agnostic |
+| Tree, interventional | Recursively iterates tree paths | Tree-based |
+| Tree, path-dependent | Recursively iterates hybrid paths | Tree-based |
+| Gradient | Computes the output's gradient with respect to inputs (inspired by Input Gradient) | Gradient-based |
+| Deep | Backpropagates SHAP value through network layers (inspired by DeepLIFT) | Neural Networks |
+| Partition | Recursive estimation based on feature hierarchy (inspired by Owen values) | Agnostic |
+
 
 There are more estimation methods than those listed here.
 The selection shown is based on the estimation methods available in the Python `shap` package. 
