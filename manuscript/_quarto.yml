@@ -17,7 +17,7 @@ book:
     - logistic.qmd
     - additive.qmd
     - interactions.qmd
-    - correlation.qmd
+#    - correlation.qmd
 #    - regression.qmd
 #    - image.qmd
 #    - image-deepexplainer.qmd
