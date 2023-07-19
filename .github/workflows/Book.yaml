@@ -32,7 +32,9 @@ jobs:
           cd manuscript
           git rev-parse --short HEAD > latex/hash.tex
           quarto render --profile leanpub --to pdf
+          mv _book/shap.pdf ./
           quarto render --profile leanpub --to epub
+          mv shap.pdf _book/
 
       - name: Publish
         uses: peaceiris/actions-gh-pages@v3
