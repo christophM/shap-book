@@ -79,5 +79,6 @@ The interactive dashboard contains several sections:
 To stop the app, use:
 
 ```{python}
+#| eval: False
 app.kill()
 ```
