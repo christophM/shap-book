@@ -30,6 +30,7 @@ jobs:
       - name: Render
         run: |
           cd manuscript
+	  git rev-parse --short HEAD > latex/hash.tex
           quarto render --profile leanpub --to pdf
           quarto render --profile leanpub --to epub
 
