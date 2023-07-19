@@ -17,11 +17,11 @@ book:
     - logistic.qmd
     - additive.qmd
     - interactions.qmd
-#    - correlation.qmd
-#    - regression.qmd
-#    - image.qmd
-#    - image-deepexplainer.qmd
-#    - text.qmd
+    - correlation.qmd
+    - regression.qmd
+    - image.qmd
+    - image-deepexplainer.qmd
+    - text.qmd
     - limitations.qmd
     - dashboard.qmd  
     - alternative-libraries.qmd
