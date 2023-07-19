@@ -26,6 +26,7 @@ pip install shapash==2.3.0
 We'll build a simple dashboard using the California housing data.
 
 ```{python}
+#| eval: False
 import sklearn
 import shap
 import shapash
@@ -58,6 +59,7 @@ To start the app, simply run:
 
 ```{python}
 #| output: False
+#| eval: False
 app = xpl.run_app(title_story='California Housing', port=8020)
 ```
 
