@@ -27,6 +27,7 @@ jobs:
 
       - name: Render
         run: |
+          cd manuscript
           quarto render --profile leanpub --to pdf
           quarto render --profile leanpub --to epub
 
