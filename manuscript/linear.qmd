@@ -376,7 +376,7 @@ Prediction [$f(x)$] for instance [$i$] differs from the average prediction [$\ma
 :::
 
 Here's an interesting analogy to view SHAP values:
-Imagine the prediction as an object floating in a 1-dimensional universe.
+Imagine the prediction as an option floating in a 1-dimensional universe.
 It's starting point is the average prediction of the background data -- this is our "center of gravity".
 Each feature of the data point can be seen as a force acting on this object and can either push it up or down.
 The SHAP value describes how strong each forces is and in which direction it pushes.

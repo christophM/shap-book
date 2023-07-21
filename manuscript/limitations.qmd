@@ -55,7 +55,7 @@ The question now is: Are these axioms useful for interpretation? Did we define t
 As demonstrated in the [Linear Chapter](#linear) and the [Additive Chapter](#additive), at least for these more restricted models, the results align with our expectations and what similar metrics (such as coefficients) would indicate.
 
 Bear in mind that SHAP values are but one example of an attribution method.
-And even attribution methods are just a subset of interpretable machine learning methods.
+And even attribution method is just a subset of methods in interpretable machine learning.
 
 ## SHAP values don't always provide human-friendly explanations.
 

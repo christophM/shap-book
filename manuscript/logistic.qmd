@@ -135,7 +135,7 @@ It's sensible to include steps like feature standardization in the pipeline, whi
 
 :::
 
-Another point of interest is that the model has two outputs: the probability of earning less than \$50k and the probability of earning more than \$50k.
+Another point of interest is that the model has two output2: the probability of earning less than \$50k and the probability of earning more than \$50k.
 This is mirrored in the resulting `shap_values` variable, which gains an extra dimension.
 So to pick a single SHAP value, we have define 3 things:
 For which data instance? For which feature? For which model output?
@@ -147,8 +147,8 @@ data_index = 1
 shap.plots.waterfall(shap_values[data_index,:,class_index])
 ```
 
-For this individual, the predicted likelihood of earning more than \$50k was 0.01%, well below the expected 79%.
-This plot shows that Marital Status (4 = married) was the most influential feature, contributing 0.06.
+For this individual, the predicted likelihood of earning more than \$50k was 0.01%, well below the expected 22%.
+This plot shows that Marital Status was the most influential feature, contributing -0.05.
 The interpretation is largely the same as for regression, except that the outcome is on the probability level and we have to choose which class's SHAP values we want to interpret.
 
 Now, let's inspect the SHAP values for the alternative class.
@@ -180,7 +180,7 @@ class_index=1
 shap.plots.bar(shap_values[data_index,:,class_index])
 ```
 The interpretation here is the same as that of the waterfall plot, so I will not repeat it. 
-The only difference between the two plots is the arrangement of information, with the bar plot lacking in the presentation of $\mathbb{E}(f(X))$ and $f(x^{(i)}$.
+The only difference between the two plots is the arrangement of information, with the bar plot lacking in the presentation of $\mathbb{E}(f(X))$ and $f(x^{(i)})$.
 
 Additionally, the force plot is simply a different representation of the SHAP values:
 
@@ -231,7 +231,7 @@ When the outcome of a logistic regression model is defined in terms of log odds,
 In other words, logistic regression is a linear model on the level of the log odds. 
 
 Here's what it means for interpretation:
-A marital status of 0 (married) contributes +1.47 to the log odds of making >50k versus <=50k compared to the average prediction.
+A marital status of 4 contributes -1.56 to the log odds of making >\$50k versus <=\$50k compared to the average prediction.
 However, SHAP values shine in their applicability at the probability level, and log odds can be challenging to interpret.
 So, when should you use log odds and when should you use probabilities?
 
@@ -255,7 +255,7 @@ In logit space, the second jump is larger.
 This happens because the logit compresses near 0 and 1, making changes in the extremes of probability space appear larger.
 
 So, which one should you select?
-If you're primarily concerned with probabilities, and a jump from 50% to 51% is as significant to you as from 99% to 100%, stick with the default and use the identity link.
+If you're primarily concerned with probabilities, and a jump from 80% to 81% is as significant to you as from 99% to 100%, stick with the default and use the identity link.
 However, if changes in extreme probabilities near 0 and 1 are more critical for your application, choose logits.
 Whenever rare events, anomalies, and extreme probabilites matter, go with logits.
 You can also visualize the difference in step sizes in the following @fig-logits.
