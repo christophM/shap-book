@@ -81,7 +81,7 @@ Here's why I believe SHAP gained popularity:
 - It was published in a reputable venue (NIPS/NeurIPS).
 - It was a pioneering work in a rapidly growing field.
 - Ongoing research by the original authors and others contributed to its development.
-- An open-source Python implementation (`shap` package) was available.
+- The open-source `shap` Python package with a wide range of features and plotting capabilities
 
 The availability of open-source code played a significant role, as it enabled people to integrate SHAP values into their projects.
 

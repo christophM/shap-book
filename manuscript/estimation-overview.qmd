@@ -14,7 +14,7 @@ In the previous chapter, we applied the Shapley value concepts from game theory 
 While exact Shapley values can be calculated for simple games, SHAP values must be estimated for two reasons:
 
 - The value function utilized by SHAP requires integration over the feature distribution. However, since we only have data and lack knowledge of the distributions, we must use estimation techniques like Monte Carlo integration.
-- Machine learning models often possess many features. As the number of coalitions increases exponentially with the number of features ($2^p$), it's often unfeasible to compute the marginal contributions of a feature to all coalitions. Instead, we have to sample coalitions.
+- Machine learning models often possess many features. As the number of coalitions increases exponentially with the number of features ($2^p$), it might become too time-consuming to compute the marginal contributions of a feature to all coalitions. Instead, we have to sample coalitions.
 
 Let's assume we have a limited number of features for which we can still iterate through all coalitions. This allows us to focus on estimating the SHAP values from data without sampling coalitions.
 
@@ -70,7 +70,8 @@ We then predict the price of the apartment with this combination (€310,000), w
 | Park        | Cat        | Area | Floor | Predicted Price   |
 |-------------|------------|------|-------|---------|
 | Nearby      | Banned     | 50   | 1st   | €310,000|
-Next, we replace `cat-banned` from the coalition with a random value of the cat allowed/banned feature from a randomly drawn apartment.
+
+Next, we replace `cat-banned` from the coalition with a random value of the cat allowed/banned feature from the same apartment that we sampled.
 In essence, we are estimating v({park-nearby, area-50}).
 
 | Park        | Cat        | Area | Floor | Predicted Price   |
@@ -153,7 +154,7 @@ The permutation estimator is a rather flexible and fast method that we will furt
 
 ## Estimation through permutation
 
-Estimation through permutation works by creating a random permutation of an instance's feature values and then performing a forward and backward pass of coalitions. 
+Estimation through permutation works by creating a random permutation of an instance's feature values and then performing a forward and backward generation of coalitions. 
 The best way to understand permutation estimation is through an example. 
 
 Let's consider four feature values: $x_{\text{park}}, x_{\text{cat}}, x_{\text{area}}$, and $x_{\text{floor}}$.
@@ -170,7 +171,7 @@ We start from the left and compute the marginal contributions:
 - Adding $x_{\text{park}}$ to $\{x_{\text{cat}}, x_{\text{area}}\}$
 - Adding $x_{\text{floor}}$ to $\{x_{\text{cat}}, x_{\text{area}}, x_{\text{park}}\}$
 
-This is the forward pass. Next, we iterate backwards:
+This is the forward generation. Next, we iterate backwards:
 
 - Adding $x_{\text{floor}}$ to $\emptyset$
 - Adding $x_{\text{park}}$ to $\{x_{\text{floor}}\}$
@@ -180,9 +181,10 @@ This is the forward pass. Next, we iterate backwards:
 This approach only alters one feature at a time, reducing the number of model calls as the first term of a marginal contribution transitions into the second term of the subsequent one.
 For instance, the coalition $\{x_{\text{cat}}, x_{\text{area}}\}$ is used to calculate the marginal contribution of $x_{\text{park}}$ to $\{x_{\text{cat}}, x_{\text{area}}\}$ and of $x_{\text{area}}$ to $\{x_{\text{cat}}\}$.
 We estimate the marginal contribution using Monte Carlo integration.
-With this method, we don't only gather information about a single feature, but with a forward and backward pass, we obtain two marginal contributions per feature.
-By repeating the permutation sampling, we achieve more accurate estimates.
-The more permutations we sample and iterate over, the more marginal contributions are estimated, bringing the final SHAP values closer to their exact value.
+With each forwards plus backward generation for a permutation, we get marginal contributions for multiple features, not just a single one.
+In fact, we get two marginal contributions per feature for one permutation.
+By repeating the permutation sampling, we get even more marginal contributions and therefore achieve more accurate estimates.
+The more permutations we sample and iterate over, the more marginal contributions are estimated, bringing the final SHAP estimates closer to their theoretical value.
 
 So, how do we transition from here, from marginal contributions based on permutations, to SHAP values?
 Actually, the formula is simpler than the original SHAP formula.
@@ -202,13 +204,13 @@ But what is $m$?
 If we want to sum over all coalitions, then $m = p!$.
 However, the motivation for permutation estimation was to avoid computing all possible coalitions or permutations.
 The good news is that $m$ can be a number smaller than all possible permutations, and you can use a sample of permutations with the above formula.
-But since we perform forward and backward passes, the formula looks like this:
+But since we perform forward and backward iterations, the formula looks like this:
 
 $$\hat{\phi}_j^{(i)} = \frac{1}{2m} \sum_{k=1}^m (\hat{\Delta}_{o(k), j} + \hat{\Delta}_{-o(k), j})$$
 
 The permutation $-o(k)$ is the reverse version of the permutation.
 
-The permutation procedure with forward and backward passes, also known as antithetic sampling, performs quite well compared to other SHAP value sampling estimators [@mitchell2022sampling].
+The permutation procedure with forward and backward iterations, also known as antithetic sampling, performs quite well compared to other SHAP value sampling estimators [@mitchell2022sampling].
 A simpler version would involve sampling random permutations without the forward and backward steps.
 One advantage of antithetic sampling is the reuse of resulting coalitions to save computation.
 
@@ -217,7 +219,7 @@ Estimation methods relying on sampling coalitions only satisfy the efficiency ax
 However, individual SHAP values remain estimates, and the more permutations you draw, the better these estimates will be.
 For a rough idea of how many permutations you might need: the `shap` package defaults to 10.
 
-## Overview of SHAP estimators.
+## Overview of SHAP estimators
 
 Estimation via permutation is an effective choice, particularly for tabular data.
 There are numerous other ways to estimate Shapley values, which are detailed in the [Appendix](#estimation).

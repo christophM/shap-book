@@ -1,5 +1,9 @@
 # Acknowledgments
 
+TODO: Clarify names by asking via mail
+
+- HaveF
+
 
 TODO: Check all names
 TODO: Add round #3 readers here
@@ -22,4 +26,13 @@ Thank readers
 - Enrico: Find out last name
 - Sairam Subramanian
 - Kerry Pearn
-- Gavin Parnaby
+- Gavin Parnaby (huge amounts of feedback)
+- HaveF TODO: Ask again for name. 
+- Robert Martin
+- Simon
+- Andrea Ruggerini
+- Cube git
+- Arved Niklas Fanta
+- Saman Parvaneh
+- Simon Prince 
+- Marouane Il Idrissi

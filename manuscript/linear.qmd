@@ -251,6 +251,14 @@ import shap
 explainer = shap.LinearExplainer(model, X_train)
 ```
 
+::: {.callout-note}
+
+While the model here is a `LinearRegression` model from the `sklearn` library, `shap` works with any model from `sklearn` as well as with other libraries such as `xgboost` and `lightgbm`.
+`shap` also works with custom prediction functions, so it's quite flexible!
+
+:::
+
+
 Alternatively, we could utilize the `Explainer` as follows:
 
 ```{python}
@@ -329,12 +337,12 @@ y = model.predict(X_test)[i]
 bv = shap_values.base_values[0]
 diff = y - bv
 
-feature1 = "density"
+feature1 = "residual sugar"
 ind = X_test.columns.get_loc(feature1)
 fv1 = X_test.iloc[i, ind]
 sv1 = shap_values.values[i,ind]
 
-feature2 = "residual sugar"
+feature2 = "free sulfur dioxide"
 ind = X_test.columns.get_loc(feature2)
 fv2 = X_test.iloc[i, ind]
 sv2 = shap_values.values[i,ind]
@@ -363,11 +371,18 @@ The sum of all SHAP values equals the difference between the prediction ({y}) an
 
 ## Interpretation Template *(replace [] with your data)*
 
-Prediction [$f(x)$] for instance [$i$] differs from the average prediction [$\mathbb{E}(f(X))$] by [$f(xi) − \mathbb{E}(f(X))j$] and [feature name = feature value] contributed [$\phi^{(i)}_j$] towards that difference.
+Prediction [$f(x)$] for instance [$i$] differs from the average prediction [$\mathbb{E}(f(X))$] by [$f(xi) − \mathbb{E}(f(X))j$] to which [feature name = feature value] contributed [$\phi^{(i)}_j$].
 
 :::
 
-Several observations can be made:
+Here's an interesting analogy to view SHAP values:
+Imagine the prediction as an object floating in a 1-dimensional universe.
+It's starting point is the average prediction of the background data -- this is our "center of gravity".
+Each feature of the data point can be seen as a force acting on this object and can either push it up or down.
+The SHAP value describes how strong each forces is and in which direction it pushes.
+Eventually, these forces reach equilibrium, which represents the predicted value.
+
+Alright, back from this little universe to our example. Several observations can be made:
 
 - The most influential feature was 'residual sugar' (=10.8), with a SHAP value of 0.32, indicating it had an increasing impact on the quality on average.
 - Overall, the prediction surpassed the average, suggesting a high-quality wine.
@@ -389,7 +404,7 @@ For instance, while we know 'residual sugar' increased the prediction for the fi
 ## Global model understanding
 
 We computed SHAP values to explain individual predictions.
-However, we can also compute SHAP values for more data points, ideally for the entire (test) dataset.
+However, we can also compute SHAP values for more data points, ideally for the entire (test) dataset (and training data as background data).
 By visualizing the SHAP values across all features and multiple data points, we can uncover patterns of how the model makes predictions.
 This gives us a global model interpretation.
 
@@ -425,8 +440,15 @@ Density, residual sugar, and alcohol are the most important features for predict
 
 The coloring also reveals that the relationships are monotonic for all features:
 A feature's increase (or decrease) consistently influences the prediction in one direction.
-Since the model is a linear regression model, we know that this modeled relationship must be linear.
-However, that's just for the model, the "true" relationship in the data might be non-linear.
+Since the model is a linear regression model, the modeled relationship between each input feature and the target must be linear.
+That means a 1 unit increase in a feature always increases the prediction by $\beta_j$, the corresponding coefficient from the linear model.
+However, that's just true for the linear model.
+The "true" relationship in the data might be non-linear.
+
+The coloring for each feature in the summary plot reveals the direction of the effect a feature has:
+For example higher density wines are associated with lower SHAP values, while wines with more residual sugar have a higher corresponding SHAP value.
+Again, this is information that directly corresponds to the coefficients from the linear regression model.
+In later chapters we will see examples with more insightful summary plots.
 
 ::: {.callout-tip}
 
@@ -435,8 +457,8 @@ However, that's just for the model, the "true" relationship in the data might be
 - Observe the ranking of the features. The higher the feature, the greater its SHAP importance.
 - For each feature of interest:
   - Examine the distribution of the SHAP values. This provides insight into the various ways the feature values can influence the prediction. For instance, a wide spread indicates a broad range of influence.
-  - Understand the color trend for a feature: This offers an initial insight into whether the relationship is monotonic or exhibits more complex relations.
-  - Look for color clusters that may indicate interesting data clusters.
+  - Understand the color trend for a feature: This offers an initial insight into the direction of a feature effect and whether the relationship is monotonic or exhibits a more complex pattern.
+  - Look for color clusters that may indicate interesting data clusters. Not relevant for linear models, but for non-linear ones.
 
 :::
 
@@ -445,8 +467,7 @@ However, that's just for the model, the "true" relationship in the data might be
 ## Comparison between coefficients and SHAP values
 
 Now, we'll explore a new type of plot - the SHAP dependence plot.
-The dependence plot should confirm that the SHAP values also exhibit a linear relationship with the target for features known to have a linear relation:
-
+The dependence plot should confirm that the SHAP values also exhibit a linear relationship with the target for features known to have a linear relation.
 
 ```{python}
 shap.plots.scatter(shap_values[:, 'alcohol'])
@@ -459,14 +480,14 @@ shap.plots.scatter(shap_values[:, 'alcohol'])
 - Also referred to as scatter plot.
 - Mathematically, the plot contains these points: $\{(x^{(i)}_j,\phi^{(i)}_j)\}_{i=1}^n$.
 - The x-axis represents the feature value, and the y-axis represents the SHAP value.
--  SHAP dependence plots serve as an alternative to [partial dependence plots](https://christophm.github.io/interpretable-ml-book/pdp.html) and [accumulated local effects](https://christophm.github.io/interpretable-ml-book/ale.html).
 - Highlighting feature interactions on the dependence plot can enhance its effectiveness.
 - The dependence plot is similar to the summary plot for a single feature, but instead of using color to represent the feature value, these values are distributed across the x-axis.
+- The grey histogram indicates the distribution of the feature values. Ranges with little data should be interpreted more cautiously. 
 
 :::
 
-
 This plot demonstrates the global dependence modeled by the linear regression between alcohol and the corresponding SHAP values for alcohol.
+The dependence plot will be much more insightful for non-linear model, but it's a great way to confirm that the SHAP values reflect the linear relationship in the case of a linear regression model.
 As the alcohol content increases, the corresponding SHAP value also increases linearly.
 This increase corresponds to the slope in the linear regression model:
 

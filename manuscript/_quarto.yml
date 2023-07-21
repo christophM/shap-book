@@ -3,7 +3,7 @@ project:
 
 book:
   title: "Interpreting Machine Learning Models With SHAP"
-  subtitle: "A Comprehensive Guide With Python"
+  subtitle: "A Guide With Python Examples And Theory On Shapley Values"
   author: "Christoph Molnar"
   output-file: shap
   chapters:
@@ -27,6 +27,7 @@ book:
     - alternative-libraries.qmd
     - extensions.qmd
     - other.qmd
+    - advertisement.qmd
     - references.qmd
   appendices:
     - estimation.qmd

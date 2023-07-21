@@ -41,7 +41,7 @@ No rule would be apparent, stating "asthma $\Rightarrow$ lower risk."
 Instead, the network would learn this rule and conceal it, potentially causing harm if deployed in real-life situations.
 
 Although you could theoretically spot the problem by closely examining the data and applying domain knowledge, it's generally easier to identify such issues if you can understand what the model has learned.
-Black box machine learning models create a distance between the data and the modeler, and interpretability methods help bridge this gap.
+Machine learning models that aren't interpretable create a distance between the data and the modeler, and interpretability methods help bridge this gap.
 
 ## Users may create their own interpretations
 
@@ -146,9 +146,11 @@ Methods like SHAP can be applied to any model, so even if you're using a decisio
 ## SHAP: An explainable AI technique
 
 SHAP [@NIPS2017_7062] is a game-theory-inspired method created to explain predictions made by machine learning models.
-To understand SHAP explanations, refer to @fig-waterfall.
 SHAP generates one value per input feature (also known as SHAP values) that indicates how the feature contributes to the prediction of the specified data point.
-In the following example, the prediction model estimates the probability of a person earning more than \$50k based on that person's socio-economic factors.
+In the example in @fig-waterfall, the prediction model estimates the probability of a person earning more than \$50k based on that person's socio-economic factors.
+Some demographics positively affect the predicted probability, while others negatively impact it.
+The understanding of this figure isn't crucial at this point; it's simply the goal to keep in mind as we dive into the theory behind SHAP in the following chapters.
+
 ```{python}
 #| echo: false
 #| label: fig-waterfall
@@ -211,14 +213,8 @@ shap.waterfall_plot(sv)
 ```
 
 
-Some demographics positively affect the predicted probability, while others negatively impact it.
-The understanding of this figure isn't crucial at this point; it's simply the goal to keep in mind as we dive into the theory behind SHAP in the following chapters.
-
-
-
 SHAP has gained popularity and is applied in various fields to explain predictive models:
 
-- Gold price forecasting [@jabeur2021forecasting].
 - Identifying COVID-19 mortality factors [@smith2021identifying].
 - Predicting heat wave-related mortality [@kim2022explainable].
 - Wastewater treatment plant management [@wang2022towards].
@@ -226,10 +222,11 @@ SHAP has gained popularity and is applied in various fields to explain predictiv
 - Accident detection [@parsa2020toward].
 - NO2 forecasting [@garcia2020shapley].
 - Molecular design [@rodriguez2020interpretation].
+- Gold price forecasting [@jabeur2021forecasting].
 
 Given its wide range of applications, you are likely to find a use for SHAP in your work.
 
 Before we talk about practical application of SHAP, let's begin with its historical background, which provides context for the subsequent theory chapters.
 
-[^keywords]: The terms "Explainable AI" and "interpretable machine learning" are used interchangeably. Some people use XAI more for post-hoc explanations of predictions and interpretable ML for inherently interpretable models. However, in many instances, these terms are used interchangeably. When searching for a particular method, it's advisable to use both terms.
+[^keywords]: The terms "Explainable AI" and "interpretable machine learning" are used interchangeably in this book. Some people use XAI more for post-hoc explanations of predictions and interpretable ML for inherently interpretable models. However, when searching for a particular method, it's advisable to use both terms.
 

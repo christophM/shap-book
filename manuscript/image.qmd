@@ -117,7 +117,6 @@ shap_values = explainer(
 
 The above code calculates all SHAP values.
 However, with image Shap, the raw values aren't particularly useful, so let's visualize them.
-
 The SHAP values are optimally visualized by overlaying them on the original image.
 Below are the selected images:
 
@@ -125,8 +124,10 @@ Below are the selected images:
 shap.image_plot(shap_values, pixel_values=X[index]/255)
 ```
 
+Before we dive into the interpretation of the SHAP values, notice the level on which we computed the SHAP values:
+The image is split into smaller rectangles, a bit like a chessboard, and we get a SHAP value for each rectangle.
+That's automatically done by the Partition explainer.
 Now, let's interpret these SHAP values:
-
 The burger is misclassified as the top class is "bottlecap".
 The SHAP values show that the top part of the burger primarily influenced the bottlecap classification.
 The middle parts of the burger negatively impacted the classification, but the top part resembled a bottlecap too closely for the Resnet model.

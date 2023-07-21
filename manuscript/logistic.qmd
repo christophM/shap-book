@@ -100,7 +100,7 @@ shap_values = ex(X_test.iloc[0:100])
 
 The novelties include: 
 
-- Using a subset of the training data as a background dataset, which can improve computation speed at the cost of less accurate SHAP value estimates.
+- Using a subset of the training data as a background dataset, which can improve computation speed at the cost of less accurate SHAP value estimates. In the [Regression Chapter](#regression) we'll discuss more elaborate choices of background data in depth.
 - Applying SHAP not to the model but to the entire pipeline, allowing us to compute SHAP values for the original features instead of their processed versions.
 
 The Adult dataset contains both categorical and numerical features, which are transformed before inputting them into the logistic regression model.
@@ -135,25 +135,26 @@ It's sensible to include steps like feature standardization in the pipeline, whi
 
 :::
 
-Another point of interest is that the model's output is 2-dimensional, not 1-dimensional.
+Another point of interest is that the model has two outputs: the probability of earning less than \$50k and the probability of earning more than \$50k.
 This is mirrored in the resulting `shap_values` variable, which gains an extra dimension.
-Hence, we also need to specify the class for which we want the SHAP values.
+So to pick a single SHAP value, we have define 3 things:
+For which data instance? For which feature? For which model output?
 
 ```{python}
-class_index = 0
+class_index = 1
 data_index = 1
 
 shap.plots.waterfall(shap_values[data_index,:,class_index])
 ```
 
-For this individual, the predicted likelihood of earning more than \$50k was 99.9%, well above the expected 79%.
+For this individual, the predicted likelihood of earning more than \$50k was 0.01%, well below the expected 79%.
 This plot shows that Marital Status (4 = married) was the most influential feature, contributing 0.06.
 The interpretation is largely the same as for regression, except that the outcome is on the probability level and we have to choose which class's SHAP values we want to interpret.
 
 Now, let's inspect the SHAP values for the alternative class.
 
 ```{python}
-class_index = 1
+class_index = 0
 shap.plots.waterfall(shap_values[data_index,:,class_index])
 ```
 
@@ -174,6 +175,8 @@ If I were to arrange the 3 plots on a spectrum, I'd say that the bar plot is the
 Let's begin with the bar plot.
 
 ```{python}
+# First, reset class_index
+class_index=1
 shap.plots.bar(shap_values[data_index,:,class_index])
 ```
 The interpretation here is the same as that of the waterfall plot, so I will not repeat it. 
@@ -220,7 +223,6 @@ ex_logit = shap.Explainer(
   model.predict_proba, X_sub, link=shap.links.logit
 )
 sv_logit = ex_logit(X_test.iloc[0:100])
-class_index = 0
 
 shap.plots.waterfall(sv_logit[data_index,:,class_index])
 ```
@@ -255,6 +257,7 @@ This happens because the logit compresses near 0 and 1, making changes in the ex
 So, which one should you select?
 If you're primarily concerned with probabilities, and a jump from 50% to 51% is as significant to you as from 99% to 100%, stick with the default and use the identity link.
 However, if changes in extreme probabilities near 0 and 1 are more critical for your application, choose logits.
+Whenever rare events, anomalies, and extreme probabilites matter, go with logits.
 You can also visualize the difference in step sizes in the following @fig-logits.
 
 ![Probabilities versus Logits](images/logits.jpg){#fig-logits width="75%"}
@@ -269,7 +272,7 @@ shap.plots.beeswarm(shap_values[:,:,class_index])
 ```
 
 From our observations, Marital Status and Education emerge as the two most important features.
-For some individuals, Capital Gain has substantial effects, suggesting that high values of capital gain result in small SHAP values.
+For some individuals, Capital Gain has substantial effects, suggesting that large capital gains result in large SHAP values.
 
 ## Clustering SHAP values
 
@@ -281,12 +284,14 @@ The tricky part is calculating distances between instances with such diverse, no
 
 SHAP clustering operates by clustering the SHAP values of each instance, meaning that instances are clustered by their explanation similarity.
 All SHAP values share the same unit — the unit of the prediction space.
+This concept is also called "supervised clustering" since we use information from a supervised model -- here via SHAP -- to cluster the data.
 Any clustering method can be employed.
 The following example utilizes hierarchical agglomerative clustering to sort the instances.
 
 The plot comprises numerous force plots, each explaining the prediction of an instance.
 We rotate the force plots vertically and arrange them side by side according to their clustering similarity.
 It's a Javascript plot.
+You might want to reduce the number of data points so that the plot doesn't get overwhelming, both visually and for your CPU.
 Here's how it looks for the first 21 data points:
 
 ```{python}
@@ -312,7 +317,7 @@ shap.plots.force(sv_logit[0:20:,:,0])
 You can hover over the plot for more information, change what you see on the x-axis, and experiment with various other orderings.
 The cluster plot is an exploratory tool.
 
-You can also alter the ordering, for example, by the prediction:
+You can also alter the ordering by clicking on the interactive graph, for example, by the prediction:
 
 ![Clustering Plot](images/clustering-plot-2.png)
 

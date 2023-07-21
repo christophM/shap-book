@@ -1,13 +1,33 @@
-# Other books by the author
+# More From The Author {-}
 
-I have also written another book about Interpretable Machine Learning.
-Interpretable Machine Learning covers a wide range of XAI techniques, from counterfactual explanations, ICE curves, and PDPs to Accumulated Local Effect Plots, Permutation Feature Importance, and LIME.
-Shapley values and SHAP are also covered in this book.
+![](images/advertisement.png)
 
-::: {.callout-note}
-[Interpretable Machine Learning book](https://christophmolnar.com/books/interpretable-machine-learning/) [@molnar2022]
+::: {layout-ncol=3}
 
-![](images/cover-interpretable-ml.jpg){width=24% fig-align="center"}
+
+::: {#first-column}
+**Interpretable Machine Learning** covers a wide range of explainable AI techniques, from counterfactual and PDPs to Permutation Feature Importance and SHAP.
+::: 
+
+::: {#second-column}
+In less than 100 pages, **Modeling Mindsets** elucidates the worldviews behind various statistical modeling and machine learning mindsets.
 :::
+ 
+::: {#third-column}
+**Introduction To Conformal Prediction With Python** is the quickest way to learn an easy-to-use and very general technique for uncertainty quantification.
+::: 
+
+:::
+
+
+Available from leanpub.com and amazon.com.
+
+
+
+
+
+
+
+
 
 

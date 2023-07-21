@@ -113,7 +113,7 @@ shap.plots.waterfall(shap_values[0], max_display=11)
 
 While the results differ from both the linear and the GAM models, the interpretation process remains the same.
 A key difference is that the random forest model includes interactions between the features.
-However, since there's only one SHAP value per feature value (and not one for every interaction), interactions between feature values are divided among the SHAP values.
+However, since there's only one SHAP value per feature value (and not one for every interaction), we don't immediately see how features interact.
 
 ## Global model interpretation
 
@@ -191,6 +191,9 @@ $$r_{xy} = \frac{\sum_{i=1}^{n}(x^{(i)}-\bar{x})(z^{(i)}-\bar{z})}{\sqrt{\sum_{i
 The correlation ranges from -1, representing a perfect negative correlation, to +1, indicating a perfect positive correlation.
 A value of 0 suggests no correlation.
 In this case, $x$ and $z$ represent two features, while $\bar{x}$ and $\bar{z}$ are their respective averages.
+Note, however, that Person correlation only measures linear correlation, which isn't the only way features may be correlated.
+Use other measures of correlation, such as mutual information, if you want to capture different notions of correlation.
+
 
 ```{python}
 #| label: fig-correlation
@@ -380,7 +383,7 @@ plt.show()
 
 ## Interpretation template for subsets *(replace [] with your data)*
 
-The prediction [$f(x)$] for instance [$i$] differs from the average prediction of [$\mathbb{E}(f(X))$] for [subset] by [$f(x^{(i)} − \mathbb{E}(f(X))$] and [feature name = feature value] contributed [$\phi^{(i)}_j$] towards that difference.
+The prediction [$f(x)$] for instance [$i$] differs from the average prediction of [$\mathbb{E}(f(X))$] for [subset] by [$f(x^{(i)} − \mathbb{E}(f(X))$] to which [feature name = feature value] contributed [$\phi^{(i)}_j$].
 
 :::
 

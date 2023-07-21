@@ -61,6 +61,7 @@ plt.scatter(x1, x2, color='black', alpha=0.1)
 plt.scatter(np.repeat(point[0], m), x2_marg, color='blue')
 plt.scatter(point[0], point[1], color='red')
 plt.ylabel('x2')
+plt.xlabel('x1')
 plt.subplot(122)
 plt.scatter(x1, x2, color='black', alpha=0.1)
 plt.scatter(np.repeat(point[0], m), x2_cond, color='green')
@@ -87,6 +88,7 @@ If information is shared, we cannot simply sample one feature without considerin
 For instance, suppose we have two strongly correlated features: rainfall yesterday and cloudiness yesterday.
 If it rained yesterday, it must have been cloudy - these features are correlated.
 How can we then isolate the effect of rain while ignoring the cloudiness?
+Even if we disentangle the two, it would make for a weird interpretation.
 
 ## Solution: Reduce correlation in the model
 

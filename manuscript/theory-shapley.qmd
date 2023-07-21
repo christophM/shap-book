@@ -11,7 +11,8 @@ By the end of this chapter, you will be able to:
 :::
 
 To learn about SHAP, we first discuss the theory behind Shapley values from game theory.
-We will progressively define a fair payout in a coalition of players and ultimately arrive at Shapley values (spoiler alert).
+We will progressively define a fair payout[^fair] in a coalition of players and ultimately arrive at Shapley values (spoiler alert).
+[^fair]: There is no perfect definition of fairness everyone would agree upon. Shapley values define a very specific version of fairness, which can be seen as egalitarian. 
 
 ## Who's going to pay for that taxi?
 
@@ -34,7 +35,7 @@ We define the taxi ride costs for all possible combinations and compile the foll
 
 | Passengers           | Cost | Note                                  |
 |----------------------|-------|--------------------------------------|
-| $\emptyset$|   $0  | No taxi ride, no costs               |
+| $\emptyset$          |   $0  | No taxi ride, no costs               |
 | {Alice}              |   $15 | Standard fare to Alice's & Bob's place |
 | {Bob}                |   $25 | Bob always insists on luxury taxis |
 | {Charlie}            |   $38 | Charlie lives slightly further away      |
@@ -79,27 +80,39 @@ We calculate all possible marginal contributions in this way:
 | Charlie           | {Alice}          | $15         | $41        | $26                   |
 | Charlie           | {Bob}            | $25         | $51        | $26                   |
 | Charlie           | {Alice, Bob}     | $25         | $51        | $26                   |
+
 We're one step closer to calculating a fair share of ride costs.
 Could we just average these marginal contributions per passenger?
 We could, but that would assign equal weight to every marginal contribution.
-However, one could argue that we learn more about how much Alice should pay
-when we add her to an empty taxi compared to adding her to a ride with Bob.
+However, one could argue that we learn more about how much Alice should pay when we add her to an empty taxi compared to adding her to a ride with Bob.
 But how much more informative?
+
 One way to answer this question is by considering all possible permutations of Alice, Bob, and Charlie.
 There are $3!=3*2*1=6$ possible permutations of passengers:
 
 - Alice, Bob, Charlie
 - Alice, Charlie, Bob
 - Bob, Alice, Charlie
-- Bob, Charlie, Alice
 - Charlie, Alice, Bob
+- Bob, Charlie, Alice
 - Charlie, Bob, Alice
 
+We take these permutations to form coalitions, for example for Alice.
+Each permutation then maps to a coalition:
+People that come before Alice in the order are in the coalition, people after are not.
+Since in  coalition the order of passengers doesn't matter, some coalitions will occur more often than others when we iterate all permutations like this:
 In 2 out of 6 permutations, Alice is added to an empty taxi;
 In 1 out of 6, she is added to a taxi with Bob;
 In 1 out of 6, she is added to a taxi with Charlie;
 And in 2 out of 6, she is added to a taxi with both Bob and Charlie.
-We use these weights to continue our journey towards a fair cost sharing.
+We use these counts to weight each marginal contribution to continue our journey towards a fair cost sharing.
+
+We could make different decisions regarding how to "fairly" allocate the costs to the passengers.
+For instance, we could weight the marginal contributions differently.
+We could divide the cost by 3.
+Alternatively, we could use solutions that depend on the order of passengers:
+Alice alone would pay \$15, when we add Bob it's +\$10, which would be his share, and Charlie would pay the remainder.
+However, all these different choices would lead us away from Shapley values.
 
 ## Averaging marginal contributions
 
@@ -122,12 +135,6 @@ $$\frac{1}{6}(\underbrace{2 \cdot \$38}_{\text{C to }\emptyset} + \underbrace{ 1
 The individual contributions sum to the total cost: \$5.50 + \$15.50 + \$30.00 = \$51.00. Perfect!
 And that's it, this is how we compute Shapley values [@shapley1953value].
 
-We could have made different decisions regarding how we "fairly" allocate the costs to the passengers.
-For instance, we could have weighted the marginal contributions differently.
-We could have divided the costs by 3.
-Alternatively, we could have used solutions that depend on the order of passengers:
-Alice alone would pay \$15, when we add Bob it's +\$10, which would be his share, and Charlie would pay the remainder.
-However, all these different choices would lead us away from Shapley values.
 Let's formalize the taxi example in terms of game theory and explore the Shapley value theory, which makes Shapley values a unique solution.
 
 

@@ -198,9 +198,10 @@ then
 $$\phi^{(i)}_j = \phi^{(i)}_{k}$$
 
 Implications:
-The symmetry axiom implies that the order of features doesn't matter.
+The symmetry axiom implies that the attribution shouldn't depend on any ordering of the features.
 If two features contribute equally, they will receive the same SHAP value.
 Other methods, such as the breakdown method [@staniak2018explanations] or counterfactual explanations, violate the symmetry axiom because two features can impact the prediction equally without receiving the same attribution.
+For example, the breakdown method also computes attributions, but does it by adding one feature at a time, so that the order by which features are added matters for the explanation.
 Symmetry is essential for accurately interpreting the order of SHAP values, for instance, when ranking features using SHAP importance (sum of absolute SHAP values per feature).
 
 ### Dummy: Features not influencing the prediction receive a SHAP value of 0  {-}

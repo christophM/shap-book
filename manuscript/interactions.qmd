@@ -27,12 +27,13 @@ We're simulating a score of how much a fan will enjoy the concert based on two f
 
 We simulate the target as:
 
-$$y = 0.1 \cdot x_1 - 1 \cdot x_2 + 10 \cdot \mathbb{1}_{x_1 < 160 \text{ and } x_2 > 7}$$
+$$y = 0.1 \cdot x_1 - 1 \cdot x_2 + 10 \cdot \mathbb{1}_{x_1 < 160 \text{ and } x_2 > 7} - 8$$ 
 
 - The taller the fan, the better.
 - The closer to the stage, the better.
 - Both of these have linear relationships with concert enjoyment.
 - Additional interaction: Small fans who are far from the stage get a "bonus": some kind soul allows them to sit on their shoulders for a better view of the concert.
+- The -8 is just so that the output is roughly between 0 (bad concert experience) and 10 (greatly enjoying the concert)
 
 ::: {.callout-note}
 
@@ -65,7 +66,7 @@ X = pd.DataFrame({
   'x2': np.random.uniform(0, 10, n)
 })
 
-y = 0.1 * X.x1 -  1 *  X.x2 + 10 * (X.x1 < 160) * (X.x2 > 7)
+y = 0.1 * X.x1 -  1 *  X.x2 + 10 * (X.x1 < 160) * (X.x2 > 7) - 8
 
 # Split the data into training and test sets
 X_train, X_test, y_train, y_test = train_test_split(
@@ -102,8 +103,6 @@ plt.show()
 ```
 
 The random forest appears to approximate the function quite accurately.
-A note on the scale of "concert enjoyment":
-The range of the score from 8 to 18 doesn't really relate to anything, you can just see it as higher means more enjoyment.
 Next, we will generate explanations for the predictions.
 
 ## Computing SHAP values
@@ -191,26 +190,20 @@ The SHAP values for Mia and Tom differ significantly.
 - Tom's SHAP values follow similar trends, which is expected since they share the same distance and similar heights.
 - However, Tom's SHAP values are more pronounced.
 
-Despite Tom being taller than Mia, his height has a more detrimental effect on the prediction.
-Neither of them have the opportunity to benefit from a shoulder ride as they are already at the front.
+But shouldn't Mia have a smaller SHAP value for height than Tom?
+Neither of them profits from the shoulder bonus, so Mia being smaller than Tom should mean that her SHAP value for "height" should be smaller than Tom's, right?
+But surprisingly, Mia's SHAP value is influenced by the interaction term, despite her not being directly affected by the shoulder bonus!
 
-Even though Mia is shorter, her height has less of a negative impact than Tom's.
-This discrepancy seemingly cannot be explained by the interaction term, as Mia's close proximity to the band negates any potential benefit from the shoulder bonus.
-But surprisingly, Mia's SHAP value is influenced by the interaction term, despite her not being directly affected by it.
-This outcome is a result of the calculation process of SHAP values.
+This outcome is a result of the calculation process of SHAP values:
+When computing the SHAP value for Mia's height, one of the marginal contributions involves adding her height to the empty coalition ($\emptyset$).
+For this marginal contribution, we have to sample the stage distance feature.
+And sometimes we sample distances > 7, which activate the shoulder bonus.
+But only for Mia, not for Tom.
+The shoulder bonus strongly increases concert enjoyment and as a consequence Mia's SHAP value for height becomes greater than Tom's.
+So even though Mia is too close to the stage to get the shoulder bonus, her height's SHAP value accounts for this interaction.
+This example shows that SHAP values have a global component: Interactions influence data points that are far away.
 
-When computing the SHAP value for Mia's height, her height value is either added to an empty coalition ($\emptyset$) or to a coalition where her stage distance is already factored in ($\{x_2=2\}$).
-The same process applies to Tom.
-When stage distance is already present in the coalition, Mia and Tom’s marginal contributions are approximately equal.
-
-However, when we add either Mia's or Tom's height to an empty coalition, the outcomes differ.
-For the empty coalition, we sample the distance to the stage from the data.
-Sometimes we sample stage distances that are far away, activating the interaction term (shoulder bonus).
-But this only applies to Mia, not Tom.
-Since the shoulder bonus increases concert enjoyment, Mia's SHAP value for height is greater than Tom's.
-
-Although Mia's proximity to the stage means she wouldn't benefit from the shoulder bonus, her height's SHAP value still accounts for the existence of this bonus.
-This phenomenon is why I describe SHAP values as having a global component: Interactions influence data points that are far away.
+## SHAP values are different from a "what-if" analysis
 
 This characteristic distinguishes SHAP values from a "what-if" analysis.
 A what-if analysis asks: How would the prediction change if we altered Mia or Tom's height?
