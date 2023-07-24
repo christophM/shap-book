@@ -84,7 +84,7 @@ We calculate all possible marginal contributions in this way:
 We're one step closer to calculating a fair share of ride costs.
 Could we just average these marginal contributions per passenger?
 We could, but that would assign equal weight to every marginal contribution.
-However, one could argue that we learn more about how much Alice should pay when we add her to an empty taxi compared to adding her to a ride with Bob.
+However, one could argue that we learn more about how much Alice should pay when we add her to an empty taxi compared to when we add her to a ride with Bob.
 But how much more informative?
 
 One way to answer this question is by considering all possible permutations of Alice, Bob, and Charlie.
@@ -97,10 +97,10 @@ There are $3!=3*2*1=6$ possible permutations of passengers:
 - Bob, Charlie, Alice
 - Charlie, Bob, Alice
 
-We take these permutations to form coalitions, for example for Alice.
+We can use these permutations to form coalitions, for example, for Alice.
 Each permutation then maps to a coalition:
-People that come before Alice in the order are in the coalition, people after are not.
-Since in  coalition the order of passengers doesn't matter, some coalitions will occur more often than others when we iterate all permutations like this:
+People who come before Alice in the order are in the coalition, people after are not.
+Since in a coalition the order of passengers doesn't matter, some coalitions will occur more often than others when we iterate through all permutations like this:
 In 2 out of 6 permutations, Alice is added to an empty taxi;
 In 1 out of 6, she is added to a taxi with Bob;
 In 1 out of 6, she is added to a taxi with Charlie;
@@ -181,8 +181,8 @@ The Shapley value is the weighted average of a player's marginal contributions t
 
 ## The axioms behind Shapley values
 
-We now have the formula, but where did it originate from?
-Lloyd Shapley derived it [@shapley1953value], but it didn't just materialize out of nowhere.
+We now have the formula, but where did it come from?
+Lloyd Shapley derived it [@shapley1953value], but it didn't just materialize out of thin air.
 He proposed axioms defining what a fair distribution could look like, and from these axioms, he derived the formula.
 Lloyd Shapley also proved that based on these axioms, the Shapley value formula yields a unique solution.
 
