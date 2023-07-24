@@ -11,7 +11,7 @@ Python packages that utilize `shap` internally:
 
 - [DALEX](https://github.com/ModelOriented/DALEX)[@baniecki2021dalex]
 - [AIX360](https://github.com/Trusted-AI/AIX360)[@aix360sept2019]
-- [InterpretML](https://github.com/interpretml/interpret/)[@nori2019interpretml] encompasses multiple methods including shap.
+- [InterpretML](https://github.com/interpretml/interpret/)[@nori2019interpretml] encompasses multiple methods including SHAP.
 - [OmniXAI](https://github.com/salesforce/OmniXAI)[@wenzhuo2022omnixai], a library dedicated to explainable AI.
 - [shapash](https://github.com/MAIF/shapash), designed for dashboards and reports, as discussed in [this chapter](#dashboard).
 

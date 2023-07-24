@@ -107,7 +107,7 @@ print('Test accuracy:', score[1])
 
 ## Computing SHAP values with the Gradient Explainer
 
-After training and evaluating our model, we'll explain its classification using SHAP:
+After training and evaluating our model, we'll explain its classifications using SHAP:
 
 ```{python}
 import shap
@@ -175,7 +175,7 @@ This makes sense, since in both cases the result should be the same SHAP values 
 
 ## Time comparison
 
-We measured the time for both gradient and deep explainer.
+We measured the time for both the gradient and deep explainer.
 
 Let's examine the results:
 
@@ -186,6 +186,6 @@ print('Deep explainer: ', round(deep_time, 2))
 
 In theory, to obtain a reliable time comparison, you should repeat the calls several hundred times and avoid using other programs simultaneously.
 However, this comparison was conducted only once on my MacBook with an M1 chip.
-Keeping this in mind, we see a bit of difference.
+Keeping this in mind, we see a bit of a difference.
 Since only the CPU is used, the efficiency of calling the model could improve if a GPU were involved.
-But I'd rather use the Gradient Explainer.
+But, I'd rather use the Gradient Explainer.

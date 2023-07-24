@@ -14,9 +14,9 @@ A masker is a function that takes a data instance and a binary mask, indicating 
 The output is the same data point with the designated inputs masked.
 Depending on the input data type (tabular, text, or image data), maskers employ different strategies for masking.
 However, they all take a feature values input and a binary vector.
-This binary vector, like [0,1,...,1], also known as a binary mask, indicates which feature values to mask (the 1s) and which not to (0s).
+This binary vector, like [0,1,...,1], also known as a binary mask, indicates which feature values to mask (the 1s) and which not to (the 0s).
 For non-masked features, the feature vector position remains untouched.
-For the masked or absent features (1s), feature values are replaced according to the specific masker used.
+For the masked or absent features (the 1s), feature values are replaced according to the specific masker used.
 We will explore various maskers in this chapter.
 
 A binary mask can be viewed as a team description, indicating which players participate and which don't.

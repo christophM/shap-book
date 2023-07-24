@@ -14,7 +14,7 @@ All models in this chapter have one thing in common: their inputs are text.
 However, we'll encounter two distinct types of outputs:
 
 - Scores, such as in classification and sentiment analysis.
-- Texts, such as in text generation, translation, and summarization.
+- Text, such as in text generation, translation, and summarization.
 
 While they might seem different at first glance, they're quite similar upon closer inspection.
 We'll start with the simpler case where a model outputs a single score for a text input, like in classification, for instance, determining the category of a news article.
@@ -53,7 +53,7 @@ The sentence "I returned the item as it didn't work." might have a predicted sco
 The aim of SHAP is to attribute this score to the input words.
 If you choose to attribute the prediction at the word level, you will obtain one SHAP value for each word: ["I", "returned", "the", "item", "as", "it", "didn't", "work"].
 
-Each word acts as a team player, and the -0.8 score is fairly distributed among them.
+Each word acts as a team player, and the -0.5 score is fairly distributed among them.
 
 ## Removing players in text-based scenarios
 
@@ -145,11 +145,11 @@ print("prediction: %.2f" % model(s2)[0][1]['score'])
 shap.plots.bar(shap_values[0, :, 'POSITIVE'])
 ```
 
-"But that's why I loved it" has a huge positive contribution to the sentiment, more than the two negative sentence combined.
+"But that's why I loved it" has a huge positive contribution to the sentiment, more than the two negative sentences combined.
 I've used a whitespace " " as the masking token, which seems suitable for dropping a sentence. 
 The default replacement token for text is "...", but generally, if a tokenizer is provided, the .mask_token attribute is utilized, assuming the tokenizer has this attribute.
 
-To illustrate "extreme" masking, let's substitute a removed sentence with a specific one instead of leaving it blank. 
+To illustrate "extreme" masking, let's replace a removed sentence with a specific one instead of leaving it blank. 
 The `collapse_mask_token=True` argument ensures that if two tokens in a row are replaced by the mask_token, the token is only added once. 
 In the ensuing example, sentences are replaced with "I love it", but only once consecutively.
 
@@ -191,7 +191,7 @@ shap.plots.bar(shap_values[0, :, 'POSITIVE'])
 Here, the replacement acts as a reference.
 In one scenario, any sentence removed from the coalition is replaced with "I love it," and in the other scenario, it's replaced with "I hate it."
 
-What changes is the base value, it shifts from strongly positive to negative, as can be inferred from the difference in the base value.
+What changes are the base values; they shift from strongly positive to negative, as can be inferred from the difference in the base value.
 Every sentence is now interpreted in contrast to the replacement.
 This was also true earlier, but previously we replaced it with an empty string, which is more neutral than the sentences provided.
 
@@ -227,8 +227,7 @@ print("expected: %.2f" % shap_values.base_values[0][1])
 print("prediction: %.2f" % model(s2)[0][1]['score'])
 shap.plots.bar(shap_values[0, :, 'POSITIVE'])
 ```
-
-Despite the overall attribution not changing significantly, except for the sign change in the "marketing" sentence which was close to zero, the base value changes considerably.
+Despite the overall attribution not changing significantly, except for the sign change in the "marketing" sentence, which was close to zero, the base value changes considerably.
 
 Experiment with it, generate some text, and make a qualitative judgment about whether it makes sense.
 To understand more about maskers, refer to the [maskers chapter in the Appendix](#maskers).
@@ -275,7 +274,7 @@ Output text: "No! This is Patrick!"
 In the context of text-to-text models, each output token is considered an individual prediction, much like in multi-class classification.
 We can compute SHAP values for each token.
 
-If the tokenized input has length $n$ and the tokenized output length is $m$, we derive $n \cdot m$ SHAP values.
+If the tokenized input has a length of $n$ and the tokenized output length is $m$, we derive $n \cdot m$ SHAP values.
 The level of input tokenization is user-controllable.
 In the example above, if the user opts for word-level tokenization for the input, the first token of the output, i.e., "No", receives $n$ SHAP values.
 The next token "!" gets $n$ SHAP values, and so on.
@@ -313,7 +312,7 @@ input_text = 'He insulted Italian cuisine by'
 # Encode input text
 input_ids = tokenizer.encode(input_text, return_tensors='pt')
 
-# Sample instead of returning most likely token
+# Sample instead of returning the most likely token
 model.config.do_sample=True
 # Set maximum length
 model.config.max_new_tokens = 30
@@ -326,11 +325,11 @@ output_text = tokenizer.decode(output[0], skip_special_tokens=True)
 print('The result: "' + output_text + '"')
 ```
 
-Now we can obtain the SHAP explanations for the first generated word "throwing".
+Now, we can obtain the SHAP explanations for the first generated word "throwing".
 
 ```{python}
 torch.manual_seed(0)
-# Setting model to decoder to prevent input repetition.
+# Setting the model to decoder to prevent input repetition.
 model.config.is_decoder = True
 explainer = shap.Explainer(model, tokenizer)
 shap_values = explainer([input_text])
@@ -344,6 +343,6 @@ Here are other examples of text-to-text tasks for which notebooks are available:
 
 - [Question Answering](https://shap.readthedocs.io/en/latest/example_notebooks/text_examples/question_answering/Explaining%20a%20Question%20Answering%20Transformers%20Model.html)
 - [Summarization](https://shap.readthedocs.io/en/latest/example_notebooks/text_examples/summarization/Abstractive%20Summarization%20Explanation%20Demo.html)
-- [Machine translation](https://shap.readthedocs.io/en/latest/example_notebooks/text_examples/translation/Machine%20Translation%20Explanations.html)
+- [Machine Translation](https://shap.readthedocs.io/en/latest/example_notebooks/text_examples/translation/Machine%20Translation%20Explanations.html)
 
 As general text-to-text models can now handle these tasks, the given example should suffice.

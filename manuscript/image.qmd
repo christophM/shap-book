@@ -18,11 +18,11 @@ Rather than training our own image classifier, we'll utilize a pre-trained ResNe
 ImageNet is a large-scale image classification challenge where models are required to categorize objects within digital images.
 It boasts a dataset of over 1 million images from 1000 different categories, aiming to develop a model that accurately classifies each image.
 
-This example's code is derived from [a notebook from the shap library](https://github.com/slundberg/shap/blob/master/notebooks/image_examples/image_classification/Explain%20ResNet50%20using%20the%20Partition%20explainer.ipynb).
+This example's code is derived from [a notebook from the `shap` library](https://github.com/slundberg/shap/blob/master/notebooks/image_examples/image_classification/Explain%20ResNet50%20using%20the%20Partition%20explainer.ipynb).
 
 ## Importing the pretrained network
 
-We'll employ a pre-trained Resnet from TensorFlow.
+We'll employ a pre-trained ResNet from TensorFlow.
 
 ```{python}
 import json
@@ -69,7 +69,7 @@ What we need now are:
 - A prediction function that wraps the model.
 - A masker that defines how to simulate absent features (pixel clusters).
 
-The prediction function is straightforward: it takes an image as a numpy array, preprocesses it for the Resnet, and feeds it to the Resnet.
+The prediction function is straightforward: it takes an image as a numpy array, preprocesses it for the ResNet, and feeds it to the ResNet.
 Thus, it takes a numpy array as input and outputs probability scores.
 We make use of the Partition explainer that partitions the image into equal rectangles and recursively computes the SHAP values. 
 
@@ -116,7 +116,7 @@ shap_values = explainer(
 ```
 
 The above code calculates all SHAP values.
-However, with image Shap, the raw values aren't particularly useful, so let's visualize them.
+However, with Image SHAP, the raw values aren't particularly useful, so let's visualize them.
 The SHAP values are optimally visualized by overlaying them on the original image.
 Below are the selected images:
 
@@ -166,7 +166,7 @@ Specifically, here are the options in SHAP:
 - `blur(16, 16)`: Blurring depends on kernel size, which can be set by the user. Larger values involve distant pixels in the blurring process, and blurring is faster than inpainting.
 
 The `shap` package uses the `cv2` package for inpainting and blurring operations. 
-Below are examples of how these different options look, featuring melting burgers primarily.
+Below are examples of how these different options look, primarily featuring melting burgers.
 ```{python}
 import matplotlib.pyplot as plt
 
@@ -202,7 +202,7 @@ The upper half of the image is "present" and the lower half is "absent".
 This mirrors the SHAP values concept, where the image is divided into two "players": the upper and lower halves.
 This is also akin to the Partition explainer, which further segments along the x and y axes.
 
-Unlike replacing all missing values with grey pixels, maskers don't entirely alter the image.
+Unlike replacing all missing values with gray pixels, maskers don't entirely alter the image.
 Blurring even maintains the original data, merely smoothing it and causing some information loss.
 For instance, the blur(16, 16) kernel doesn't significantly alter the image; the bottom of the burger remains fairly recognizable.
 Next, let's examine the effect of the masks on the SHAP values.
@@ -225,11 +225,11 @@ for mask_name in mask_names:
 ```
 
 The masker choice does influence the explanation of the cheeseburger classification.
-The mistaken classification identified the cheeseburger as a bottlecap.
+The mistaken classification identified the cheeseburger as a bottle cap.
 All maskers concurred that the most influencing pixels were at the top, except for the blur(16, 16) masker, which highlighted the side pixels.
 Nonetheless, the blur(16, 16) masker appears somewhat unreliable, as it doesn't obscure much.
 Even to me, the bottom part of the image is recognizable as a burger, indicating that the features haven't been significantly obscured.
-In all instances, the pixels at the bottom of the burger seemed to counter the bottlecap classification.
+In all instances, the pixels at the bottom of the burger seemed to counter the bottle cap classification.
 For more information on maskers, refer to the [maskers chapter in the Appendix](#maskers).
 
 Another intriguing hyperparameter is the number of evaluation steps.

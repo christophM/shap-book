@@ -33,7 +33,7 @@ $$y = 0.1 \cdot x_1 - 1 \cdot x_2 + 10 \cdot \mathbb{1}_{x_1 < 160 \text{ and } 
 - The closer to the stage, the better.
 - Both of these have linear relationships with concert enjoyment.
 - Additional interaction: Small fans who are far from the stage get a "bonus": some kind soul allows them to sit on their shoulders for a better view of the concert.
-- The -8 is just so that the output is roughly between 0 (bad concert experience) and 10 (greatly enjoying the concert)
+- The -8 is just so that the output is roughly between 0 (bad concert experience) and 10 (great concert experience).
 
 ::: {.callout-note}
 
@@ -127,7 +127,7 @@ To investigate further, let's examine the dependence plot, @fig-dependence-x1.
 ```{python}
 #| label: fig-dependence-x1
 #| fig-cap: "Dependence plot for x1, the height feature"
-shap.plots.scatter(shap_values[:,0], color = shap_values)
+shap.plots.scatter(shap_values[:,0], color=shap_values)
 ```
 The dependence plot colors the points by the values of feature $x_2$, as we provided the SHAP values for the color option.
 By default, the points are colored by the feature with the highest approximate interaction.
@@ -185,13 +185,13 @@ print(shap_values[1].values)
 
 The SHAP values for Mia and Tom differ significantly.
 
-- Mia's slightly negative value for height is understandable, given her relative shortness in comparison to the majority of simulated heights.
+- Mia's slightly negative value for height is understandable, given her relative shortness compared to the majority of simulated heights.
 - Mia's positive SHAP value for distance makes sense as she is quite near the front.
 - Tom's SHAP values follow similar trends, which is expected since they share the same distance and similar heights.
 - However, Tom's SHAP values are more pronounced.
 
 But shouldn't Mia have a smaller SHAP value for height than Tom?
-Neither of them profits from the shoulder bonus, so Mia being smaller than Tom should mean that her SHAP value for "height" should be smaller than Tom's, right?
+Neither of them benefits from the shoulder bonus, so Mia being smaller than Tom should mean that her SHAP value for "height" should be smaller than Tom's, right?
 But surprisingly, Mia's SHAP value is influenced by the interaction term, despite her not being directly affected by the shoulder bonus!
 
 This outcome is a result of the calculation process of SHAP values:
@@ -199,7 +199,7 @@ When computing the SHAP value for Mia's height, one of the marginal contribution
 For this marginal contribution, we have to sample the stage distance feature.
 And sometimes we sample distances > 7, which activate the shoulder bonus.
 But only for Mia, not for Tom.
-The shoulder bonus strongly increases concert enjoyment and as a consequence Mia's SHAP value for height becomes greater than Tom's.
+The shoulder bonus strongly increases concert enjoyment and, as a consequence, Mia's SHAP value for height becomes greater than Tom's.
 So even though Mia is too close to the stage to get the shoulder bonus, her height's SHAP value accounts for this interaction.
 This example shows that SHAP values have a global component: Interactions influence data points that are far away.
 

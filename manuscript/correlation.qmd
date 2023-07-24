@@ -19,7 +19,7 @@ In this chapter, we will first dive into the problem in more detail using a smal
 
 ## Correlated features cause extrapolation
 
-To illustrate this issue, I simulated two highly correlated features, $X_1$ and $X_2$. Assuming a machine learning model is later trained on this data, we won't train a model but will instead explore how sampling background data can be problematic.
+To illustrate this issue, I simulated two highly correlated features, $X_1$ and $X_2$. Assuming a machine learning model is later trained on this data, we won't actually train a model but will instead explore how sampling background data can be problematic.
 
 ```{python}
 import numpy as np
@@ -144,7 +144,7 @@ We treat both groups as players and compute their SHAP values $\phi_{\text{size,
 In the next recursion, we split up the $\phi_{\text{size,cat,park}}$ among the groups {park} and {size, cat}, again as if we were computing SHAP, but with groups as players.
 We then move down to {cat} and {size}.
 The Partition explainer doesn't fully eliminate the correlation problem.
-As we move deeper down the correlation tree, we start to also break up stronger correlated features to recursively compute the Owen's value.
+As we move deeper down the correlation tree, we start to also break up strongly correlated features to recursively compute Owen's value.
 However, it's reduced, since we only try to explain the group's SHAP value and permute fewer features.
 
 Owen's game alters the complexity from $\mathcal{O}(2^p)$ to $\mathcal{O}(p^2)$ (when the clustering tree is balanced), where $p$ is the number of input features for the model.

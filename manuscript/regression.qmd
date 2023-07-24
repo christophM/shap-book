@@ -101,7 +101,7 @@ shap_values = explainer(X_test, check_additivity=False)
 
 ::: {.callout-warning}
 Please provide a dataset or masker when creating an Explainer for a tree-based model.
-While other explainers will not function without data, the tree explainer will default to `feature_pertubation='tree_path_dependent'`, which is not recommended due to its ambiguous interpretation.
+While other explainers will not function without data, the tree explainer will default to `feature_perturbation='tree_path_dependent'`, which is not recommended due to its ambiguous interpretation.
 
 :::
 
@@ -149,7 +149,7 @@ You can also manually select a feature.
 Here are some important observations:
 
 - Generally, a higher alcohol level corresponds to a higher SHAP value.
-- Examining cases with low volatile acidity reveals an interesting interaction with wines having a low alcohol level. For wines with low alcohol (between 8% and 11%), if the wines have low volatile acidity, then the SHAP value for alcohol is higher compared to wines with similar alcohol levels.
+- Examining cases with low volatile acidity reveals an interesting interaction with wines that have a low alcohol level. For wines with low alcohol (between 8% and 11%), if the wines have low volatile acidity, then the SHAP value for alcohol is higher compared to wines with similar alcohol levels.
 - The relationship reverses for wines with higher alcohol levels: a higher volatile acidity level is associated with slightly higher SHAP values for alcohol.
 - We could infer that volatile acidity alters the effect of alcohol on the predicted wine quality.
 - However, this interaction is subtle, and we should avoid overinterpreting it, particularly considering the insights from the [Interaction Chapter](#interaction) about the complexity of interactions.
@@ -179,7 +179,7 @@ Key observations:
 - Alcohol and residual sugar are negatively correlated with a correlation coefficient of -0.5 (see later in this chapter); this makes sense as sugar is converted into alcohol during the fermentation process.
 - Comparing curves for low (below 12) and high alcohol levels (above 12):
   - High variance in SHAP values is observed when alcohol content is low.
-  - High alcohol content is associated with low residual sugar and higher SHAP values, as compared to low alcohol content.  
+  - High alcohol content is associated with low residual sugar and higher SHAP values, compared to low alcohol content.  
 
 ## Analyzing correlated features
 
@@ -191,7 +191,7 @@ $$r_{xy} = \frac{\sum_{i=1}^{n}(x^{(i)}-\bar{x})(z^{(i)}-\bar{z})}{\sqrt{\sum_{i
 The correlation ranges from -1, representing a perfect negative correlation, to +1, indicating a perfect positive correlation.
 A value of 0 suggests no correlation.
 In this case, $x$ and $z$ represent two features, while $\bar{x}$ and $\bar{z}$ are their respective averages.
-Note, however, that Person correlation only measures linear correlation, which isn't the only way features may be correlated.
+Note, however, that Pearson correlation only measures linear correlation, which isn't the only way features may be correlated.
 Use other measures of correlation, such as mutual information, if you want to capture different notions of correlation.
 
 
@@ -266,7 +266,7 @@ plt.show()
 ```
 Figure @fig-clustering shows the clustering results: density and alcohol are combined first, then merged with residual sugar, and finally with the cluster of free and total sulfur dioxide.
 As we ascend, the correlation weakens.
-This clustering hierarchy is input into the Partition explainer to produce SHAP values:
+This clustering hierarchy is input into the Partition Explainer to produce SHAP values:
 
 ```{python}
 masker = shap.maskers.Partition(X_train, clustering=clustering)
@@ -275,7 +275,7 @@ shap_values2 = explainer2(X_test)
 ```
 
 ::: {.callout-note}
-By using the Partition explainer instead of the Tree explainer, we avoid the issue of checking additivity.
+By using the Partition Explainer instead of the Tree Explainer, we avoid the issue of checking additivity.
 :::
 
 We now have our new SHAP values.
@@ -295,7 +295,7 @@ plt.show()
 ```
 
 While the SHAP importances are not identical, the differences are not substantial.
-However, the real benefit is the new interpretation we gain from clustering and the Partition explainer:
+However, the real benefit is the new interpretation we gain from clustering and the Partition Explainer:
 
 - We may add the SHAP values for both alcohol and density and interpret this as the effect for the alcohol and density group. There was no extrapolation between the two features, meaning no unlikely combination of alcohol and density was formed.
 - Similarly, we may interpret the combined SHAP importance: we can interpret 0.34 + 0.03 = 0.37 as the SHAP importance of the alcohol+density group.
@@ -314,12 +314,12 @@ shap.plots.bar(shap_values2[0], clustering_cutoff=0.6)
 Again, there are only slight differences in the SHAP values, and we can combine the SHAP values of clusters in addition to interpreting the individual SHAP values.
 For the computation of a combined SHAP value, the features within that group were not subjected to extrapolation through marginal sampling.
 Revisit the [Correlation Chapter](#correlation) for a refresher on this concept.
-For instance, the feature group "alcohol, density and residual sugar" contributed a significant +0.55 (0.39 + 0.02 + 0.14) to the predicted quality.
-We know that for the group SHAP value of 0.55, alcohol, density and residual sugar were always kept together in coalitions.
+For instance, the feature group "alcohol, density, and residual sugar" contributed a significant +0.55 (0.39 + 0.02 + 0.14) to the predicted quality.
+We know that for the group SHAP value of 0.55, alcohol, density, and residual sugar were always kept together in coalitions.
 
 However, the individual SHAP values are still partially susceptible to extrapolation.
 For instance, the SHAP value for alcohol was computed by attributing 0.41 to both density and alcohol.
-For this attribution, density was also sampled by marginal sampling, which introduces extrapolation, such as combining high alcohol values with a high density.
+For this attribution, density was also sampled by marginal sampling, which introduces extrapolation, such as combining high alcohol values with high density.
 So we have a trade-off between extrapolation and group granularity:
 The higher we ascend in the clustering hierarchy, the less extrapolation but the larger the feature groups become, which also complicates interpretation.
 
@@ -421,7 +421,7 @@ The predicted value of {y} for instance {i} differs from the expected average pr
 - {feature3}={fv3} contributed {sv3}
 - ...
 
-The sum of all SHAP values equals to the difference between the prediction ({y}) and the expected value ({base_value}).
+The sum of all SHAP values equals the difference between the prediction ({y}) and the expected value ({base_value}).
 """.format(base_value=round(bv, 2), y=np.round(y, 2), i=i, diff=np.round(diff, 2),
            feature1=feature1, fv1=round(fv1, 2), sv1=np.round(sv1, 3),
            feature2=feature2, fv2=round(fv2, 2), sv2=np.round(sv2, 3),
@@ -463,7 +463,7 @@ Alcohol, according to SHAP, is the most crucial feature.
 Its importance remains when we subset SHAP values for wines high in alcohol.
 Its significance increases because these wines, high in alcohol, have a high predicted quality due to their alcohol content.
 However, when we also alter the background data, the importance of alcohol significantly decreases, as evidenced by the close clustering of the SHAP values around zero.
-However, more insights can be found in @fig-summaries.
+More insights can be found in @fig-summaries.
 For instance, consider volatile acidity.
 A higher volatile acidity typically correlates to lower SHAP values, but different patterns emerge when considering wines rich in alcohol.
 Firstly, the SHAP values of volatile acidity exhibit a smaller range.

@@ -6,7 +6,7 @@
 
 
 ::: {#first-column}
-**Interpretable Machine Learning** covers a wide range of explainable AI techniques, from counterfactual and PDPs to Permutation Feature Importance and SHAP.
+**Interpretable Machine Learning** covers a wide range of explainable AI techniques, from counterfactuals and PDPs to Permutation Feature Importance and SHAP.
 ::: 
 
 ::: {#second-column}

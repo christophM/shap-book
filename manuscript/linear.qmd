@@ -114,7 +114,7 @@ from IPython.display import display, Markdown
 display(Markdown("""This indicates that, on average, the prediction deviates by {mae} from the actual value.""".format(mae=round(mae, 2))))
 ```
 
-Next, we aim to understand how the model generates a prediction.
+Next, we aim to understand how the model generates predictions.
 How is the predicted quality of a given wine related to its input features?
 
 ## Interpreting the coefficients
@@ -134,7 +134,7 @@ print(coefs.to_markdown(index=False))
 Interpretation:
 
 - For instance, increasing the fixed acidity of a wine by 1 unit raises the predicted quality by 0.046.
-- Increasing the density by 1 unit reduces the predicted quality by -124.264.
+- Increasing the density by 1 unit reduces the predicted quality by 124.264.
 - Volatile acidity, citric acid, chlorides, total sulfur dioxide, and density negatively affect the predicted quality.
 
 ## Model coefficients provide a global perspective
@@ -156,7 +156,7 @@ As we'll see in the coming section, this is the same as how the SHAP values are 
 
 ## Theory: SHAP for linear models
 
-For linear regression models without interaction terms, the computation of SHAP values is straightforward since the model only has linear relations between the feature and target and no interactions.
+For linear regression models without interaction terms, the computation of SHAP values is straightforward since the model only has linear relations between the features and target and no interactions.
 The SHAP value $\phi^{(i)}_j$ of the j-th feature on the prediction $f(x^{(i)}_j)$ for a linear regression model is defined as:
 
 $$\phi^{(i)}_j=\beta_{j}x^{(i)}_j-\mathbb{E}(\beta_{j}X_{j})=\beta_{j}(x^{(i)}_j - \mathbb{E}(X_{j}))$$
@@ -268,7 +268,7 @@ shap.Explainer(model, X_train)
 This is also a `Linear` explainer object.
 The advantage of the `algorithm='auto'` option, which is the default setting when creating an Explainer, is that `shap` identifies the model as a linear regression model and selects the efficient linear explainer.
 
-There is another way, which involves directly choosing the appropriate `algorithm` in the explainer:
+Another method involves directly choosing the appropriate `algorithm` in the explainer:
 
 ```{python}
 shap.Explainer(model, X_train, algorithm='linear')
@@ -282,8 +282,8 @@ shap_values = explainer(X_test)
 
 ::: {.callout-note}
 
-When constructing a prediction model, you divide training and testing data to prevent overfitting and to achieve a fair evaluation.
-Although the risk of overfitting doesn't apply in the same way to SHAP, it's considered best practice to use training data for the Explainer (i.e., for the background data) and compute explanations for new data.
+When constructing a prediction model, you divide the data into training and testing sets to prevent overfitting and to achieve a fair evaluation.
+Although the risk of overfitting doesn't apply in the same way to SHAP, it's considered best practice to use the training data for the Explainer (i.e., for the background data) and compute explanations for new data.
 This separation prevents a data point's feature values from being "replaced" by its own values.
 It also means we calculate explanations for fresh data that the model hasn't previously encountered.
 However, I must confess that I haven't seen much research on dataset choices, so take this information with a pinch of salt.
@@ -294,7 +294,7 @@ Next, let's examine the SHAP values.
 
 While initially looking a bit messy, it's insightful to inspect the `Explanation` object.
 The Explanation object includes `.values`, `.base_values`, and `.data` fields.
-The `.values` represent the SHAP values as $n \times p$ array, `.base_values` is the average prediction (consistent for each data point), and `.data` contains the feature values.
+The `.values` represent the SHAP values as an $n \times p$ array, `.base_values` is the average prediction (consistent for each data point), and `.data` contains the feature values.
 Each element in these arrays corresponds to one data point in `X_test`, which we used to calculate the SHAP values.
 
 ```{python}
@@ -321,7 +321,7 @@ shap.plots.waterfall(shap_values[0])
 - The plot is dubbed "waterfall" because each step resembles flowing water. Water can flow in either direction, just as SHAP values can be positive or negative. Positive SHAP values point to the right.
 - The y-axis exhibits the individual features, along with the values for the selected data instance.
 - The feature values are ordered by the magnitudes of their SHAP values.
-- The x-axis is on the scale of SHAP values
+- The x-axis is on the scale of SHAP values.
 - Each bar signifies the SHAP value for that specific feature value.
 - The x-axis also shows the estimated expected prediction $\mathbb{E}(f(X))$ and the actual prediction of the instance $f(x^{(i)})$.
 - The bars start at the bottom from the expected prediction and add up to the actual prediction.
@@ -360,7 +360,7 @@ Interpretation: The predicted value of {y} for instance {i} differs from the ave
 - {feature3}={fv3} contributed {sv3}
 - ...
 
-The sum of all SHAP values equals the difference between the prediction ({y}) and expected value ({base_value}).
+The sum of all SHAP values equals the difference between the prediction ({y}) and the expected value ({base_value}).
 """.format(base_value=round(bv, 2), y=np.round(y, 2), i=i, diff=np.round(diff, 2),
            feature1=feature1, fv1=round(fv1, 2), sv1=np.round(sv1, 2),
            feature2=feature2, fv2=round(fv2, 2), sv2=np.round(sv2, 2),
@@ -376,13 +376,13 @@ Prediction [$f(x)$] for instance [$i$] differs from the average prediction [$\ma
 :::
 
 Here's an interesting analogy to view SHAP values:
-Imagine the prediction as an option floating in a 1-dimensional universe.
-It's starting point is the average prediction of the background data -- this is our "center of gravity".
+Imagine the prediction as an object floating in a 1-dimensional universe.
+Its starting point is the average prediction of the background data -- this is our "center of gravity".
 Each feature of the data point can be seen as a force acting on this object and can either push it up or down.
-The SHAP value describes how strong each forces is and in which direction it pushes.
+The SHAP value describes how strong each force is and in which direction it pushes.
 Eventually, these forces reach equilibrium, which represents the predicted value.
 
-Alright, back from this little universe to our example. Several observations can be made:
+Back from this little universe to our example, several observations can be made:
 
 - The most influential feature was 'residual sugar' (=10.8), with a SHAP value of 0.32, indicating it had an increasing impact on the quality on average.
 - Overall, the prediction surpassed the average, suggesting a high-quality wine.
@@ -413,7 +413,7 @@ This gives us a global model interpretation.
 ## Global versus local interpretation
 
 SHAP values allow for a local interpretation -- how features contribute to a prediction.
-Global interpretations focus on *average model behavior*, which includes how features affect the prediction, how important each feature was for the prediction, and how features interact.
+Global interpretations focus on *average model behavior*, which includes how features affect the prediction, how important each feature is for the prediction, and how features interact.
 :::
 
 We previously computed the SHAP values for the test data, which are now stored in the `shap_values` variable.
@@ -446,8 +446,8 @@ However, that's just true for the linear model.
 The "true" relationship in the data might be non-linear.
 
 The coloring for each feature in the summary plot reveals the direction of the effect a feature has:
-For example higher density wines are associated with lower SHAP values, while wines with more residual sugar have a higher corresponding SHAP value.
-Again, this is information that directly corresponds to the coefficients from the linear regression model.
+For example, higher density wines are associated with lower SHAP values, while wines with more residual sugar have a higher corresponding SHAP value.
+Again, this information directly corresponds to the coefficients from the linear regression model.
 In later chapters we will see examples with more insightful summary plots.
 
 ::: {.callout-tip}
@@ -497,4 +497,4 @@ ind = X_test.columns.get_loc(feature)
 coefs.coefficient[ind]
 ```
 
-A visual inspection of the dependence plot confirms the same slope, as the plot ranges from (8, -0.6) to (14, 0.8), resulting in a slope of $(0.8 - (-0.6))/(14 - 8) \approx 0.23$
+A visual inspection of the dependence plot confirms the same slope, as the plot ranges from (8, -0.6) to (14, 0.8), resulting in a slope of $(0.8 - (-0.6))/(14 - 8) \approx 0.23$.

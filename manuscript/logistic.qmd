@@ -35,7 +35,7 @@ Even though the example here is binary classification, `shap` works the same for
 
 :::
 
-From the SHAP perspective, classification is similar to regression, except the scale the score or probability for a class.
+From the SHAP perspective, classification is similar to regression, except that the outcome is a score or class probability.
 
 ## The Adult dataset
 
@@ -47,7 +47,7 @@ Conveniently, the `shap` package includes the Adult dataset, which simplifies it
 
 ## Training the model
 
-First we load the dataset which, to our convenience, is available in `shap`.
+First, we load the dataset which, to our convenience, is available in `shap`.
 
 ```{python}
 import shap
@@ -206,8 +206,8 @@ In logistic regression, it's common to interpret the model in terms of log odds 
 
 The explainer has a `link` argument for this, which defaults to the identity link $l(x) = x$.
 For classification, the logit link: $l(x) = log\left(\frac{x}{1 - x}\right)$, is a good choice.
-This turn the probabilities into log odds.
-In mathematical terms, it's rearrangement of the terms in the logistic regression model:
+This turns the probabilities into log odds.
+In mathematical terms, it's a rearrangement of the terms in the logistic regression model:
 
 \begin{equation*}
 \log\left(\frac{P(Y=1|x^{(i)})}{P(Y=0|x^{(i)})}\right) = \beta_0 + \beta_1 x^{(i)}_1 + \beta_2 x^{(i)}_2 + ... + \beta_p x^{(i)}_p
@@ -215,8 +215,6 @@ In mathematical terms, it's rearrangement of the terms in the logistic regressio
 
 
 We can use this logit link to transform the output of the logistic regression model and compute SHAP values on this new scale:
-
-And to the same 
 
 ```{python}
 ex_logit = shap.Explainer(
@@ -249,7 +247,7 @@ In probability space, the differences are 0.10 and 0.019.
 In logit space, we have:
 
 - $log(0.9/0.1) - log(0.8/0.2) \approx 0.8$ and
-- $log(0.999/0.001) - log(0.98/0.02) \approx 3$
+- $log(0.999/0.001) - log(0.98/0.02) \approx 3$.
 
 In logit space, the second jump is larger.
 This happens because the logit compresses near 0 and 1, making changes in the extremes of probability space appear larger.
@@ -257,7 +255,7 @@ This happens because the logit compresses near 0 and 1, making changes in the ex
 So, which one should you select?
 If you're primarily concerned with probabilities, and a jump from 80% to 81% is as significant to you as from 99% to 100%, stick with the default and use the identity link.
 However, if changes in extreme probabilities near 0 and 1 are more critical for your application, choose logits.
-Whenever rare events, anomalies, and extreme probabilites matter, go with logits.
+Whenever rare events, anomalies, and extreme probabilities matter, go with logits.
 You can also visualize the difference in step sizes in the following @fig-logits.
 
 ![Probabilities versus Logits](images/logits.jpg){#fig-logits width="75%"}
@@ -290,7 +288,7 @@ The following example utilizes hierarchical agglomerative clustering to sort the
 
 The plot comprises numerous force plots, each explaining the prediction of an instance.
 We rotate the force plots vertically and arrange them side by side according to their clustering similarity.
-It's a Javascript plot.
+It's a JavaScript plot.
 You might want to reduce the number of data points so that the plot doesn't get overwhelming, both visually and for your CPU.
 Here's how it looks for the first 21 data points:
 
@@ -336,12 +334,12 @@ shap.plots.heatmap(sv_logit[:,:,class_index])
 ## Heatmap plot
 
 - Each row on the y-axis represents a feature, and instances are distributed across the x-axis.
-- Color signifies the SHAP value.
+- The color signifies the SHAP value.
 - Instances are arranged based on clustered SHAP values.
 - The curve at the top displays the predicted value for the data.
 
 :::
 
-Some features are automatically summarized, a plotting behavior that can be managed by setting the `max_display` argument.
+Some features are automatically summarized, a plotting behavior that can be controlled by setting the `max_display` argument.
 
-[^no-probability]: While the output is a number between 0 and 1, classifiers are frequently not well calibrated, so be cautious when interpreting the output as a probability in real-world scenarios.
+[^no-probability]: While the output is a number between 0 and 1, classifiers are frequently not well-calibrated, so be cautious when interpreting the output as a probability in real-world scenarios.

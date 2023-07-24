@@ -10,7 +10,7 @@ By the end of this chapter, you will be able to:
 
 :::
 
-In this step, we introduce the concept of non-linear relationships between a feature and the target, while excluding interactions between the features.
+In this section, we introduce the concept of non-linear relationships between a feature and the target, while excluding interactions between the features.
 
 ## Introducing the generalized additive model (GAM)
 
@@ -76,7 +76,7 @@ print(f"MAE: {mae:.2f}")
 ```
 
 The mean absolute error on the test data is less than that of the linear regression model.
-This is promising, as it indicates that by using a GAM and allowing non-linear feature effects, we improved predictions.
+This is promising as it indicates that by using a GAM and allowing non-linear feature effects, we improved predictions.
 The increase in performance indicates that some relations between wine quality and features are non-linear.
 
 ## Interpreting the GAM with SHAP
@@ -107,13 +107,13 @@ The Additive explainer method isn't used because the additive estimation in `sha
 
 This waterfall plot provides a different perspective than the purely linear model.
 
-- For this particular wine, the most important features were alcohol and free sulfur dioxide, whereas, in the linear model, it was residual sugar and free sulfur dioxide.
+- For this particular wine, the most important features were alcohol and free sulfur dioxide, whereas, in the linear model, they were residual sugar and free sulfur dioxide.
 - The quality predicted by the GAM is approximately 6.0, lower than the 6.4 predicted by the linear model. 
 - This example clearly illustrates how the global average prediction and the local prediction can be similar, but numerous SHAP values cancel each other out.
 
 ## SHAP recovers non-linear functions
 
-GAM is an additive model, which implies that we can inspect each feature in isolation to understand its effect without considering interaction effects.
+A GAM is an additive model, which implies that we can inspect each feature in isolation to understand its effect without considering interaction effects.
 Let's examine the SHAP dependence plot for alcohol:
 ```{python}
 shap.plots.scatter(shap_values[:,"alcohol"])

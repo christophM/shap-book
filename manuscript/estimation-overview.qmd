@@ -70,8 +70,7 @@ We then predict the price of the apartment with this combination (€310,000), w
 | Park        | Cat        | Area | Floor | Predicted Price   |
 |-------------|------------|------|-------|---------|
 | Nearby      | Banned     | 50   | 1st   | €310,000|
-
-Next, we replace `cat-banned` from the coalition with a random value of the cat allowed/banned feature from the same apartment that we sampled.
+Next, we replace `cat-banned` in the coalition with a random value of the cat allowed/banned feature from the same apartment that we sampled.
 In essence, we are estimating v({park-nearby, area-50}).
 
 | Park        | Cat        | Area | Floor | Predicted Price   |
@@ -181,7 +180,7 @@ This is the forward generation. Next, we iterate backwards:
 This approach only alters one feature at a time, reducing the number of model calls as the first term of a marginal contribution transitions into the second term of the subsequent one.
 For instance, the coalition $\{x_{\text{cat}}, x_{\text{area}}\}$ is used to calculate the marginal contribution of $x_{\text{park}}$ to $\{x_{\text{cat}}, x_{\text{area}}\}$ and of $x_{\text{area}}$ to $\{x_{\text{cat}}\}$.
 We estimate the marginal contribution using Monte Carlo integration.
-With each forwards plus backward generation for a permutation, we get marginal contributions for multiple features, not just a single one.
+With each forward and backward generation for a permutation, we get marginal contributions for multiple features, not just a single one.
 In fact, we get two marginal contributions per feature for one permutation.
 By repeating the permutation sampling, we get even more marginal contributions and therefore achieve more accurate estimates.
 The more permutations we sample and iterate over, the more marginal contributions are estimated, bringing the final SHAP estimates closer to their theoretical value.
@@ -226,7 +225,7 @@ There are numerous other ways to estimate Shapley values, which are detailed in 
 Here's a table to illustrate just how many methods there are.
 Some methods are model-specific, while others are model-agnostic.
 Model-specific methods are often inspired by other techniques used to explain model predictions. 
-The "Background Data" column indicates whether the estimation method requires data to be estimated.
+The "Background Data" column indicates whether the estimation method requires data for estimation.
 
 
 | Method | Estimation (with inspiration) | Model-specific? |
@@ -264,7 +263,7 @@ To illustrate how the 'auto' option selects estimation methods:
 
 ::: {.callout-tip}
 
-The original SHAP paper [@lundberg2017unified] introduced the Kernel method, which involves sampling coalitions and utilizing a weighted linear regression model to estimate SHAP values.
+The original SHAP paper [@lundberg2017unified] introduced the Kernel method, which involves sampling coalitions and using a weighted linear regression model to estimate SHAP values.
 The Kernel method "united" SHAP with LIME and other prediction explanation techniques in machine learning.
 However, the Kernel method is slow and has been superseded by the permutation method.
 

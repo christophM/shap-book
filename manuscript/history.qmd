@@ -19,8 +19,8 @@ The history is divided into three parts, each highlighted by a milestone:
 
 ## Lloyd Shapley's pursuit of fairness
 
-Shapley values have greater importance than might initially be apparent from the book.
-These values are named after their creator, Lloyd Shapley, who first introduced them in 1951.
+Shapley values have greater importance than might initially be apparent from this book.
+These values are named after their creator, Lloyd Shapley, who first introduced them in 1953.
 In the 1950s, game theory saw an active period, during which many core concepts were formulated, including repeated games, the prisoner's dilemma, fictitious play, and, of course, Shapley values.
 Lloyd Shapley, a mathematician, was renowned in game theory, with fellow theorist Robert Aumann calling him the ["greatest game theorist of all time"](https://www.wsj.com/articles/lloyd-shapley-won-the-nobel-prize-for-economics-1923-2016-1458342678).
 After World War II, Shapley completed his PhD at Princeton University with a thesis titled "Additive and Non-Additive Set Functions."
@@ -42,7 +42,7 @@ Fast forward to 2010.
 Shapley hadn't yet received his Nobel Prize in Economics, but the theory of Shapley values had been established for nearly 60 years.
 In contrast, machine learning had made tremendous strides during this period.
 In 2012, the ImageNet competition [@deng2009imagenet], led by Fei-Fei Li, was won for the first time by a team using a deep neural network (AlexNet) with a significant lead over the runner-up.
-Machine learning continued to advance and attract more research in many other ways.
+Machine learning continued to advance and attract more research in many other areas.
 
 While Shapley values had previously been defined for linear models, 2010 marks the beginning of model-agnostic estimation of Shapley values.
 In 2010, Erik Štrumbelj and Igor Kononenko published a paper titled "An efficient explanation of individual classifications using game theory" [@strumbelj2010efficient], proposing the use of Shapley values to explain machine learning model predictions.

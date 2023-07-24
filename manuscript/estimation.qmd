@@ -1,6 +1,6 @@
 # SHAP Estimators {#estimation}
 
-This chapter present the various SHAP estimators in detail.
+This chapter presents the various SHAP estimators in detail.
 
 ## Exact Estimation: Computing all the coalitions
 
@@ -239,7 +239,7 @@ A random coalition is created by repeatedly flipping a coin until we have a sequ
 For instance, the vector (1,0,1,0) denotes a coalition of the first and third features.
 The K sampled coalitions become the dataset for the regression model.
 The target for the regression model is the prediction for a coalition.
-("Wait a minute!," you might say, "The model hasn't been trained on these binary coalition data and thus can't make predictions for them.")
+("Wait a minute!" you might say, "The model hasn't been trained on these binary coalition data and thus can't make predictions for them.")
 To convert coalitions of feature values into valid data instances, we need a function $h_x(z')=z$ where $h_x:\{0,1\}^M\rightarrow\mathbb{R}^p$.
 The function $h_x$ maps 1's to the corresponding value from the instance x that we wish to explain and 0's to values from the original instance.
 
@@ -248,7 +248,7 @@ $$\pi_{x}(z')=\frac{(M-1)}{\binom{M}{|z'|}|z'|(M-|z'|)}$$
 Here, M represents the maximum coalition size, and $|z'|$ signifies the number of features present in instance z'.
 Lundberg and Lee illustrate that using this kernel weight for linear regression yields SHAP values.
 LIME, a method that functions by fitting local surrogate models, operates similarly to Kernel SHAP.
-Were you to employ the SHAP kernel with LIME on the coalition data, LIME would also generate SHAP values!
+If you were to employ the SHAP kernel with LIME on the coalition data, LIME would also generate SHAP values!
 
 ### More strategic sampling of coalitions
 
@@ -293,7 +293,7 @@ This estimation method is specific to tree-based models such as decision trees, 
 :::
 
 The Tree Estimator contributes significantly to the popularity of SHAP.
-While other estimation methods may be relatively slow, the Tree Estimator is a fast, model-specific Estimator designed for tree-based models.
+While other estimation methods may be relatively slow, the Tree Estimator is a fast, model-specific estimator designed for tree-based models.
 It is compatible with decision trees, random forests, and gradient boosted trees such as LightGBM and XGBoost.
 Boosted trees are particularly effective for tabular data, and having a quick method to compute SHAP values positions the technique advantageously.
 Moreover, it is an exact method, meaning you obtain the correct SHAP values rather than mere estimates, at least with respect to the coalitions.
@@ -356,17 +356,17 @@ This depends on the subsets in the parent node and the split feature.
 For instance, when the first split in a tree is on feature x3, all subsets containing feature x3 will go to one node (the one where x goes).
 Subsets that do not include feature x3 go to both nodes with reduced weight.
 Unfortunately, subsets of different sizes carry different weights.
-The algorithm must keep track of the cumulative weight of the subsets in each node, which complicated the algorithm.
+The algorithm must keep track of the cumulative weight of the subsets in each node, which complicates the algorithm.
 
 The tree estimation method is implemented in `shap`:
 
 ```{python}
 #| eval: False
 shap.explainers.Tree(
-  model, data, feature_pertubation='interventional'
+  model, data, feature_perturbation='interventional'
 )
 shap.explainers.Tree(
-  model, feature_pertubation='tree_path_dependent'
+  model, feature_perturbation='tree_path_dependent'
 )
 ```
 
@@ -461,13 +461,12 @@ Deep SHAP is an adaptation of the DeepLIFT procedure to produce SHAP values.
 Here are the changes the Deep Estimator incorporates:
 
 - The Deep Estimator uses background data, a set of reference points, instead of a single reference point.
-- The multipliers are redefined in terms of SHAP values, which are
-  backpropagated instead of the original DeepLIFT multipliers. Informally:  $m_{\Delta x_j \Delta f} = \frac{\phi}{x_j} - \mathbb{E}(X_j)$.
-- Another interpretation of Deep Estimator: it computes the SHAP values in smaller parts of the network first and combines those to obtain SHAP values for the entire network, explaining the prediction from the input, similar to our usual understanding of SHAP.
+- The multipliers are redefined in terms of SHAP values, which are backpropagated instead of the original DeepLIFT multipliers. Informally:  $m_{\Delta x_j \Delta f} = \frac{\phi}{x_j} - \mathbb{E}(X_j)$.
+- Another interpretation of the Deep Estimator: it computes the SHAP values in smaller parts of the network first and combines those to obtain SHAP values for the entire network, explaining the prediction from the input, similar to our usual understanding of SHAP.
 
 ::: {.callout-note}
 
-How large should the background data be for Deep Estimator?
+How large should the background data be for the Deep Estimator?
 [According to the SHAP author](https://shap-lrjball.readthedocs.io/en/latest/generated/shap.DeepExplainer.html#shap.DeepExplainer.shap_values), 100 is good, and 1000 is very good.
 
 :::
@@ -503,7 +502,7 @@ They are similar to SHAP values but assigned to feature groups instead of indivi
 Owen values only allow permutations defined by a coalition structure.
 The computation is identical to SHAP values, except that it imposes a hierarchy.
 
-Partition Estimator also prove useful for image inputs, where image pixels can be grouped into larger regions.
+Partition Estimator also proves useful for image inputs, where image pixels can be grouped into larger regions.
 
 Implementation details:
 

@@ -36,7 +36,7 @@ We just need to translate concepts from game theory to machine learning predicti
 ## Viewing a prediction as a coalitional game
 
 A prediction can be viewed as a coalitional game by considering each feature value of an instance as a "player" in a game.
-The "payout" involves the predicted value. We refer to this version of Shapley values adapted for machine learning predictions as "SHAP".
+The "payout" is the predicted value. We refer to this version of Shapley values adapted for machine learning predictions as "SHAP".
 Let's translate the terms from game theory to machine learning predictions one by one with the following table:
 
 | Concept | Machine Learning | Term |
@@ -51,7 +51,7 @@ Let's translate the terms from game theory to machine learning predictions one b
 | SHAP value | Contribution of feature $j$ towards payout |  $\phi^{(i)}_j$ |
 
 
-You may have questions about these terms, but we will talk about them shortly.
+You may have questions about these terms, but we will discuss them shortly.
 The value function is central to SHAP, and we will discuss it in detail.
 This function is closely related to the simulation of absent features.
 
@@ -65,14 +65,11 @@ $$v_{f,x^{(i)}}(S) = \int f(x^{(i)}_S \cup X_C)d\mathbb{P}_{X_{C}} - \mathbb{E}(
 
 The value function relies on a specific model $f$ and a particular data point to be explained $x^{(i)}$, and maps a coalition $S$ to its value.
 Although the correct notation is $v_{f, x^{(i)}}(S)$, I will occasionally use $v(S)$ for brevity.
-Another misusage of notation: I use the union operator for the feature vector: $x^{(i)}_S \cup X_C$ is a feature vector $\in \mathbb{R}^p$ where values at positions $S$ have values from $x^{(i)}_S$ and the rest is random variables from $X_C$. 
-
+Another misuse of notation: I use the union operator for the feature vector: $x^{(i)}_S \cup X_C$ is a feature vector $\in \mathbb{R}^p$ where values at positions $S$ have values from $x^{(i)}_S$ and the rest are random variables from $X_C$. 
 
 :::
 
-
-
-This function provides an answer to the simulation of absent features.
+This function provides an answer for the simulation of absent features.
 The second part $\mathbb{E}(f(X))$ is straightforward:
 It ensures the value of an empty coalition $v(\emptyset)$ equals 0.
 
@@ -84,7 +81,7 @@ v(\emptyset) &=& \int f(X_{1},\ldots,X_{p})d\mathbb{P}_{X}-E_X(f(X)) \\
              &=& 0 
 \end{align}
 
-The first part of the value funtion, $\int f(x^{(i)}_S \cup X_C)dX_{C}$, is where the magic occurs.
+The first part of the value function, $\int f(x^{(i)}_S \cup X_C)dX_{C}$, is where the magic occurs.
 The model prediction function $f$, which is central to the value function, takes the feature vector $x^{(i)} \in \mathbb{R}^p$ as input and generates the prediction $\in \mathbb{R}$.
 However, we only know the features in set $S$, so we need to account for the features not in $S$, which we index with $C$.
 

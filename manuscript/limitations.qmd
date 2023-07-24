@@ -9,7 +9,7 @@ By the end of this chapter, you will be able to:
 
 :::
 
-As a statistician holding both Bachelor's and Master's degrees, I feel obligated to critically examine methods and resist hype. 
+As a statistician holding both a Bachelor's and a Master's degree, I feel obligated to critically examine methods and resist hype. 
 In this chapter, we will scrutinize SHAP.
 While SHAP is popular, it is not without its shortcomings. 
 We have already discussed issues such as the [correlation problem](#correlation) and the complexity of [interpreting interactions](#interaction). 
@@ -55,7 +55,7 @@ The question now is: Are these axioms useful for interpretation? Did we define t
 As demonstrated in the [Linear Chapter](#linear) and the [Additive Chapter](#additive), at least for these more restricted models, the results align with our expectations and what similar metrics (such as coefficients) would indicate.
 
 Bear in mind that SHAP values are but one example of an attribution method.
-And even attribution method is just a subset of methods in interpretable machine learning.
+And even attribution methods are just a subset of methods in interpretable machine learning.
 
 ## SHAP values don't always provide human-friendly explanations.
 

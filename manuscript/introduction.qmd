@@ -3,9 +3,7 @@
 # Introduction {#introduction}
 
 <!-- Motivation for XAI -->
-Machine learning models are powerful tools, but their lack of interpretability
-is a challenge.
-It's often unclear why a certain prediction was made, what the most important features were, and how the features influenced the predictions in general.
+Machine learning models are powerful tools, but their lack of interpretability is a challenge. It's often unclear why a certain prediction was made, what the most important features were, and how the features influenced the predictions in general. 
 <!-- is it important? -->
 Many people argue that as long as a machine learning model performs well, interpretability is unnecessary.
 However, there are many practical reasons why you need interpretability, ranging from debugging to building trust in your model.
@@ -14,24 +12,13 @@ However, there are many practical reasons why you need interpretability, ranging
 
 ## Interpretability 
 
-I think of "interpretability" in the context of machine learning as a keyword.
-And under this keyword you find a colorful variety of approaches that attempt
-to extract information about how the model makes predictions.
+I think of "interpretability" in the context of machine learning as a keyword. Under this keyword, you find a colorful variety of approaches that attempt to extract information about how the model makes predictions.
 
 :::
 
-## Interpret to debug
+## Interpreting to debug
 
-Interpretability is valuable for model debugging, as illustrated by a study predicting pneumonia [@caruana2015intelligible].
-The authors trained a rule-based model, which learned that if a patient has asthma, they have a lower risk of pneumonia.
-I mean, seriously?
-I'm no doctor, but that seems off.
-Asthma patients typically have a higher risk of lung-related diseases.
-It appears the model got it all wrong.
-However, it turns out that asthma patients in this dataset were less likely to get pneumonia.
-The indirect reason was that these patients received "aggressive care," such as early antibiotic treatment.
-Consequently, they were less likely to develop pneumonia.
-A typical case of "correlation does not imply causation" as you can see in @fig-asthma.
+Interpretability is valuable for model debugging, as illustrated by a study predicting pneumonia [@caruana2015intelligible]. The authors trained a rule-based model, which learned that if a patient has asthma, they have a lower risk of pneumonia. Seriously? I'm no doctor, but that seems off. Asthma patients typically have a higher risk of lung-related diseases. It appears the model got it all wrong. However, it turns out that asthma patients in this dataset were less likely to get pneumonia. The indirect reason was that these patients received "aggressive care," such as early antibiotic treatment. Consequently, they were less likely to develop pneumonia. A typical case of "correlation does not imply causation" as you can see in @fig-asthma.
 
 ![Asthma increases the likelihood of pneumonia. However, in the study, asthma also increased the (preemptive) use of antibiotics which generally protects against pneumonia and led to an overall lower pneumonia risk for asthma patients.](images/asthma-dag.jpg){#fig-asthma}
 
@@ -135,7 +122,7 @@ Various methods operate under the SIPA framework [@molnar2022], including:
 - Permutation Feature Importance, quantifying a feature's importance for accurate predictions.
 - Local interpretable model-agnostic explanations (LIME), explaining predictions with local linear models [@ribeiro2016should].
 
-SHAP is another model-agnostic interpretation method operating by sampling data, intervening on them, making predictions, and then aggregating the results. 
+SHAP is another model-agnostic interpretation method that operates by sampling data, intervening on it, making predictions, and then aggregating the results. 
 
 ::: {.callout-tip}
 Even if you use an interpretable model, this book can be of assistance.
@@ -204,8 +191,8 @@ class_index = 0
 data_index = 1
 
 sv = shap.Explanation(
-  values = shap_values.values[data_index,:,class_index],
-  base_values = shap_values.base_values[data_index,class_index],
+  values=shap_values.values[data_index,:,class_index],
+  base_values=shap_values.base_values[data_index,class_index],
   feature_names=X.columns,
   data=X_test.iloc[data_index]
 )
@@ -226,7 +213,7 @@ SHAP has gained popularity and is applied in various fields to explain predictiv
 
 Given its wide range of applications, you are likely to find a use for SHAP in your work.
 
-Before we talk about practical application of SHAP, let's begin with its historical background, which provides context for the subsequent theory chapters.
+Before we talk about the practical application of SHAP, let's begin with its historical background, which provides context for the subsequent theory chapters.
 
 [^keywords]: The terms "Explainable AI" and "interpretable machine learning" are used interchangeably in this book. Some people use XAI more for post-hoc explanations of predictions and interpretable ML for inherently interpretable models. However, when searching for a particular method, it's advisable to use both terms.
 
