@@ -41,7 +41,7 @@ Duke University and Duke Health Systems developed Sepsis Watch, an early warning
 This software system, based on deep neural networks, takes patient data as input and predicts whether the patient is likely to develop sepsis [@elish2020repairing].
 If the model detects a potential sepsis case, it triggers an alert that initiates a new hospital protocol for diagnosis and treatment.
 This protocol involves a rapid response team (RRT) nurse who monitors the alarms and informs the doctors, who then treat the patient.
-Numerous aspects of the implementation warrant discussion, especially the social implications of the new workflow, such as hospital hierarchy causing nurses to feel uncomfortable instructing doctors.
+Numerous aspects of the implementation warrant discussion, especially the social implications of the new workflow, such as the hospital hierarchy causing nurses to feel uncomfortable instructing doctors.
 There was also considerable repair work carried out by RRT nurses to adapt the
 new system to the hospital environment.
 Interestingly, the report noted that the deep learning system didn't provide explanations for warnings, leaving it unclear why a patient was predicted to develop sepsis.
@@ -92,17 +92,17 @@ models, anyone?), and convolutional neural networks for image classification.
 Furthermore, ensembles of models often yield the best results and they are
 clearly less interpretable as they combine multiple models.
 Hence, restricting model selection to inherently interpretable models might lead to inferior performance.
-This inferior performance could directly result in fewer sales, increased churn or more false negative sepsis predictions. 
+This inferior performance could directly result in fewer sales, increased churn, or more false negative sepsis predictions. 
 
 So, what's the solution?
 
 ## Model-agnostic interpretation is the answer
 
-Model-agnostic methods like explainable artificial intelligence (XAI) or interpretable machine learning (IML) provide solutions to interpreting any machine learning model[^keywords].
+Model-agnostic methods like explainable artificial intelligence (XAI) or interpretable machine learning (IML) provide solutions for interpreting any machine learning model[^keywords].
 Despite the vast differences between machine learning models, from k-nearest
 neighbors to deep neural networks and support vector machines, model-agnostic
 methods are always applicable as they don't need knowledge of the model's inner
-mechanics, like coefficients.
+mechanics, such as coefficients.
 
 Consider playing fighting games on a console, where you push inputs (the controller) and observe the outcomes (the character fights).
 This is similar to how model-agnostic interpretable machine learning operates.
@@ -135,8 +135,8 @@ Methods like SHAP can be applied to any model, so even if you're using a decisio
 SHAP [@NIPS2017_7062] is a game-theory-inspired method created to explain predictions made by machine learning models.
 SHAP generates one value per input feature (also known as SHAP values) that indicates how the feature contributes to the prediction of the specified data point.
 In the example in @fig-waterfall, the prediction model estimates the probability of a person earning more than \$50k based on that person's socio-economic factors.
-Some demographics positively affect the predicted probability, while others negatively impact it.
-The understanding of this figure isn't crucial at this point; it's simply the goal to keep in mind as we dive into the theory behind SHAP in the following chapters.
+Some factors positively affect the predicted probability, while others negatively impact it.
+Understanding this figure isn't crucial at this point; it's simply a goal to keep in mind as we dive into the theory behind SHAP in the following chapters.
 
 ```{python}
 #| echo: false

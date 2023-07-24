@@ -265,7 +265,7 @@ Alternatively, we could utilize the `Explainer` as follows:
 shap.Explainer(model, X_train)
 ```
 
-This is also a `Linear` explainer object.
+This also creates a `Linear` explainer object.
 The advantage of the `algorithm='auto'` option, which is the default setting when creating an Explainer, is that `shap` identifies the model as a linear regression model and selects the efficient linear explainer.
 
 Another method involves directly choosing the appropriate `algorithm` in the explainer:
@@ -487,7 +487,7 @@ shap.plots.scatter(shap_values[:, 'alcohol'])
 :::
 
 This plot demonstrates the global dependence modeled by the linear regression between alcohol and the corresponding SHAP values for alcohol.
-The dependence plot will be much more insightful for non-linear model, but it's a great way to confirm that the SHAP values reflect the linear relationship in the case of a linear regression model.
+The dependence plot will be much more insightful for a non-linear model, but it's a great way to confirm that the SHAP values reflect the linear relationship in the case of a linear regression model.
 As the alcohol content increases, the corresponding SHAP value also increases linearly.
 This increase corresponds to the slope in the linear regression model:
 

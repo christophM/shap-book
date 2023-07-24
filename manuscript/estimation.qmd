@@ -194,7 +194,7 @@ The SHAP value for feature $X_j$ can be computed as follows:
 $$\phi^{(i)}_j = f_j(x_j^{(i)}) -  \frac{1}{n} \sum_{k=1}^n f_j(x_j^{(k)})$$
 
 This equation is similar to the one used in the Linear Estimator.
-The first term denotes the effect of feature value $x_j^{(i)}$, while the second term centers it at the expected effect of feature $X_j$.
+The first term denotes the effect of the feature value $x_j^{(i)}$, while the second term centers it at the expected effect of the feature $X_j$.
 However, different assumptions about the shape of the effect are required due to the use of different models (linear versus additive).
 
 Like the Linear Estimator, the Additive Estimator can also be extended to non-linear link functions:

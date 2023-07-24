@@ -188,8 +188,8 @@ Without correlation, marginal and conditional SHAP are identical, since then $P(
 
 :::
 
-If you want to employ conditional sampling in `shap`, use the Linear explainer with the `feature_pertubation='correlation_dependent'` option.
-The Tree explainer provides a similar option called `feature_pertubation= 'tree_path_dependent'`, which uses the splits in the underlying tree-based model to ensure SHAP is not extrapolating.
+If you want to employ conditional sampling in `shap`, use the Linear explainer with the `feature_perturbation='correlation_dependent'` option.
+The Tree explainer provides a similar option called `feature_perturbation= 'tree_path_dependent'`, which uses the splits in the underlying tree-based model to ensure SHAP is not extrapolating.
 However, I advise against using the tree-path option, as it does not accurately model the conditional distribution and does not approximate the conditional SHAP values well [@aas2021explaining].
 
 Whether a conditional SHAP interpretation is useful depends on your interpretation objectives.

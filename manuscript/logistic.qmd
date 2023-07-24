@@ -100,10 +100,10 @@ shap_values = ex(X_test.iloc[0:100])
 
 The novelties include: 
 
-- Using a subset of the training data as a background dataset, which can improve computation speed at the cost of less accurate SHAP value estimates. In the [Regression Chapter](#regression) we'll discuss more elaborate choices of background data in depth.
-- Applying SHAP not to the model but to the entire pipeline, allowing us to compute SHAP values for the original features instead of their processed versions.
+- Using a subset of the training data as a background dataset improves computation speed at the cost of less accurate SHAP value estimates. In the [Regression Chapter](#regression) we'll discuss more elaborate choices of background data in depth.
+- Applying SHAP not to the model but to the entire pipeline allows us to compute SHAP values for the original features instead of their processed versions.
 
-The Adult dataset contains both categorical and numerical features, which are transformed before inputting them into the logistic regression model.
+The Adult dataset contains both categorical and numerical features, which are transformed before being inputted into the logistic regression model.
 
 - Numerical features are standardized: $x_{j,std}^{(i)} = (x_j^{(i)} - \bar{x}_j) / sd(x_j)$.
 - Categorical features are one-hot encoded. For instance, a feature with 1 column and 3 categories transforms into 3 columns, e.g. category "3" might be encoded as (0,0,1).
@@ -135,7 +135,7 @@ It's sensible to include steps like feature standardization in the pipeline, whi
 
 :::
 
-Another point of interest is that the model has two output2: the probability of earning less than \$50k and the probability of earning more than \$50k.
+Another point of interest is that the model has two outputs: the probability of earning less than \$50k and the probability of earning more than \$50k.
 This is mirrored in the resulting `shap_values` variable, which gains an extra dimension.
 So to pick a single SHAP value, we have define 3 things:
 For which data instance? For which feature? For which model output?
@@ -158,8 +158,8 @@ class_index = 0
 shap.plots.waterfall(shap_values[data_index,:,class_index])
 ```
 
-This plot shows the probability of this individual to earn less than \$50k.
-We can see it's the figure from before except all SHAP values are multiplied by -1.
+This plot shows the probability of this individual earning less than \$50k.
+We can see it's the same figure from before except all SHAP values are multiplied by -1.
 This is logical since the probabilities for both classes must add up to 1.
 Thus, a variable that increases the classification by 0.11 for class >50k decreases the classification by 0.11 for class <=50k.
 We only need to pick one of the two classes.
@@ -170,7 +170,7 @@ This changes when we have three or more classes, see the [Image Chapter](#image)
 
 The waterfall plot visualizes the SHAP values of a data instance.
 However, there are other ways to visualize the exact same type of information: the bar plot and the force plot.
-If I were to arrange the 3 plots on a spectrum, I'd say that the bar plot is the most conventional, familiar to most people, followed by the waterfall plot and the force plot, which is the most challenging to read.
+If I were to arrange the three plots on a spectrum, I'd say that the bar plot is the most conventional, familiar to most people, followed by the waterfall plot and the force plot, which is the most challenging to read.
 
 Let's begin with the bar plot.
 

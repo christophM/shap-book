@@ -71,7 +71,7 @@ What we need now are:
 
 The prediction function is straightforward: it takes an image as a numpy array, preprocesses it for the ResNet, and feeds it to the ResNet.
 Thus, it takes a numpy array as input and outputs probability scores.
-We make use of the Partition explainer that partitions the image into equal rectangles and recursively computes the SHAP values. 
+We make use of the Partition Explainer that partitions the image into equal rectangles and recursively computes the SHAP values. 
 
 ```{python}
 # Wrapping the model
@@ -126,7 +126,7 @@ shap.image_plot(shap_values, pixel_values=X[index]/255)
 
 Before we dive into the interpretation of the SHAP values, notice the level on which we computed the SHAP values:
 The image is split into smaller rectangles, a bit like a chessboard, and we get a SHAP value for each rectangle.
-That's automatically done by the Partition explainer.
+That's automatically done by the Partition Explainer.
 Now, let's interpret these SHAP values:
 The burger is misclassified as the top class is "bottlecap".
 The SHAP values show that the top part of the burger primarily influenced the bottlecap classification.
@@ -200,7 +200,7 @@ plt.show()
 
 The upper half of the image is "present" and the lower half is "absent".
 This mirrors the SHAP values concept, where the image is divided into two "players": the upper and lower halves.
-This is also akin to the Partition explainer, which further segments along the x and y axes.
+This is also akin to the Partition Explainer, which further segments along the x and y axes.
 
 Unlike replacing all missing values with gray pixels, maskers don't entirely alter the image.
 Blurring even maintains the original data, merely smoothing it and causing some information loss.
@@ -237,7 +237,7 @@ Another intriguing hyperparameter is the number of evaluation steps.
 ## Effect of increasing the evaluation steps
 
 The number of evaluations in SHAP for images affects the detail of the explanations.
-Given that the Image explainer is based on the Partition explainer, more evaluations result in finer partitions and more localized superpixels.
+Given that the Image explainer is based on the Partition Explainer, more evaluations result in finer partitions and more localized superpixels.
 Let's investigate the impact of increasing the number of evaluation steps, beginning with just 10 evaluations:
 
 ```{python}
@@ -278,9 +278,9 @@ shap.image_plot(shap_values, pixel_values=X[[21]]/255)
 
 As we increase the number of evaluations, we notice:
 
-- We acquire more detailed superpixels, which are associated with the Partition explainer. With only 10 evaluations, we see 4 leaves, requiring a tree depth of 2, which leads to 4 individual SHAP values and 2 for the first split.
+- We acquire more detailed superpixels, which are associated with the Partition Explainer. With only 10 evaluations, we see 4 leaves, requiring a tree depth of 2, which leads to 4 individual SHAP values and 2 for the first split.
 - The SHAP values decrease as the partitions and the number of pixels get smaller. This is because masking fewer pixels tends to have a lower impact on the prediction.
 - The computation time grows linearly with the number of evaluations.
 
-However, the Partition explainer isn't the only option for image classifiers.
+However, the Partition Explainer isn't the only option for image classifiers.
 In the next chapter, we'll discuss how to generate pixel-level explanations.

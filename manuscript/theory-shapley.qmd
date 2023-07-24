@@ -230,7 +230,7 @@ $$\phi_{j, v_1 + v_2} = \phi_{j, v_1} + \phi_{j, v_2}$$
 
 Imagine Alice, Bob, and Charlie not only sharing a taxi but also going out for ice cream.
 Their goal is to fairly divide not just the taxi costs, but both the taxi and ice cream costs.
-The additivity axiom suggests that they could first calculate every persons fair share of the ice cream costs, then the taxi costs, and add them up per person.
+The additivity axiom suggests that they could first calculate each person's fair share of the ice cream costs, then the taxi costs, and add them up per person.
 
 These four[^fifth] axioms ensure the uniqueness of the Shapley values, indicating there's only one solution presented in the Shapley formula, @eq-shapley.
 The proof of why this is the case won't be discussed in this book, as it would be too detailed.

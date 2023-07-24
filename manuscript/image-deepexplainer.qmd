@@ -16,8 +16,7 @@ In this chapter, we will explain image classifier classifications using a differ
 This involves two key aspects:
 
 - Assigning one SHAP value for each input pixel.
-- Simulating feature absence (pixel absence) by sampling pixel from a background dataset.
-
+- Simulating feature absence (pixel absence) by sampling pixels from a background dataset.
 
 Since we are working with a neural network, two model-specific tools are available:
 
@@ -143,7 +142,7 @@ Now, let's plot the SHAP values:
 
 ```{python}
 #| label: fig-digits
-#| fig-cap: SHAP values for the input pixels of different input images (one per row). First column shows input image, then each column shows the SHAP values for the classes from 1 to 9. 
+#| fig-cap: SHAP values for the input pixels of different input images (one per row). The first column shows the input image, then each column shows the SHAP values for the classes from 1 to 9. 
 shap.image_plot(shap_values, x_test[:3])
 ```
 
@@ -171,9 +170,9 @@ shap.image_plot(shap_values, x_test[:3])
 ```
 
 The SHAP values are very similar to the Gradient Explainer.
-This makes sense, since in both cases the result should be the same SHAP values and the difference is only due to the fact that both are approximated.
+This makes sense, since in both cases the result should be the same SHAP values and the difference is only due to the fact that both are approximations.
 
-## Time comparison
+## Time Comparison
 
 We measured the time for both the gradient and deep explainer.
 

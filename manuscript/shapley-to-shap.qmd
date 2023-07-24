@@ -241,5 +241,5 @@ An alternative formulation of the SHAP axioms exists where the Dummy and Additiv
 
 This chapter has provided theoretical SHAP values.
 However, we face a significant problem: 
-In practice, we lack a closed form expression for $f$ and we are unaware of the distributions of $X_C$.
+In practice, we lack a closed-form expression for $f$ and we are unaware of the distributions of $X_C$.
 This means we are unable to calculate the SHAP values, but, fortunately, we can estimate them.

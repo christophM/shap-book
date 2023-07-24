@@ -47,6 +47,14 @@ consistent.
 
 """
 
+system_text = """You are a proof reader. Your job is to fix language errors and typos.
+You have to be extremely conservative. Keep as much untouched as possible.
+
+"""
+
+
+
+
 system_prompt = SystemMessage(content=system_text)
 
 keyfile = "oai.key"
