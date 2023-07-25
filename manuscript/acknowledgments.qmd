@@ -30,7 +30,8 @@ Marouane Il Idrissi,
 Kranthi Kamsanpalli,
 Enrico Roletto,
 David Cortés,
-HaveF. <!-- update maybe -->
+HaveF, and
+Johannes Widera.
 
 And of course a big thanks goes to Heidi, my wife, who always has to put up with my ramblings when I learn something new and just have to tell someone.
 The cover art (the team of meerkats) was created by [jeeshiu from Fiverr](https://www.fiverr.com/jeeshiu).
