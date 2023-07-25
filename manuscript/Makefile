@@ -12,6 +12,7 @@ output/leanpub/$(bookname).epub : *.qmd _quarto-leanpub.yml _quarto.yml
 	mkdir -p output/leanpub
 	quarto render --profile leanpub --to epub
 	mv _book/*.epub output/leanpub/
+	python3 ../scripts/fix-epub.py ./output/leanpub/shap.epub
 
 output/leanpub/$(bookname).pdf: *.qmd _quarto-leanpub.yml latex _quarto.yml
 	mkdir -p output/leanpub
@@ -28,6 +29,7 @@ output/amazon/$(bookname).epub : *.qmd _quarto-amazon.yml _quarto.yml
 	mkdir -p output/amazon
 	quarto render --profile amazon --to epub
 	mv _book/*.epub output/amazon/
+	python3 ../scripts/fix-epub.py ./output/amazon/shap.epub
 
 output/amazon/$(bookname).pdf: *.qmd _quarto-amazon.yml latex _quarto.yml
 	mkdir -p output/amazon

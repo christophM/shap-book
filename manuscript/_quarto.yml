@@ -45,6 +45,8 @@ csl: aquatic-sciences
 format:
   epub:
     html-math-method: mathml
+    lang: en-US
+    date: "2023-08-01"
   pdf:
     documentclass: scrbook
     highlight-style: nord
