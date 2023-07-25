@@ -1,38 +1,37 @@
 # Acknowledgments
 
-TODO: Clarify names by asking via mail
+This book stands on the shoulders of giants.
+In particular, these giants are the researchers working on Shapley values and SHAP, with a special mention of Scott Lundberg who played a pivotal role in bringing Shapley values to machine learning.
 
-- HaveF
+I would also like to thank all my beta readers for their invaluable feedback. In no particular order:
+Carlos Mougan,
+Bharat Raghunathan,
+Junaid Butt,
+Joshua Le Cornu,
+Vaibhav Krishna Irugu Guruswamy,
+Liban Mohamed,
+Tim Triche,
+Ronald Richman,
+Germán García,
+Jeff Herman,
+Zachary Duey,
+Sven Kruschel,
+Joaquín Bogado,
+Shino Chen
+Sairam Subramanian,
+Kerry Pearn,
+Gavin Parnaby,
+Robert Martin,
+Andrea Ruggerini,
+Arved Niklas Fanta,
+Saman Parvaneh,
+Simon Prince, 
+Marouane Il Idrissi,
+Kranthi Kamsanpalli,
+Enrico Roletto,
+David Cortés,
+HaveF. <!-- update maybe -->
 
+And of course a big thanks goes to Heidi, my wife, who always has to put up with my ramblings when I learn something new and just have to tell someone.
+The cover art (the team of meerkats) was created by [jeeshiu from Fiverr](https://www.fiverr.com/jeeshiu).
 
-TODO: Check all names
-TODO: Add round #3 readers here
-Thank readers
-
-- Carlos Mougan 
-- Bharat Raghunathan
-- Junaid Butt 
-- Joshua Le Cornu   (check name again)
-- Vaibhav Krishna Irugu Guruswamy
-- Liban Mohamed
-- Tim Triche
-- Ronald Richman
-- Germán García
-- Jeff Herman
-- Zachary Duey
-- Sven Kruschel (huge amount of feedback)
-- Joaquín Bogado
-- Shino Chen
-- Enrico: Find out last name
-- Sairam Subramanian
-- Kerry Pearn
-- Gavin Parnaby (huge amounts of feedback)
-- HaveF TODO: Ask again for name. 
-- Robert Martin
-- Simon
-- Andrea Ruggerini
-- Cube git
-- Arved Niklas Fanta
-- Saman Parvaneh
-- Simon Prince 
-- Marouane Il Idrissi

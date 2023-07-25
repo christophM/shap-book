@@ -20,7 +20,7 @@ output/leanpub/$(bookname).pdf: *.qmd _quarto-leanpub.yml latex _quarto.yml
 	mv _book/*.pdf output/leanpub/
 
 output/leanpub/sample-$(bookname).pdf: output/leanpub/$(bookname).pdf
-	pdftk output/leanpub/$(bookname).pdf cat 1-32 output output/leanpub/sample-$(bookname).pdf
+	pdftk output/leanpub/$(bookname).pdf cat 1-40 output output/leanpub/sample-$(bookname).pdf
 
 leanpub: output/leanpub/$(bookname).pdf output/leanpub/$(bookname).epub output/leanpub/sample-$(bookname).pdf
 

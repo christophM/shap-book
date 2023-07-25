@@ -27,6 +27,7 @@ book:
     - alternative-libraries.qmd
     - extensions.qmd
     - other.qmd
+    - acknowledgments.qmd
     - advertisement.qmd
     - references.qmd
   appendices:
