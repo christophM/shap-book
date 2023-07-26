@@ -30,6 +30,7 @@ Marouane Il Idrissi,
 Kranthi Kamsanpalli,
 Enrico Roletto,
 David Cortés,
+Valentino Zocca,
 HaveF, and
 Johannes Widera.
 
