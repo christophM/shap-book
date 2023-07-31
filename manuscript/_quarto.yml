@@ -59,4 +59,3 @@ format:
     color-links: true
     links-as-notes: true
     citecolor: "blue"
-    include-before-body: latex/before_body.tex 

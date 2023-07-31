@@ -1,0 +1,45 @@
+\thispagestyle{empty}
+
+\newcommand{\authorName}{Christoph Molnar}
+\newcommand{\authorMail}{christoph.molnar.ai@gmail.com}
+\newcommand{\authorCity}{Munich}
+\newcommand{\authorCountry}{Germany}
+\newcommand{\authorAddress}{%
+Christoph Molnar \\
+c/o MUCBOOK,  Heidi Seibold  \\
+Elsenheimerstraße 48  \\
+80687 München, Germany \\
+}
+\newcommand{\isbn}{ISBN}
+\newcommand{\edition}{First Edition}
+
+% =========================================================================
+% Page with publishing details
+% =========================================================================
+
+\thispagestyle{empty}
+\begin{center}
+  {
+  \bfseries \sffamily \LARGE {{< meta title >}}\par
+  \bfseries \small {{< meta subtitle >}}\par
+}
+
+  \copyright~2023 \textit{{{\authorName}}}, \authorCountry, \authorCity\\
+\url{\authorMail}
+
+For more information about permission to reproduce selections from this book, write to \url{\authorMail}.
+
+	\the\year, \edition
+
+% International Standard Book Number (ISBN)
+% International Standard Serial Number (ISSN), if applicable
+\textsc{} 
+
+\authorAddress
+
+\vspace*{1cm}
+
+\textit{commit id: \input{latex/hash.tex}}
+
+\end{center}
+

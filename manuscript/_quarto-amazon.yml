@@ -12,6 +12,7 @@ format:
     links-as-notes: true
     citecolor: "blue"
     include-in-header: latex/preamble.tex
+    include-before-body: latex/before_body.tex 
     geometry:
       - paperwidth=18.9cm
       - paperheight=24.61cm

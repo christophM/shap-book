@@ -5,4 +5,4 @@ format:
   pdf:
     documentclass: scrreport
     fontsize: "13pt"
-
+    before_body: latex/before_body_leanpub.tex
