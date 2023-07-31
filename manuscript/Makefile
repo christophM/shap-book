@@ -40,4 +40,11 @@ output/amazon/$(bookname).pdf: *.qmd _quarto-amazon.yml latex _quarto.yml
 
 amazon: output/amazon/$(bookname).pdf output/amazon/$(bookname).epub
 
+check-epub-leanpub:
+	java -jar ../scripts/epubcheck-5.0.0/epubcheck.jar ~/repos/shap-book/manuscript/output/leanpub/shap.epub
+
+check-epub-amazon:
+	java -jar ../scripts/epubcheck-5.0.0/epubcheck.jar ~/repos/shap-book/manuscript/output/amazon/shap.epub
+
+check-epubs: check-epub-leanpub check-epub-amazon
   
