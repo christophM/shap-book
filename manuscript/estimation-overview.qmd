@@ -225,7 +225,6 @@ There are numerous other ways to estimate Shapley values, which are detailed in 
 Here's a table to illustrate just how many methods there are.
 Some methods are model-specific, while others are model-agnostic.
 Model-specific methods are often inspired by other techniques used to explain model predictions. 
-The "Background Data" column indicates whether the estimation method requires data for estimation.
 
 
 | Method | Estimation (with inspiration) | Model-specific? |

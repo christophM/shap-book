@@ -40,8 +40,8 @@ We define the taxi ride costs for all possible combinations and compile the foll
 | {Bob}                |   $25 | Bob always insists on luxury taxis |
 | {Charlie}            |   $38 | Charlie lives slightly further away      |
 | {Alice, Bob}         |   $25 | Bob always gets his way               |
-| {Alice, Charlie}     |   $41 | Alice & Bob's place requires a slight detour |
-| {Bob, Charlie}       |   $51 | Bob is a creature of luxury and Charlie lives a bit further away|
+| {Alice, Charlie}     |   $41 | Drop off Alice first, then Charlie |
+| {Bob, Charlie}       |   $51 | Drop off luxurious Bob first, then Charlie |
 | {Alice, Bob, Charlie}|   $51 | The full fare with all three of them      |
 
 The coalition $\emptyset$ is a coalition without any players in it, i.e., an empty taxi.
