@@ -154,7 +154,9 @@ Here are some important observations:
 - We could infer that volatile acidity alters the effect of alcohol on the predicted wine quality.
 - However, this interaction is subtle, and we should avoid overinterpreting it, particularly considering the insights from the [Interaction Chapter](#interaction) about the complexity of interactions.
 
-::: {.callout-note} Here's some advice on interpreting the interaction part of the dependence plot:
+::: {.callout-note} 
+
+Here's some advice on interpreting the interaction part of the dependence plot:
 
 - Select one of the two variables.
 - For this variable, choose two ranges or categories.

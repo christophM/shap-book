@@ -324,6 +324,7 @@ You can also alter the ordering by clicking on the interactive graph, for exampl
 
 The heatmap plot is another tool for global interpretation.
 Unlike the dependence or importance plot, the heatmap plot displays all SHAP values without aggregation.
+Some features are automatically summarized -- a plotting behavior that can be controlled by setting the `max_display` argument.
 
 ```{python}
 shap.plots.heatmap(sv_logit[:,:,class_index])
@@ -340,6 +341,5 @@ shap.plots.heatmap(sv_logit[:,:,class_index])
 
 :::
 
-Some features are automatically summarized, a plotting behavior that can be controlled by setting the `max_display` argument.
 
 [^no-probability]: While the output is a number between 0 and 1, classifiers are frequently not well-calibrated, so be cautious when interpreting the output as a probability in real-world scenarios.

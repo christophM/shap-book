@@ -92,8 +92,8 @@ shap_values = explainer(X_test)
 
 The question now is: How do we interpret the SHAP values?
 And do they align with our expectations?
-
 First, let's elucidate the initial prediction of a data point:
+
 ```{python}
 shap.plots.waterfall(shap_values[0], max_display=10)
 ```

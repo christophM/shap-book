@@ -1,4 +1,4 @@
-# Other Applications of Shapley Values in Machine Learning
+# Other Uses of Shapley Values in Machine Learning
 
 This chapter explores the various applications of Shapley values in tasks within the machine learning field beyond prediction explanations.
 While the [Extensions Chapter](#extensions) focused on extensions for explaining predictions, this chapter introduces other tasks in machine learning and data science that can benefit from the use of Shapley values.

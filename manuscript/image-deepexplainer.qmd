@@ -1,4 +1,4 @@
-# Explaining Image Classification with Deep and Gradient Explainer {#image-deep-explainer}
+# Deep and Gradient Explainer {#image-deep-explainer}
 
 
 ::: {.callout-tip appearance="simple"}
