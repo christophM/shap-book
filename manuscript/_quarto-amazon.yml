@@ -1,7 +1,7 @@
 format:
   pdf:
     documentclass: scrbook
-    highlight-style: nord
+    highlight-style: arrow
     font-size: 12
     toc: true
     toc-depth: 2
