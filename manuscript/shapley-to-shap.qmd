@@ -23,7 +23,7 @@ Your task is to explain this prediction.
 The apartment has an area of 50 $m^2$ (538 square feet), is located on the 2nd floor, has a nearby park, and cats are banned.
 These features are what the model used to make the prediction.
 
-![The predicted price for a 50 $m^2$ 2nd floor apartment with a nearby park and cat ban is €300,000. Our goal is to explain how each of these feature values contributed to the prediction.](images/shapley-instance.jpg)
+![The predicted price for a 50 $m^2$ 2nd floor apartment with a nearby park and cat ban is €300,000. Our goal is to explain how each of these feature values contributed to the prediction.](images/shapley-instance.jpg){width=70%}
 
 The average prediction for all apartments in the data is €310,000, which places the predicted price of this specific apartment slightly below average. How much did each feature value contribute to the prediction compared to the average prediction?
 In the apartment example, the feature values `park-nearby`, `cat-banned`, `area-50`, and `floor-2nd` collectively led to a prediction of €300,000.
@@ -201,7 +201,7 @@ Other methods, such as the breakdown method [@staniak2018explanations] or counte
 For example, the breakdown method also computes attributions, but does it by adding one feature at a time, so that the order by which features are added matters for the explanation.
 Symmetry is essential for accurately interpreting the order of SHAP values, for instance, when ranking features using SHAP importance (sum of absolute SHAP values per feature).
 
-### Dummy: Features not influencing the prediction receive a SHAP value of 0  {-}
+### Dummy: Features not affecting the prediction receive SHAP values of 0  {-}
 
 A feature j that does not alter the predicted value, regardless of the coalition of feature values it is added to, should have a SHAP value of 0.
 
