@@ -1,6 +1,6 @@
 # More From The Author {-}
 
-![](images/advertisement.png)
+![](images/advertisement.jpg)
 
 ::: {layout-ncol=3}
 

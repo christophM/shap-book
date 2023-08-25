@@ -190,7 +190,7 @@ shap.initjs()
 shap.plots.force(shap_values[data_index,:,class_index])
 ```
 
-![Force Plot](images/force-plot.png)
+![Force Plot](images/force-plot.jpg)
 
 The force plot is interactive, based on JavaScript, and allows you to hover over it for more insights.
 Of course, this feature is not available in the static format you're currently viewing, but it can be accessed if you create your own plot and embed it in a Jupyter notebook or a website.
@@ -298,7 +298,7 @@ shap.plots.force(sv_logit[0:20:,:,0])
 ```
 
 
-![Clustering Plot](images/clustering-plot-1.png)
+![Clustering Plot](images/clustering-plot-1.jpg)
 
 ::: {.callout-note}
 
@@ -317,7 +317,7 @@ The cluster plot is an exploratory tool.
 
 You can also alter the ordering by clicking on the interactive graph, for example, by the prediction:
 
-![Clustering Plot](images/clustering-plot-2.png)
+![Clustering Plot](images/clustering-plot-2.jpg)
 
 
 ## The heatmap plot
