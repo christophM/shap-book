@@ -227,8 +227,8 @@ Some methods are model-specific, while others are model-agnostic.
 Model-specific methods are often inspired by other techniques used to explain model predictions. 
 
 
-| Method | Estimation (with inspiration) | Model-specific? |
-| ------ | ----------------------------- | --------------- |
+| Method | Estimation  | Model-specific? |
+| ------- | ----------------------------- | --------- |
 | Exact | Iterates through all background data and coalitions | Agnostic |
 | Sampling | Samples coalitions | Agnostic |
 | Permutation | Samples permutations | Agnostic |
