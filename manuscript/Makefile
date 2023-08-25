@@ -47,4 +47,13 @@ check-epub-amazon:
 	java -jar ../scripts/epubcheck-5.0.0/epubcheck.jar ~/repos/shap-book/manuscript/output/amazon/shap.epub
 
 check-epubs: check-epub-leanpub check-epub-amazon
-  
+ 
+venv:
+	@rm -rf venv
+	@echo "Creating virtual environment"
+	@python3.10 -m venv venv
+	@echo "Activating virtual environment"
+	@venv/bin/pip install jupyter
+	@echo "Installing dependencies from requirements.txt"
+	@venv/bin/pip install -r requirements.txt
+	@echo "Virtual environment is ready to use!"
