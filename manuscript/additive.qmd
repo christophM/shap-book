@@ -111,6 +111,7 @@ This waterfall plot provides a different perspective than the purely linear mode
 
 A GAM is an additive model, which implies that we can inspect each feature in isolation to understand its effect without considering interaction effects.
 Let's examine the SHAP dependence plot for alcohol:
+
 ```{python}
 shap.plots.scatter(shap_values[:,"alcohol"])
 ```

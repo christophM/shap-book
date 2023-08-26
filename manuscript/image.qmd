@@ -255,7 +255,7 @@ shap_values = explainer(
     batch_size=50,
     outputs=shap.Explanation.argsort.flip[:topk]
 )
-shap.image_plot(shap_values, pixel_values=X[[21]]/255)
+shap.image_plot(shap_values, pixel_values=X[[21]]/255, width=4)
 ```
 
 
@@ -270,7 +270,7 @@ shap_values = explainer(
     batch_size=50,
     outputs=shap.Explanation.argsort.flip[:topk]
 )
-shap.image_plot(shap_values, pixel_values=X[[21]]/255)
+shap.image_plot(shap_values, pixel_values=X[[21]]/255, width=4)
 ```
 
 
