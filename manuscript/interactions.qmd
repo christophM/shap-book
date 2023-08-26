@@ -71,29 +71,19 @@ y = 0.1 * X.x1 -  1 *  X.x2 + 10 * (X.x1 < 160) * (X.x2 > 7) - 8
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
-```
-
-And finally we train the model:
-
-```{python}
-#| output: false
 rf_model = RandomForestRegressor(n_estimators=100, random_state=42)
 rf_model.fit(X_train, y_train)
 ```
 
-Here's a visualization of how the features height and distance relate to the prediction:
+Let's visualize how height and distance relate to the prediction:
 
 ```{python}
 # Generate x1 and x2 grids
 x1 = np.linspace(140, 200, 100)
 x2 = np.linspace(0, 10, 100)
 xx1, xx2 = np.meshgrid(x1, x2)
-
-# Flatten the grids and predict color
 Xgrid = np.column_stack((xx1.ravel(), xx2.ravel()))
 color = rf_model.predict(Xgrid)
-
-# Reshape the predicted color array
 color = color.reshape(xx1.shape)
 
 # Plot the heatmap

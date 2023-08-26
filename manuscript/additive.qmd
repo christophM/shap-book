@@ -90,6 +90,9 @@ explainer = shap.Explainer(model.predict, X_train)
 shap_values = explainer(X_test)
 ```
 
+The explainer used here is a Permutation explainer.
+The Additive explainer method isn't used because the additive estimation in `shap` is only implemented for `interpret.glassbox.ExplainableBoostingClassifier`, and we are using the Regressor.
+
 The question now is: How do we interpret the SHAP values?
 And do they align with our expectations?
 First, let's elucidate the initial prediction of a data point:
@@ -97,13 +100,6 @@ First, let's elucidate the initial prediction of a data point:
 ```{python}
 shap.plots.waterfall(shap_values[0], max_display=10)
 ```
-
-::: {.callout-note}
-
-The explainer used here is a Permutation explainer.
-The Additive explainer method isn't used because the additive estimation in `shap` is only implemented for `interpret.glassbox.ExplainableBoostingClassifier`, and we are using the Regressor.
-
-:::
 
 This waterfall plot provides a different perspective than the purely linear model.
 
@@ -148,7 +144,6 @@ plt.show()
 As evident, the SHAP values follow the same trajectory as we would see when simply altering one of the features (here, alcohol).
 This reinforces our confidence in understanding SHAP values.
 There's a paper [@bordt2022shapley] that demonstrates that when the model is a GAM, the non-linear components can be recovered by SHAP.
-
 Like the linear case, in the additive case, SHAP values accurately track the feature effect and align with what we would expect.
 
 ## Analyzing feature importance

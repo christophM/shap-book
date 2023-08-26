@@ -90,7 +90,7 @@ shap_values.base_values +  np.sum(shap_values, axis=1) - \
 
 :::
 
-Let's try again without checking for additivity:
+Let's try again but this time we skip the check for additivity:
 
 ```{python}
 import shap
@@ -98,9 +98,11 @@ explainer = shap.Explainer(model, X_train)
 shap_values = explainer(X_test, check_additivity=False)
 ```
 
+Now we can continue as usual.
 
 ::: {.callout-warning}
-Please provide a dataset or masker when creating an Explainer for a tree-based model.
+
+Provide a dataset or masker when creating an Explainer for a tree-based model.
 While other explainers will not function without data, the tree explainer will default to `feature_perturbation='tree_path_dependent'`, which is not recommended due to its ambiguous interpretation.
 
 :::
@@ -276,13 +278,10 @@ explainer2 = shap.PartitionExplainer(model.predict, masker)
 shap_values2 = explainer2(X_test)
 ```
 
-::: {.callout-note}
-By using the Partition Explainer instead of the Tree Explainer, we avoid the issue of checking additivity.
-:::
-
 We now have our new SHAP values.
 The key question is: Do the results differ from when we ignored feature correlation?
 Let's compare the SHAP importances:
+
 
 ```{python}
 fig = plt.figure(figsize=(6,12))
@@ -345,26 +344,18 @@ In the first scenario, the SHAP values of the wines would sum up to a positive v
 Let's explore the two methods of comparing subsets.
 
 ```{python}
+#| label: fig-subsets
+#| fig-cap:  "Background data: wines with alcohol > 12 (top) or all wines (bottom)."
 # create the data subsets
 ind_test = np.where(X_test['alcohol'].values > 12)
 ind_train = np.where(X_train['alcohol'].values > 12)
 X_train_sub = X_train.iloc[ind_train]
 X_test_sub = X_test.iloc[ind_test]
-
 # SHAP where background data is based on subset
 explainer_sub = shap.Explainer(model, X_train_sub)
 shap_values_sub = explainer_sub(X_test_sub)
-
 # SHAP where background data includes all wines
 shap_values_sub_all = shap_values[ind_test]
-```
-
-We start with the SHAP values for a single wine.
-
-```{python}
-#| label: fig-subsets
-#| fig-cap:  "Top: Background data are wines with alcohol > 12. Bottom: Background data includes all wines"
-import matplotlib.pyplot as plt
 
 fig = plt.figure(figsize=(6,12))
 ax0 = fig.add_subplot(211)

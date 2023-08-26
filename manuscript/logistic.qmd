@@ -326,10 +326,6 @@ The heatmap plot is another tool for global interpretation.
 Unlike the dependence or importance plot, the heatmap plot displays all SHAP values without aggregation.
 Some features are automatically summarized -- a plotting behavior that can be controlled by setting the `max_display` argument.
 
-```{python}
-shap.plots.heatmap(sv_logit[:,:,class_index])
-```
-
 ::: {.callout-note}
 
 ## Heatmap plot
@@ -340,6 +336,12 @@ shap.plots.heatmap(sv_logit[:,:,class_index])
 - The curve at the top displays the predicted value for the data.
 
 :::
+
+You generate the heatmap plot similar to the other plots:
+
+```{python}
+shap.plots.heatmap(sv_logit[:,:,class_index])
+```
 
 
 [^no-probability]: While the output is a number between 0 and 1, classifiers are frequently not well-calibrated, so be cautious when interpreting the output as a probability in real-world scenarios.
