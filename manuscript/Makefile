@@ -12,7 +12,6 @@ output/leanpub/$(bookname).epub : *.qmd _quarto-leanpub.yml _quarto.yml
 	mkdir -p output/leanpub
 	quarto render --profile leanpub --to epub
 	mv _book/*.epub output/leanpub/
-	python3 ../scripts/fix-epub.py ./output/leanpub/shap.epub
 
 output/leanpub/$(bookname).pdf: *.qmd _quarto-leanpub.yml latex _quarto.yml
 	mkdir -p output/leanpub
@@ -29,7 +28,6 @@ output/amazon/$(bookname).epub : *.qmd _quarto-amazon.yml _quarto.yml
 	mkdir -p output/amazon
 	quarto render --profile amazon --to epub
 	mv _book/*.epub output/amazon/
-	python3 ../scripts/fix-epub.py ./output/amazon/shap.epub
 
 output/amazon/$(bookname).pdf: *.qmd _quarto-amazon.yml latex _quarto.yml
 	mkdir -p output/amazon
@@ -41,10 +39,10 @@ output/amazon/$(bookname).pdf: *.qmd _quarto-amazon.yml latex _quarto.yml
 amazon: output/amazon/$(bookname).pdf output/amazon/$(bookname).epub
 
 check-epub-leanpub:
-	java -jar ../scripts/epubcheck-5.0.0/epubcheck.jar ~/repos/shap-book/manuscript/output/leanpub/shap.epub
+	java -jar ../scripts/epubcheck-5.0.0/epubcheck.jar output/leanpub/shap.epub
 
 check-epub-amazon:
-	java -jar ../scripts/epubcheck-5.0.0/epubcheck.jar ~/repos/shap-book/manuscript/output/amazon/shap.epub
+	java -jar ../scripts/epubcheck-5.0.0/epubcheck.jar output/amazon/shap.epub
 
 check-epubs: check-epub-leanpub check-epub-amazon
  

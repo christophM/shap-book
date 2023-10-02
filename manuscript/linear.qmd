@@ -93,11 +93,11 @@ We'll now train the linear regression model using the scikit-learn package.
 
 
 ```{python}
-#| output: false
+#| output: False
 from sklearn.linear_model import LinearRegression
 
 model = LinearRegression()
-model.fit(X_train, y_train)
+model = model.fit(X_train, y_train)
 ```
 How does the model perform?
 To evaluate, we calculate the mean absolute error (MAE) on the test data.
@@ -217,7 +217,7 @@ pip install shap==0.42.0
 ```
 
 
-### If you use virtualenv {-}
+**If you use virtualenv**
 
 If you're using virtualenv or venv, activate the environment first.
 Assuming the environment is named venv:
@@ -227,7 +227,7 @@ source venv/bin/activate
 pip install shap
 ```
 
-### If you use conda {-}
+**If you use conda**
 
 If you're using conda, use the following commands to install `shap`:
 
@@ -243,6 +243,7 @@ conda install -c conda-forge shap=0.42.0
 
 
 ## Computing SHAP values
+
 To better comprehend the effects of features, we can calculate SHAP values for a single data instance.
 For this, we construct a `LinearExplainer` object.
 

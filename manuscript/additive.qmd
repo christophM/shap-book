@@ -62,7 +62,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 model = ExplainableBoostingRegressor(interactions=0)
-model.fit(X_train, y_train)
+model = model.fit(X_train, y_train)
 ```
 
 Let's evaluate the model's predictions on the test data:

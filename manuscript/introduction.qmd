@@ -140,7 +140,6 @@ Understanding this figure isn't crucial at this point; it's simply a goal to kee
 #| echo: false
 #| label: fig-waterfall
 #| fig-cap: SHAP values to explain a prediction.
-#| width: 30%
 import shap
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline

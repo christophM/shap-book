@@ -80,7 +80,7 @@ Should fertilizer use be increased?
 SHAP values don't provide a solution, as they only explain how the current value affected the prediction compared to the background data, without suggesting how to modify it.
 However, they do indicate which features need to be preserved to avoid regression to the mean.
 
-For actionable recommendations, consider using [counterfactual explanations](christophm.github.io/interpretable-ml-book/counterfactual.html).
+For actionable recommendations, consider using [counterfactual explanations](https://christophm.github.io/interpretable-ml-book/counterfactual.html).
 Additionally, ensure the model itself offers actionable advice by using representative data samples and modeling causal relationships.
 
 ## SHAP values can be misinterpreted

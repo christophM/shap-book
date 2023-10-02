@@ -259,22 +259,19 @@ shap.image_plot(shap_values, pixel_values=X[[21]]/255, width=4)
 ```
 
 
-Then we increase the number of evaluations to 1000:
+Then we increase the number of evaluations to 100:
 
 ```{python}
 #| message: False
 #| warning: False
 shap_values = explainer(
     X[[21]],
-    max_evals=1000,
+    max_evals=100,
     batch_size=50,
     outputs=shap.Explanation.argsort.flip[:topk]
 )
 shap.image_plot(shap_values, pixel_values=X[[21]]/255, width=4)
 ```
-
-
-
 
 As we increase the number of evaluations, we notice:
 

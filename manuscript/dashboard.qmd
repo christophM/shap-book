@@ -1,4 +1,4 @@
-# Building SHAP Dashboards with Shapash
+# Building SHAP Dashboards with Shapash {#dashboard}
 
 ::: {.callout-tip appearance="simple"}
 

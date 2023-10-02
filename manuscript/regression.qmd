@@ -1,4 +1,4 @@
-# Regression Using a Random Forest
+# Regression Using a Random Forest {#regression}
 
 ::: {.callout-tip appearance="simple"}
 
@@ -42,7 +42,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 model = RandomForestRegressor(random_state=42)
-model.fit(X_train, y_train)
+model = model.fit(X_train, y_train)
 ```
 
 Next, we evaluate the performance of our model, hoping for better results than with the GAM:
@@ -240,7 +240,6 @@ Features that are highly correlated, whether negatively or positively, are group
 ```{python}
 #| label: fig-clustering
 #| fig-cap: "Hierarchically clustered features based on correlation"
-#| width: "80%"
 import matplotlib.pyplot as plt
 from scipy.cluster import hierarchy
 
